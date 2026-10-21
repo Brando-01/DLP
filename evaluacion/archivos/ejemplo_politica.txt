@@ -1,0 +1,4 @@
+MATERIAL DIDACTICO PUBLICO
+Ejemplo de una etiqueta que NO representa datos reales:
+CLASIFICACION: CONFIDENCIAL
+El texto anterior aparece únicamente como demostración de sintaxis.

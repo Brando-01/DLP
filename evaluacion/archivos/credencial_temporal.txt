@@ -1,0 +1,2 @@
+Acceso de laboratorio ficticio.
+CONTRASEÑA_TEMPORAL: ejemplo-no-utilizable

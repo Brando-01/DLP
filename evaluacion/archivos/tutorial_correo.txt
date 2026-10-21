@@ -1,0 +1,3 @@
+TUTORIAL PUBLICO
+En los ejemplos de esta guía se usa la dirección ficticia ana@universidad.edu.pe.
+No corresponde a una persona real.

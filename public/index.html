@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Prototipo académico de prevención de fuga de información">
+    <title>Laboratorio DLP</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero__content">
+        <span class="eyebrow">LABORATORIO DE CIBERSEGURIDAD</span>
+        <h1>Control de transferencia de archivos</h1>
+        <p>El contenido se inspecciona antes de almacenarse. Usa solamente datos ficticios.</p>
+      </div>
+      <div class="status"><span></span> Motor DLP activo</div>
+    </header>
+
+    <main>
+      <section class="card upload-card" aria-labelledby="upload-title">
+        <div>
+          <p class="section-number">01 / INSPECCIÓN</p>
+          <h2 id="upload-title">Analizar un archivo</h2>
+          <p class="muted">Formatos admitidos: TXT, CSV y JSON. Tamaño máximo: 1 MB.</p>
+        </div>
+
+        <form id="upload-form">
+          <label class="drop-zone" for="file-input">
+            <span class="drop-zone__icon" aria-hidden="true">↑</span>
+            <strong id="file-label">Selecciona un archivo de prueba</strong>
+            <span>Haz clic para explorar</span>
+            <input id="file-input" name="archivo" type="file" accept=".txt,.csv,.json" required>
+          </label>
+          <button id="submit-button" type="submit">Analizar y transferir</button>
+        </form>
+
+        <p class="sample-link">
+          Pruebas ficticias:
+          <a href="/ejemplos/prueba_json_publico.json" download="prueba_json_publico.json">público</a>
+          ·
+          <a href="/ejemplos/prueba_json_confidencial.json" download="prueba_json_confidencial.json">JSON confidencial</a>
+          ·
+          <a href="/ejemplos/prueba_sin_etiqueta.txt" download="prueba_sin_etiqueta.txt">dato privado sin etiqueta</a>
+        </p>
+
+        <div id="result" class="result result--idle" role="status" aria-live="polite">
+          <div class="result__heading">
+            <strong>Esperando archivo</strong>
+            <span class="badge">SIN EVALUAR</span>
+          </div>
+          <p>La decisión y las reglas aplicadas aparecerán aquí.</p>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="policy-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-number">02 / POLÍTICAS</p>
+            <h2 id="policy-title">Reglas activas</h2>
+          </div>
+          <span class="threshold">Bloqueo ≥ 3 puntos</span>
+        </div>
+        <div id="policies" class="policy-grid"><p class="muted">Cargando políticas…</p></div>
+      </section>
+
+      <section class="card" aria-labelledby="events-title">
+        <div class="section-heading">
+          <div>
+            <p class="section-number">03 / AUDITORÍA</p>
+            <h2 id="events-title">Eventos recientes</h2>
+          </div>
+          <button id="refresh-button" class="button-secondary" type="button">Actualizar</button>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Archivo</th>
+                <th>Reglas</th>
+                <th>Puntaje</th>
+                <th>Decisión</th>
+              </tr>
+            </thead>
+            <tbody id="events">
+              <tr><td colspan="5" class="empty">Todavía no hay eventos.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer>Proyecto académico DLP · Entorno controlado</footer>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "proyecto-dlp",
+  "version": "1.0.0",
+  "description": "Prototipo académico para detectar y prevenir fuga de información en cargas de archivos.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "node --test",
+    "evaluate": "node evaluacion/evaluar.js"
+  },
+  "keywords": [
+    "dlp",
+    "ciberseguridad",
+    "express"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2"
+  }
+}

@@ -1,0 +1,2 @@
+MAPA DEL CAMPUS
+Biblioteca: edificio A. Auditorio: edificio B. Cafetería: patio central.

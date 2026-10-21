@@ -1,0 +1,22 @@
+[
+  { "id": "B01", "file": "archivos/horario_publico.txt", "sensitive": false, "reason": "Horario de clases publicado para todos." },
+  { "id": "B02", "file": "archivos/calendario_publico.txt", "sensitive": false, "reason": "Fechas académicas públicas." },
+  { "id": "B03", "file": "archivos/reglamento_publico.txt", "sensitive": false, "reason": "Normas generales sin datos personales." },
+  { "id": "B04", "file": "archivos/mapa_campus.txt", "sensitive": false, "reason": "Ubicación pública de edificios." },
+  { "id": "B05", "file": "archivos/aviso_biblioteca.txt", "sensitive": false, "reason": "Aviso público de atención." },
+  { "id": "B06", "file": "archivos/agenda_evento.json", "sensitive": false, "reason": "Agenda de un evento abierto." },
+  { "id": "B07", "file": "archivos/catalogo_cursos.csv", "sensitive": false, "reason": "Catálogo de cursos sin alumnos." },
+  { "id": "B08", "file": "archivos/preguntas_frecuentes.txt", "sensitive": false, "reason": "Preguntas frecuentes para visitantes." },
+  { "id": "B09", "file": "archivos/ejemplo_politica.txt", "sensitive": false, "reason": "Material público que cita una etiqueta DLP como ejemplo; posible falso positivo." },
+  { "id": "B10", "file": "archivos/tutorial_correo.txt", "sensitive": false, "reason": "Guía pública con una dirección ficticia de ejemplo; posible falso positivo." },
+  { "id": "S01", "file": "archivos/notas_confidenciales.csv", "sensitive": true, "reason": "Notas y código de estudiante ficticio." },
+  { "id": "S02", "file": "archivos/acta_restringida.txt", "sensitive": true, "reason": "Acta marcada como restringida." },
+  { "id": "S03", "file": "archivos/listado_estudiantes.csv", "sensitive": true, "reason": "Código y nota individual ficticios." },
+  { "id": "S04", "file": "archivos/credencial_temporal.txt", "sensitive": true, "reason": "Credencial temporal ficticia." },
+  { "id": "S05", "file": "archivos/reporte_confidencial.json", "sensitive": true, "reason": "Reporte marcado como confidencial." },
+  { "id": "S06", "file": "archivos/evaluacion_individual.txt", "sensitive": true, "reason": "Evaluación individual con código y nota." },
+  { "id": "S07", "file": "archivos/acceso_restringido.json", "sensitive": true, "reason": "Instrucciones internas marcadas como restringidas." },
+  { "id": "S08", "file": "archivos/planilla_notas.csv", "sensitive": true, "reason": "Planilla con código y nota ficticios." },
+  { "id": "S09", "file": "archivos/directorio_interno.txt", "sensitive": true, "reason": "Directorio no publicado con contacto personal; la regla solo ve un correo." },
+  { "id": "S10", "file": "archivos/notas_sin_etiquetas.txt", "sensitive": true, "reason": "Calificaciones privadas sin etiquetas reconocidas; posible falso negativo." }
+]

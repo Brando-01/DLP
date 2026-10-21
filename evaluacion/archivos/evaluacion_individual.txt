@@ -1,0 +1,3 @@
+Evaluación individual ficticia.
+CODIGO_ESTUDIANTE: 20263456
+NOTA_FINAL: 12
