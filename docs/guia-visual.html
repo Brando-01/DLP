@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratorio DLP · Arquitectura y casos de uso</title>
+<style>
+:root{font-family:Segoe UI,Arial,sans-serif;color:#142c43;background:#edf3f7;font-size:17px;line-height:1.65}*{box-sizing:border-box}body{margin:0}header,main,footer{max-width:1240px;margin:auto;padding:32px}header{padding-top:64px}h1{font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.08;letter-spacing:-.04em;margin:16px 0}h2{font-size:1.65rem;line-height:1.25}p{max-width:1000px}a{color:#087f82}nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}nav a{border:1px solid #cddbe6;border-radius:8px;padding:8px 12px;text-decoration:none;background:#fff}.eyebrow{color:#087f82;letter-spacing:.14em;font-weight:700;font-size:.8rem}.intro{font-size:1.15rem;color:#51677b}.note{background:#e6f2f3;border-left:4px solid #087f82;padding:16px 22px;border-radius:6px}.section{background:#fff;margin-bottom:26px;padding:26px;border:1px solid #d9e3eb;border-radius:14px;break-inside:avoid}.graphic svg{width:100%;height:auto;display:block}.graphic{margin:16px -8px 0}table{width:100%;border-collapse:collapse;font-size:.94rem}th,td{padding:12px 10px;text-align:left;border-bottom:1px solid #dae3eb;vertical-align:top}th{background:#f2f7fa;color:#51677b}code{background:#edf3f7;padding:2px 5px;border-radius:4px}.wide{overflow:auto}.links{font-size:.88rem}footer{font-size:.9rem;color:#51677b}li{margin:10px 0}@media(max-width:650px){header,main,footer{padding:20px}.section{padding:16px}.graphic{overflow:auto}.graphic svg{min-width:820px}}@media print{:root{background:white;font-size:11pt}header,main,footer{padding:12px;max-width:none}header{padding-top:20px}nav,.links{display:none}.section{border:0;padding:0;margin:0 0 22px;break-before:page;border-radius:0}.graphic{margin:0}.graphic svg{max-height:225mm;min-width:0}h1{font-size:30pt}.note{background:#f2f7fa}a{color:inherit}footer{break-before:avoid}}
+</style></head><body>
+<header><span class="eyebrow">DOCUMENTACIÓN DEL PROYECTO · 21 OCT 2026</span>
+<h1>Así funciona<br>el laboratorio DLP</h1>
+<p class="intro">Casos de uso, arquitectura de red, componentes y recorrido completo de una transferencia. Esta guía representa la implementación actual, previa a integrar Groq.</p>
+<p class="note">El archivo se recibe en memoria y se inspecciona antes de guardarlo. Un bloqueo evita su almacenamiento en <code>recibidos/</code>. El alcance del control es el portal de carga.</p>
+<nav><a href="#01-arquitectura-red">1. Arquitectura de red</a><a href="#02-casos-de-uso">2. Casos de uso y actores</a><a href="#03-componentes">3. Arquitectura de componentes</a><a href="#04-flujo-decision">4. Flujo de procesamiento</a><a href="#05-secuencia">5. Secuencia de una transferencia</a><a href="#casos">Fichas de casos</a></nav></header>
+<main><section class="section" id="01-arquitectura-red"><h2>Arquitectura de red</h2><p>Kali y Windows comparten la red Host-only. El participante carga archivos hacia el puerto TCP 3000 del servicio; el receptor inspecciona antes de guardar. La dirección exacta de Kali debe verificarse en su terminal.</p><div class="graphic"><svg xmlns="http://www.w3.org/2000/svg" width="1440" height="890" viewBox="0 0 1440 890" role="img" aria-labelledby="01-arquitectura-red-title 01-arquitectura-red-desc">
+<title id="01-arquitectura-red-title">Arquitectura de red</title><desc id="01-arquitectura-red-desc">Un equipo físico: Kali origina la carga y Windows inspecciona y decide el almacenamiento.</desc>
+<defs><marker id="01-arquitectura-red-arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="01-arquitectura-red-arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="01-arquitectura-red-arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="01-arquitectura-red-arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="01-arquitectura-red-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="01-arquitectura-red-arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="01-arquitectura-red-arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="01-arquitectura-red-arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="890" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 01 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Arquitectura de red</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Un equipo físico: Kali origina la carga y Windows inspecciona y decide el almacenamiento.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="34" y="150" width="1372" height="650" rx="16" fill="#fbfdff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="54" y="181" font-size="18" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="54" dy="0">PC FÍSICA · WINDOWS ALOJA EL SERVICIO Y LA VM KALI</tspan></text>
+<rect x="62" y="211" width="330" height="430" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="82" y="242" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="82" dy="0">VM Kali Linux</tspan></text>
+<rect x="84" y="265" width="286" height="83" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="102" y="297" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="102" dy="0">Cliente del laboratorio</tspan></text>
+<text x="102" y="327" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="102" dy="0">IP: 192.168.56.X</tspan></text>
+<rect x="84" y="380" width="286" height="80" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="102" y="412" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="102" dy="0">Archivo ficticio</tspan></text>
+<text x="102" y="442" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="102" dy="0">TXT / CSV / JSON</tspan></text>
+<rect x="84" y="500" width="286" height="100" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="102" y="532" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="102" dy="0">Firefox o curl</tspan></text>
+<text x="102" y="562" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="102" dy="0">Selecciona y envía</tspan><tspan x="102" dy="25">el contenido del archivo</tspan></text>
+<path d="M227 460 V500" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#01-arquitectura-red-arrow-ink)"/>
+<rect x="456" y="392" width="252" height="153" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="474" y="424" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="474" dy="0">Red Host-only</tspan></text>
+<text x="474" y="454" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="474" dy="0">192.168.56.0/24</tspan><tspan x="474" dy="25">ICMP: prueba de ping</tspan><tspan x="474" dy="25">TCP: puerto destino 3000</tspan></text>
+<path d="M370 525 H456" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#01-arquitectura-red-arrow-blue)"/>
+<text x="405" y="500" font-size="16" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="405" dy="0">HTTP</tspan></text>
+<rect x="776" y="211" width="601" height="430" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="796" y="242" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="796" dy="0">Servicio DLP en Windows</tspan></text>
+<rect x="802" y="265" width="548" height="83" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="820" y="297" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="820" dy="0">Host: 192.168.56.1</tspan></text>
+<text x="820" y="327" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="820" dy="0">Node.js / Express · escucha 0.0.0.0:3000</tspan></text>
+<rect x="802" y="390" width="548" height="105" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="820" y="422" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="820" dy="0">POST /api/upload</tspan></text>
+<text x="820" y="452" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="820" dy="0">Recibe en memoria → valida → aplica reglas</tspan><tspan x="820" dy="25">Decide si guarda el archivo</tspan></text>
+<path d="M708 445 H802" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#01-arquitectura-red-arrow-blue)"/>
+<rect x="802" y="542" width="259" height="76" rx="16" fill="#fff" stroke="#167650" stroke-width="1.7"/>
+<text x="820" y="574" font-size="20" fill="#167650" font-weight="700" text-anchor="start"><tspan x="820" dy="0">recibidos/</tspan></text>
+<text x="820" y="604" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="820" dy="0">Solo permitido / alerta</tspan></text>
+<rect x="1090" y="542" width="260" height="76" rx="16" fill="#fff" stroke="#976000" stroke-width="1.7"/>
+<text x="1108" y="574" font-size="20" fill="#976000" font-weight="700" text-anchor="start"><tspan x="1108" dy="0">eventos.jsonl</tspan></text>
+<text x="1108" y="604" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1108" dy="0">Decisiones analizadas</tspan></text>
+<path d="M930 495 V542" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#01-arquitectura-red-arrow-green)"/>
+<path d="M1210 495 V542" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#01-arquitectura-red-arrow-amber)"/>
+<path d="M1080 641 V692 H227 V600" fill="none" stroke="#087f82" stroke-width="2" stroke-linejoin="round" marker-end="url(#01-arquitectura-red-arrow-teal)"/>
+<text x="655" y="681" font-size="18" fill="#087f82" font-weight="400" text-anchor="middle"><tspan x="655" dy="0">Respuesta HTTP 200 (permitido / alerta) o 403 (bloqueado)</tspan></text>
+<text x="72" y="746" font-size="19" fill="#142c43" font-weight="600" text-anchor="start"><tspan x="72" dy="0">Windows también puede usar el portal mediante http://localhost:3000</tspan></text>
+<text x="72" y="776" font-size="18" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="72" dy="0">Kali usa http://192.168.56.1:3000 · El análisis actual no consulta internet.</tspan></text>
+<text x="34" y="864" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">IP de Windows comprobada: 21/10/2026. La X de Kali es un marcador, no una dirección verificada.</tspan></text>
+</svg>
+</div><p class="links"><a href="diagramas/01-arquitectura-red.svg">Abrir gráfico SVG independiente</a></p></section><section class="section" id="02-casos-de-uso"><h2>Casos de uso y actores</h2><p>Seis casos de uso: transferir y ver la decisión, consultar políticas, revisar eventos, descargar ejemplos, configurar reglas y evaluar el control. Los papeles son responsabilidades humanas; la aplicación actual no tiene login ni separación de permisos.</p><div class="graphic"><svg xmlns="http://www.w3.org/2000/svg" width="1440" height="990" viewBox="0 0 1440 990" role="img" aria-labelledby="02-casos-de-uso-title 02-casos-de-uso-desc">
+<title id="02-casos-de-uso-title">Casos de uso y actores</title><desc id="02-casos-de-uso-desc">Las funciones web y las tareas técnicas locales se muestran en límites separados.</desc>
+<defs><marker id="02-casos-de-uso-arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="02-casos-de-uso-arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="02-casos-de-uso-arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="02-casos-de-uso-arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="02-casos-de-uso-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="02-casos-de-uso-arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="02-casos-de-uso-arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="02-casos-de-uso-arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="990" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 02 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Casos de uso y actores</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Las funciones web y las tareas técnicas locales se muestran en límites separados.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="250" y="160" width="920" height="460" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="270" y="191" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="270" dy="0">PORTAL DLP · INTERACCIÓN WEB</tspan></text>
+<circle cx="104" cy="303" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M104 320 V366 M75 337 H133 M104 366 L80 398 M104 366 L128 398" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="104" y="425" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="104" dy="0">Participante</tspan><tspan x="104" dy="24">de prueba</tspan></text>
+<circle cx="1300" cy="303" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M1300 320 V366 M1271 337 H1329 M1300 366 L1276 398 M1300 366 L1324 398" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="1300" y="425" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="1300" dy="0">Evaluador /</tspan><tspan x="1300" dy="24">auditor</tspan></text>
+<path d="M135 337 L305 270" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M135 337 L305 465" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1269 337 L1100 270" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1269 337 L1100 465" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<ellipse cx="490" cy="270" rx="182" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="490" y="265" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="490" dy="0">CU-01 Transferir</tspan><tspan x="490" dy="26">y ver decisión</tspan></text>
+<ellipse cx="490" cy="465" rx="182" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="490" y="460" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="490" dy="0">CU-04 Descargar</tspan><tspan x="490" dy="26">ejemplos ficticios</tspan></text>
+<ellipse cx="935" cy="270" rx="174" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="935" y="265" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">CU-02 Consultar</tspan><tspan x="935" dy="26">políticas activas</tspan></text>
+<ellipse cx="935" cy="465" rx="174" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="935" y="460" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">CU-03 Revisar</tspan><tspan x="935" dy="26">eventos recientes</tspan></text>
+<text x="278" y="585" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="278" dy="0">CU-01 comprende validación, análisis, decisión, almacenamiento condicional y registro.</tspan></text>
+<text x="250" y="664" font-size="18" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="250" dy="0">Los actores son responsabilidades: el portal actual no implementa usuarios, login ni roles.</tspan></text>
+<rect x="250" y="730" width="920" height="185" rx="16" fill="#fbfdff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="270" y="761" font-size="18" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="270" dy="0">OPERACIÓN TÉCNICA LOCAL · TERMINAL Y CÓDIGO</tspan></text>
+<circle cx="104" cy="761" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M104 778 V824 M75 795 H133 M104 824 L80 856 M104 824 L128 856" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="104" y="883" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="104" dy="0">Operador</tspan><tspan x="104" dy="24">técnico</tspan></text>
+<circle cx="1300" cy="761" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M1300 778 V824 M1271 795 H1329 M1300 824 L1276 856 M1300 824 L1324 856" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="1300" y="883" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="1300" dy="0">Evaluador</tspan></text>
+<path d="M135 795 H280" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1269 795 H1135" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<rect x="282" y="782" width="390" height="98" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="300" y="814" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="300" dy="0">CU-05 Configurar políticas</tspan></text>
+<text x="300" y="844" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="300" dy="0">Editar app.js, probar y reiniciar</tspan></text>
+<rect x="735" y="782" width="400" height="98" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="753" y="814" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="753" dy="0">CU-06 Evaluar el control</tspan></text>
+<text x="753" y="844" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="753" dy="0">Pruebas y 20 casos ficticios</tspan></text>
+<text x="34" y="964" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Participante y evaluador pueden consultar las mismas pantallas. No hay separación de permisos en la aplicación actual.</tspan></text>
+</svg>
+</div><p class="links"><a href="diagramas/02-casos-de-uso.svg">Abrir gráfico SVG independiente</a></p></section><section class="section" id="03-componentes"><h2>Arquitectura de componentes</h2><p>El navegador consume la API de una única aplicación Node.js. Multer recibe en memoria, el motor calcula la decisión y el servidor escribe archivos permitidos o en alerta, además de sus eventos de auditoría.</p><div class="graphic"><svg xmlns="http://www.w3.org/2000/svg" width="1440" height="920" viewBox="0 0 1440 920" role="img" aria-labelledby="03-componentes-title 03-componentes-desc">
+<title id="03-componentes-title">Arquitectura de componentes</title><desc id="03-componentes-desc">Una aplicación Node.js coordina el portal, el motor de reglas y los archivos de evidencia.</desc>
+<defs><marker id="03-componentes-arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="03-componentes-arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="03-componentes-arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="03-componentes-arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="03-componentes-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="03-componentes-arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="03-componentes-arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="03-componentes-arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="920" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 03 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Arquitectura de componentes</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Una aplicación Node.js coordina el portal, el motor de reglas y los archivos de evidencia.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="40" y="275" width="275" height="180" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="58" y="307" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="58" dy="0">Navegador cliente</tspan></text>
+<text x="58" y="337" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="58" dy="0">HTML + CSS</tspan><tspan x="58" dy="25">public/app.js</tspan><tspan x="58" dy="25">FormData + fetch</tspan><tspan x="58" dy="25">Kali o Windows</tspan></text>
+<rect x="370" y="155" width="667" height="637" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="390" y="186" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="390" dy="0">UN PROCESO NODE.JS EN WINDOWS</tspan></text>
+<rect x="398" y="208" width="612" height="85" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="416" y="240" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Recursos estáticos: public/</tspan></text>
+<text x="416" y="270" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">Portal, estilos, JavaScript y ejemplos ficticios</tspan></text>
+<rect x="398" y="340" width="612" height="95" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="416" y="372" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Express · API HTTP</tspan></text>
+<text x="416" y="402" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">/api/upload · /api/policies · /api/events · /api/health</tspan></text>
+<path d="M315 310 H350 V250 H398" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-blue)"/>
+<path d="M315 388 H398" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-blue)"/>
+<text x="343" y="372" font-size="15" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="343" dy="0">API</tspan></text>
+<rect x="398" y="490" width="274" height="115" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="416" y="522" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Recepción y validación</tspan></text>
+<text x="416" y="552" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">Multer: archivo en memoria</tspan><tspan x="416" dy="25">Extensión, tamaño y UTF-8</tspan></text>
+<rect x="735" y="490" width="275" height="115" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="753" y="522" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="753" dy="0">analyzeContent</tspan></text>
+<text x="753" y="552" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="753" dy="0">7 reglas · normalización CSV</tspan><tspan x="753" dy="25">Suma de puntos → decisión</tspan></text>
+<path d="M535 435 V490" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-ink)"/>
+<path d="M672 548 H735" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-ink)"/>
+<rect x="398" y="661" width="612" height="88" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="416" y="693" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Aplicar la decisión y registrar</tspan></text>
+<text x="416" y="723" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">Guardar si corresponde → appendEvent → responder</tspan></text>
+<path d="M870 605 V661" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-ink)"/>
+<rect x="1100" y="445" width="298" height="120" rx="16" fill="#fff" stroke="#167650" stroke-width="1.7"/>
+<text x="1118" y="477" font-size="20" fill="#167650" font-weight="700" text-anchor="start"><tspan x="1118" dy="0">recibidos/</tspan></text>
+<text x="1118" y="507" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1118" dy="0">Archivos con UUID</tspan><tspan x="1118" dy="25">PERMITIDO y ALERTA</tspan></text>
+<rect x="1100" y="660" width="298" height="120" rx="16" fill="#fff" stroke="#976000" stroke-width="1.7"/>
+<text x="1118" y="692" font-size="20" fill="#976000" font-weight="700" text-anchor="start"><tspan x="1118" dy="0">logs/eventos.jsonl</tspan></text>
+<text x="1118" y="722" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1118" dy="0">Metadatos y decisiones</tspan><tspan x="1118" dy="25">Consulta: últimos 50</tspan></text>
+<path d="M1010 692 H1063 V510 H1100" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-green)"/>
+<path d="M1010 722 H1100" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#03-componentes-arrow-amber)"/>
+<text x="1050" y="845" font-size="20" fill="#51677b" font-weight="400" text-anchor="middle"><tspan x="1050" dy="0">Sistema de archivos local</tspan></text>
+<text x="34" y="894" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">No requiere base de datos. El motor actual usa patrones de texto; Groq y el análisis antivirus aún no forman parte del sistema.</tspan></text>
+</svg>
+</div><p class="links"><a href="diagramas/03-componentes.svg">Abrir gráfico SVG independiente</a></p></section><section class="section" id="04-flujo-decision"><h2>Flujo de procesamiento</h2><p>Con cero puntos se permite; con uno o dos se permite con alerta; con tres o más se bloquea el almacenamiento. Los errores de formato, tamaño o UTF-8 son distintos de una decisión de bloqueo por contenido.</p><div class="graphic"><svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1530" viewBox="0 0 1200 1530" role="img" aria-labelledby="04-flujo-decision-title 04-flujo-decision-desc">
+<title id="04-flujo-decision-title">Flujo de procesamiento</title><desc id="04-flujo-decision-desc">La política decide el almacenamiento después de recibir y analizar el contenido.</desc>
+<defs><marker id="04-flujo-decision-arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="04-flujo-decision-arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="04-flujo-decision-arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="04-flujo-decision-arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="04-flujo-decision-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="04-flujo-decision-arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="04-flujo-decision-arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="04-flujo-decision-arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1200" height="1530" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 04 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Flujo de procesamiento</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">La política decide el almacenamiento después de recibir y analizar el contenido.</tspan></text>
+<path d="M34 125 H1166" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="350" y="152" width="500" height="80" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="368" y="184" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Carga del participante</tspan></text>
+<text x="368" y="214" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">POST /api/upload · campo archivo</tspan></text>
+<path d="M600 232 V278" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-ink)"/>
+<rect x="350" y="278" width="500" height="103" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="310" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Multer y decodificación</tspan></text>
+<text x="368" y="340" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">TXT / CSV / JSON · hasta 1 MiB</tspan><tspan x="368" dy="25">Archivo en memoria · texto UTF-8</tspan></text>
+<path d="M600 381 V420" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-ink)"/>
+<polygon points="600,420 740,485 600,550 460,485" fill="#eef7f8" stroke="#087f82" stroke-width="2"/>
+<text x="600" y="477" font-size="20" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="600" dy="0">¿Entrada válida</tspan><tspan x="600" dy="27">para analizar?</tspan></text>
+<path d="M460 485 H305" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-red)"/>
+<text x="377" y="470" font-size="18" fill="#b92f49" font-weight="400" text-anchor="start"><tspan x="377" dy="0">No</tspan></text>
+<rect x="40" y="422" width="265" height="165" rx="16" fill="#fff" stroke="#b92f49" stroke-width="1.7"/>
+<text x="58" y="454" font-size="20" fill="#b92f49" font-weight="700" text-anchor="start"><tspan x="58" dy="0">ERROR</tspan></text>
+<text x="58" y="484" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="58" dy="0">Ej.: extensión o tamaño</tspan><tspan x="58" dy="25">HTTP 400 en esos casos</tspan><tspan x="58" dy="25">No genera evento DLP</tspan><tspan x="58" dy="25">No es bloqueo por política</tspan></text>
+<path d="M600 550 V595" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-ink)"/>
+<text x="621" y="579" font-size="18" fill="#087f82" font-weight="400" text-anchor="start"><tspan x="621" dy="0">Sí</tspan></text>
+<rect x="350" y="595" width="500" height="95" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="627" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Preparar el texto</tspan></text>
+<text x="368" y="657" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">CSV: columnas → campos; TXT / JSON: texto</tspan></text>
+<path d="M600 690 V735" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-ink)"/>
+<rect x="350" y="735" width="500" height="95" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="767" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Evaluar las siete reglas</tspan></text>
+<text x="368" y="797" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">Cada regla aporta sus puntos una vez</tspan></text>
+<path d="M600 830 V865" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-ink)"/>
+<polygon points="600,865 730,930 600,995 470,930" fill="#eef7f8" stroke="#087f82" stroke-width="2"/>
+<text x="600" y="922" font-size="20" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="600" dy="0">Puntaje</tspan><tspan x="600" dy="27">total</tspan></text>
+<path d="M470 930 H200 V1040" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-green)"/>
+<path d="M600 995 V1040" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-amber)"/>
+<path d="M730 930 H1000 V1040" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-red)"/>
+<text x="200" y="1005" font-size="18" fill="#167650" font-weight="400" text-anchor="middle"><tspan x="200" dy="0">0 puntos</tspan></text>
+<text x="620" y="1023" font-size="18" fill="#976000" font-weight="400" text-anchor="start"><tspan x="620" dy="0">1–2 puntos</tspan></text>
+<text x="1000" y="1005" font-size="18" fill="#b92f49" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">3 o más</tspan></text>
+<rect x="50" y="1040" width="300" height="130" rx="16" fill="#fff" stroke="#167650" stroke-width="1.7"/>
+<text x="68" y="1072" font-size="20" fill="#167650" font-weight="700" text-anchor="start"><tspan x="68" dy="0">PERMITIDO</tspan></text>
+<text x="68" y="1102" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="68" dy="0">Guardar en recibidos/</tspan><tspan x="68" dy="25">HTTP 200</tspan></text>
+<rect x="450" y="1040" width="300" height="130" rx="16" fill="#fff" stroke="#976000" stroke-width="1.7"/>
+<text x="468" y="1072" font-size="20" fill="#976000" font-weight="700" text-anchor="start"><tspan x="468" dy="0">ALERTA</tspan></text>
+<text x="468" y="1102" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="468" dy="0">Guardar en recibidos/</tspan><tspan x="468" dy="25">HTTP 200 · mostrar alerta</tspan></text>
+<rect x="850" y="1040" width="300" height="130" rx="16" fill="#fff" stroke="#b92f49" stroke-width="1.7"/>
+<text x="868" y="1072" font-size="20" fill="#b92f49" font-weight="700" text-anchor="start"><tspan x="868" dy="0">BLOQUEADO</tspan></text>
+<text x="868" y="1102" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="868" dy="0">No guardar el archivo</tspan><tspan x="868" dy="25">HTTP 403</tspan></text>
+<path d="M200 1170 V1210 H600 V1245" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-green)"/>
+<path d="M600 1170 V1245" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-amber)"/>
+<path d="M1000 1170 V1210 H600 V1245" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-red)"/>
+<rect x="350" y="1245" width="500" height="85" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="1277" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Registrar la decisión</tspan></text>
+<text x="368" y="1307" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">Agregar metadatos a logs/eventos.jsonl</tspan></text>
+<path d="M600 1330 V1375" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#04-flujo-decision-arrow-ink)"/>
+<rect x="350" y="1375" width="500" height="85" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="368" y="1407" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Responder al cliente</tspan></text>
+<text x="368" y="1437" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">Mostrar decisión, puntaje y reglas activadas</tspan></text>
+<text x="34" y="1504" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Se asume procesamiento sin fallos internos. Archivo y auditoría son escrituras separadas; no hay transacción atómica.</tspan></text>
+</svg>
+</div><p class="links"><a href="diagramas/04-flujo-decision.svg">Abrir gráfico SVG independiente</a></p></section><section class="section" id="05-secuencia"><h2>Secuencia de una transferencia</h2><p>Primero se analiza, después se guarda el archivo cuando corresponde, se registra la decisión y se responde. El navegador solicita después los eventos recientes para refrescar la tabla.</p><div class="graphic"><svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1100" viewBox="0 0 1440 1100" role="img" aria-labelledby="05-secuencia-title 05-secuencia-desc">
+<title id="05-secuencia-title">Secuencia de una transferencia</title><desc id="05-secuencia-desc">Orden real de la carga, la decisión, las escrituras y la actualización de la tabla del portal.</desc>
+<defs><marker id="05-secuencia-arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="05-secuencia-arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="05-secuencia-arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="05-secuencia-arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="05-secuencia-arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="05-secuencia-arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="05-secuencia-arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="05-secuencia-arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="1100" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 05 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Secuencia de una transferencia</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Orden real de la carga, la decisión, las escrituras y la actualización de la tabla del portal.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="70" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="88" y="192" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="88" dy="0">Navegador</tspan></text>
+<text x="88" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="88" dy="0">Kali o Windows</tspan></text>
+<path d="M195 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<rect x="420" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="438" y="192" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="438" dy="0">API Express</tspan></text>
+<text x="438" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="438" dy="0">app.js</tspan></text>
+<path d="M545 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<rect x="770" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="788" y="192" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="788" dy="0">Motor de reglas</tspan></text>
+<text x="788" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="788" dy="0">analyzeContent</tspan></text>
+<path d="M895 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<rect x="1120" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="1138" y="192" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="1138" dy="0">Disco local</tspan></text>
+<text x="1138" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1138" dy="0">recibidos/ y logs/</tspan></text>
+<path d="M1245 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<path d="M195 292 H545" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-ink)"/>
+<text x="370" y="280" font-size="17" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">1. POST /api/upload</tspan></text>
+<path d="M545 322 H592 V352 H545" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-ink)"/>
+<text x="608" y="344" font-size="17" fill="#142c43" font-weight="400" text-anchor="start"><tspan x="608" dy="0">2. Validar entrada y decodificar UTF-8</tspan></text>
+<path d="M545 395 H895" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-ink)"/>
+<text x="720" y="383" font-size="17" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="720" dy="0">3. Analizar contenido y reglas</tspan></text>
+<path d="M895 445 H545" fill="none" stroke="#087f82" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#05-secuencia-arrow-teal)"/>
+<text x="720" y="433" font-size="17" fill="#087f82" font-weight="400" text-anchor="middle"><tspan x="720" dy="0">4. Devolver puntaje y decisión</tspan></text>
+<rect x="392" y="476" width="987" height="168" rx="16" fill="#f8fbfd" stroke="#cddbe6" stroke-width="1.7"/>
+<text x="410" y="502" font-size="14" fill="#51677b" font-weight="700" text-anchor="start"><tspan x="410" dy="0">ALTERNATIVAS DE ALMACENAMIENTO</tspan></text>
+<path d="M545 550 H1245" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-green)"/>
+<text x="895" y="538" font-size="17" fill="#167650" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">5a. PERMITIDO / ALERTA → guardar archivo</tspan></text>
+<path d="M545 582 H591 V613 H545" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-red)"/>
+<text x="615" y="603" font-size="17" fill="#b92f49" font-weight="400" text-anchor="start"><tspan x="615" dy="0">5b. BLOQUEADO → omitir escritura del archivo</tspan></text>
+<path d="M545 695 H1245" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-amber)"/>
+<text x="895" y="683" font-size="17" fill="#976000" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">6. Agregar evento a eventos.jsonl</tspan></text>
+<path d="M1245 739 H545" fill="none" stroke="#51677b" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#05-secuencia-arrow-muted)"/>
+<text x="895" y="727" font-size="17" fill="#51677b" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">Escritura completada</tspan></text>
+<path d="M545 791 H195" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#05-secuencia-arrow-blue)"/>
+<text x="370" y="779" font-size="17" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">7. HTTP 200 o 403 + resultado</tspan></text>
+<path d="M195 848 H545" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-blue)"/>
+<text x="370" y="836" font-size="17" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">8. GET /api/events</tspan></text>
+<path d="M545 889 H1245" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#05-secuencia-arrow-ink)"/>
+<text x="895" y="877" font-size="17" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">9. Leer los eventos recientes</tspan></text>
+<path d="M1245 933 H545" fill="none" stroke="#51677b" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#05-secuencia-arrow-muted)"/>
+<text x="895" y="921" font-size="17" fill="#51677b" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">Hasta 50 eventos, más recientes primero</tspan></text>
+<path d="M545 980 H195" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#05-secuencia-arrow-blue)"/>
+<text x="370" y="968" font-size="17" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">10. JSON → actualizar tabla</tspan></text>
+<text x="34" y="1074" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">La secuencia muestra una carga válida y sin fallos internos. Los errores previos al análisis siguen un recorrido separado.</tspan></text>
+</svg>
+</div><p class="links"><a href="diagramas/05-secuencia.svg">Abrir gráfico SVG independiente</a></p></section>
+<section class="section" id="casos"><h2>Los seis casos de uso</h2><div class="wide"><table><thead><tr><th>ID</th><th>Objetivo</th><th>Actor</th><th>Interacción</th></tr></thead><tbody><tr><td>CU-01</td><td>Transferir un archivo y conocer la decisión</td><td>Participante</td><td>Portal o POST /api/upload</td></tr><tr><td>CU-02</td><td>Consultar políticas activas</td><td>Participante / evaluador</td><td>Portal · GET /api/policies</td></tr><tr><td>CU-03</td><td>Revisar eventos recientes</td><td>Evaluador / participante</td><td>Portal · GET /api/events</td></tr><tr><td>CU-04</td><td>Descargar ejemplos ficticios</td><td>Participante</td><td>Enlaces del portal</td></tr><tr><td>CU-05</td><td>Configurar y activar políticas</td><td>Operador técnico</td><td>Editar app.js, probar y reiniciar</td></tr><tr><td>CU-06</td><td>Evaluar el control</td><td>Evaluador</td><td>Terminal · npm test / npm run evaluate</td></tr></tbody></table></div><p>Las precondiciones, el flujo principal y las alternativas están desarrollados en <a href="ARQUITECTURA_Y_CASOS_DE_USO.md">el documento de casos de uso y arquitectura</a>.</p></section>
+<section class="section"><h2>Cómo explicarlo en una demostración</h2><ol><li>Windows ejecuta el servicio y Kali abre el portal a través de la red Host-only.</li><li>Se selecciona un archivo ficticio TXT, CSV o JSON y se pulsa «Analizar y transferir».</li><li>El servidor valida la carga y aplica siete reglas, que aportan puntos una vez cada una.</li><li>Con 0 puntos permite; con 1–2 permite con alerta; con 3 o más bloquea el almacenamiento.</li><li>Se contrasta el resultado con los eventos, la carpeta de recibidos y la clasificación de referencia.</li></ol><p>Una alerta detecta pero permite guardar. Un archivo con datos sensibles puede pasar si las reglas no reconocen su forma de escritura; un ejemplo didáctico puede activar una regla indebidamente. Por eso se evalúan falsos positivos y negativos.</p></section>
+<section class="section"><h2>Qué está implementado y qué viene después</h2><p>La versión actual usa patrones, archivos locales y HTTP. Admite texto UTF-8 de hasta 1 MiB; no dispone de autenticación, cuarentena, análisis antivirus ni lectura PDF/Office. Groq es una ampliación futura para evaluar contexto.</p><p>La dirección de Windows <code>192.168.56.1</code> se comprobó con <code>ipconfig</code>. La IP exacta de Kali, el estado de la VM y el firewall no se verificaron en esta revisión. El proceso escucha por defecto en <code>0.0.0.0:3000</code>, es decir, en todas sus interfaces IPv4.</p><p>Las cargas inválidas antes del análisis no generan evento DLP. Las escrituras de archivo y auditoría son separadas: si falla la segunda, puede existir un archivo guardado aunque la respuesta sea de error.</p></section>
+</main><footer>Fuente: implementación del repositorio · Datos de prueba ficticios · Diagramas editables generados con Node.js, sin dependencias adicionales.</footer></body></html>

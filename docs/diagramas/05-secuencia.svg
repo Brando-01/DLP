@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1100" viewBox="0 0 1440 1100" role="img" aria-labelledby="title desc">
+<title id="title">Secuencia de una transferencia</title><desc id="desc">Orden real de la carga, la decisión, las escrituras y la actualización de la tabla del portal.</desc>
+<defs><marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="1100" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 05 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Secuencia de una transferencia</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Orden real de la carga, la decisión, las escrituras y la actualización de la tabla del portal.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="70" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="88" y="192" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="88" dy="0">Navegador</tspan></text>
+<text x="88" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="88" dy="0">Kali o Windows</tspan></text>
+<path d="M195 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<rect x="420" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="438" y="192" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="438" dy="0">API Express</tspan></text>
+<text x="438" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="438" dy="0">app.js</tspan></text>
+<path d="M545 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<rect x="770" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="788" y="192" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="788" dy="0">Motor de reglas</tspan></text>
+<text x="788" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="788" dy="0">analyzeContent</tspan></text>
+<path d="M895 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<rect x="1120" y="160" width="250" height="82" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="1138" y="192" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="1138" dy="0">Disco local</tspan></text>
+<text x="1138" y="222" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1138" dy="0">recibidos/ y logs/</tspan></text>
+<path d="M1245 242 V1015" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6"/>
+<path d="M195 292 H545" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<text x="370" y="280" font-size="17" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">1. POST /api/upload</tspan></text>
+<path d="M545 322 H592 V352 H545" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<text x="608" y="344" font-size="17" fill="#142c43" font-weight="400" text-anchor="start"><tspan x="608" dy="0">2. Validar entrada y decodificar UTF-8</tspan></text>
+<path d="M545 395 H895" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<text x="720" y="383" font-size="17" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="720" dy="0">3. Analizar contenido y reglas</tspan></text>
+<path d="M895 445 H545" fill="none" stroke="#087f82" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow-teal)"/>
+<text x="720" y="433" font-size="17" fill="#087f82" font-weight="400" text-anchor="middle"><tspan x="720" dy="0">4. Devolver puntaje y decisión</tspan></text>
+<rect x="392" y="476" width="987" height="168" rx="16" fill="#f8fbfd" stroke="#cddbe6" stroke-width="1.7"/>
+<text x="410" y="502" font-size="14" fill="#51677b" font-weight="700" text-anchor="start"><tspan x="410" dy="0">ALTERNATIVAS DE ALMACENAMIENTO</tspan></text>
+<path d="M545 550 H1245" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-green)"/>
+<text x="895" y="538" font-size="17" fill="#167650" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">5a. PERMITIDO / ALERTA → guardar archivo</tspan></text>
+<path d="M545 582 H591 V613 H545" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-red)"/>
+<text x="615" y="603" font-size="17" fill="#b92f49" font-weight="400" text-anchor="start"><tspan x="615" dy="0">5b. BLOQUEADO → omitir escritura del archivo</tspan></text>
+<path d="M545 695 H1245" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<text x="895" y="683" font-size="17" fill="#976000" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">6. Agregar evento a eventos.jsonl</tspan></text>
+<path d="M1245 739 H545" fill="none" stroke="#51677b" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow-muted)"/>
+<text x="895" y="727" font-size="17" fill="#51677b" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">Escritura completada</tspan></text>
+<path d="M545 791 H195" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow-blue)"/>
+<text x="370" y="779" font-size="17" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">7. HTTP 200 o 403 + resultado</tspan></text>
+<path d="M195 848 H545" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<text x="370" y="836" font-size="17" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">8. GET /api/events</tspan></text>
+<path d="M545 889 H1245" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<text x="895" y="877" font-size="17" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">9. Leer los eventos recientes</tspan></text>
+<path d="M1245 933 H545" fill="none" stroke="#51677b" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow-muted)"/>
+<text x="895" y="921" font-size="17" fill="#51677b" font-weight="400" text-anchor="middle"><tspan x="895" dy="0">Hasta 50 eventos, más recientes primero</tspan></text>
+<path d="M545 980 H195" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow-blue)"/>
+<text x="370" y="968" font-size="17" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="370" dy="0">10. JSON → actualizar tabla</tspan></text>
+<text x="34" y="1074" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">La secuencia muestra una carga válida y sin fallos internos. Los errores previos al análisis siguen un recorrido separado.</tspan></text>
+</svg>

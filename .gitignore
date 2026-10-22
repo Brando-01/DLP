@@ -3,3 +3,8 @@ recibidos/
 logs/
 .env
 npm-debug.log*
+datos-endpoint/
+laboratorio/
+tmp/
+__pycache__/
+*.pyc

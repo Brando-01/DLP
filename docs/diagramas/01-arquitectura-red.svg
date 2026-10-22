@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="890" viewBox="0 0 1440 890" role="img" aria-labelledby="title desc">
+<title id="title">Arquitectura de red</title><desc id="desc">Un equipo físico: Kali origina la carga y Windows inspecciona y decide el almacenamiento.</desc>
+<defs><marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="890" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 01 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Arquitectura de red</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Un equipo físico: Kali origina la carga y Windows inspecciona y decide el almacenamiento.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="34" y="150" width="1372" height="650" rx="16" fill="#fbfdff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="54" y="181" font-size="18" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="54" dy="0">PC FÍSICA · WINDOWS ALOJA EL SERVICIO Y LA VM KALI</tspan></text>
+<rect x="62" y="211" width="330" height="430" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="82" y="242" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="82" dy="0">VM Kali Linux</tspan></text>
+<rect x="84" y="265" width="286" height="83" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="102" y="297" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="102" dy="0">Cliente del laboratorio</tspan></text>
+<text x="102" y="327" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="102" dy="0">IP: 192.168.56.X</tspan></text>
+<rect x="84" y="380" width="286" height="80" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="102" y="412" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="102" dy="0">Archivo ficticio</tspan></text>
+<text x="102" y="442" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="102" dy="0">TXT / CSV / JSON</tspan></text>
+<rect x="84" y="500" width="286" height="100" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="102" y="532" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="102" dy="0">Firefox o curl</tspan></text>
+<text x="102" y="562" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="102" dy="0">Selecciona y envía</tspan><tspan x="102" dy="25">el contenido del archivo</tspan></text>
+<path d="M227 460 V500" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<rect x="456" y="392" width="252" height="153" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="474" y="424" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="474" dy="0">Red Host-only</tspan></text>
+<text x="474" y="454" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="474" dy="0">192.168.56.0/24</tspan><tspan x="474" dy="25">ICMP: prueba de ping</tspan><tspan x="474" dy="25">TCP: puerto destino 3000</tspan></text>
+<path d="M370 525 H456" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<text x="405" y="500" font-size="16" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="405" dy="0">HTTP</tspan></text>
+<rect x="776" y="211" width="601" height="430" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="796" y="242" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="796" dy="0">Servicio DLP en Windows</tspan></text>
+<rect x="802" y="265" width="548" height="83" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="820" y="297" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="820" dy="0">Host: 192.168.56.1</tspan></text>
+<text x="820" y="327" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="820" dy="0">Node.js / Express · escucha 0.0.0.0:3000</tspan></text>
+<rect x="802" y="390" width="548" height="105" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="820" y="422" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="820" dy="0">POST /api/upload</tspan></text>
+<text x="820" y="452" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="820" dy="0">Recibe en memoria → valida → aplica reglas</tspan><tspan x="820" dy="25">Decide si guarda el archivo</tspan></text>
+<path d="M708 445 H802" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<rect x="802" y="542" width="259" height="76" rx="16" fill="#fff" stroke="#167650" stroke-width="1.7"/>
+<text x="820" y="574" font-size="20" fill="#167650" font-weight="700" text-anchor="start"><tspan x="820" dy="0">recibidos/</tspan></text>
+<text x="820" y="604" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="820" dy="0">Solo permitido / alerta</tspan></text>
+<rect x="1090" y="542" width="260" height="76" rx="16" fill="#fff" stroke="#976000" stroke-width="1.7"/>
+<text x="1108" y="574" font-size="20" fill="#976000" font-weight="700" text-anchor="start"><tspan x="1108" dy="0">eventos.jsonl</tspan></text>
+<text x="1108" y="604" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1108" dy="0">Decisiones analizadas</tspan></text>
+<path d="M930 495 V542" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-green)"/>
+<path d="M1210 495 V542" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path d="M1080 641 V692 H227 V600" fill="none" stroke="#087f82" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-teal)"/>
+<text x="655" y="681" font-size="18" fill="#087f82" font-weight="400" text-anchor="middle"><tspan x="655" dy="0">Respuesta HTTP 200 (permitido / alerta) o 403 (bloqueado)</tspan></text>
+<text x="72" y="746" font-size="19" fill="#142c43" font-weight="600" text-anchor="start"><tspan x="72" dy="0">Windows también puede usar el portal mediante http://localhost:3000</tspan></text>
+<text x="72" y="776" font-size="18" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="72" dy="0">Kali usa http://192.168.56.1:3000 · El análisis actual no consulta internet.</tspan></text>
+<text x="34" y="864" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">IP de Windows comprobada: 21/10/2026. La X de Kali es un marcador, no una dirección verificada.</tspan></text>
+</svg>

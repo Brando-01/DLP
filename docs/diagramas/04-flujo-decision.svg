@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1530" viewBox="0 0 1200 1530" role="img" aria-labelledby="title desc">
+<title id="title">Flujo de procesamiento</title><desc id="desc">La política decide el almacenamiento después de recibir y analizar el contenido.</desc>
+<defs><marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1200" height="1530" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 04 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Flujo de procesamiento</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">La política decide el almacenamiento después de recibir y analizar el contenido.</tspan></text>
+<path d="M34 125 H1166" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="350" y="152" width="500" height="80" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="368" y="184" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Carga del participante</tspan></text>
+<text x="368" y="214" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">POST /api/upload · campo archivo</tspan></text>
+<path d="M600 232 V278" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<rect x="350" y="278" width="500" height="103" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="310" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Multer y decodificación</tspan></text>
+<text x="368" y="340" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">TXT / CSV / JSON · hasta 1 MiB</tspan><tspan x="368" dy="25">Archivo en memoria · texto UTF-8</tspan></text>
+<path d="M600 381 V420" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<polygon points="600,420 740,485 600,550 460,485" fill="#eef7f8" stroke="#087f82" stroke-width="2"/>
+<text x="600" y="477" font-size="20" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="600" dy="0">¿Entrada válida</tspan><tspan x="600" dy="27">para analizar?</tspan></text>
+<path d="M460 485 H305" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-red)"/>
+<text x="377" y="470" font-size="18" fill="#b92f49" font-weight="400" text-anchor="start"><tspan x="377" dy="0">No</tspan></text>
+<rect x="40" y="422" width="265" height="165" rx="16" fill="#fff" stroke="#b92f49" stroke-width="1.7"/>
+<text x="58" y="454" font-size="20" fill="#b92f49" font-weight="700" text-anchor="start"><tspan x="58" dy="0">ERROR</tspan></text>
+<text x="58" y="484" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="58" dy="0">Ej.: extensión o tamaño</tspan><tspan x="58" dy="25">HTTP 400 en esos casos</tspan><tspan x="58" dy="25">No genera evento DLP</tspan><tspan x="58" dy="25">No es bloqueo por política</tspan></text>
+<path d="M600 550 V595" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<text x="621" y="579" font-size="18" fill="#087f82" font-weight="400" text-anchor="start"><tspan x="621" dy="0">Sí</tspan></text>
+<rect x="350" y="595" width="500" height="95" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="627" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Preparar el texto</tspan></text>
+<text x="368" y="657" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">CSV: columnas → campos; TXT / JSON: texto</tspan></text>
+<path d="M600 690 V735" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<rect x="350" y="735" width="500" height="95" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="767" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Evaluar las siete reglas</tspan></text>
+<text x="368" y="797" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">Cada regla aporta sus puntos una vez</tspan></text>
+<path d="M600 830 V865" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<polygon points="600,865 730,930 600,995 470,930" fill="#eef7f8" stroke="#087f82" stroke-width="2"/>
+<text x="600" y="922" font-size="20" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="600" dy="0">Puntaje</tspan><tspan x="600" dy="27">total</tspan></text>
+<path d="M470 930 H200 V1040" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-green)"/>
+<path d="M600 995 V1040" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path d="M730 930 H1000 V1040" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-red)"/>
+<text x="200" y="1005" font-size="18" fill="#167650" font-weight="400" text-anchor="middle"><tspan x="200" dy="0">0 puntos</tspan></text>
+<text x="620" y="1023" font-size="18" fill="#976000" font-weight="400" text-anchor="start"><tspan x="620" dy="0">1–2 puntos</tspan></text>
+<text x="1000" y="1005" font-size="18" fill="#b92f49" font-weight="400" text-anchor="middle"><tspan x="1000" dy="0">3 o más</tspan></text>
+<rect x="50" y="1040" width="300" height="130" rx="16" fill="#fff" stroke="#167650" stroke-width="1.7"/>
+<text x="68" y="1072" font-size="20" fill="#167650" font-weight="700" text-anchor="start"><tspan x="68" dy="0">PERMITIDO</tspan></text>
+<text x="68" y="1102" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="68" dy="0">Guardar en recibidos/</tspan><tspan x="68" dy="25">HTTP 200</tspan></text>
+<rect x="450" y="1040" width="300" height="130" rx="16" fill="#fff" stroke="#976000" stroke-width="1.7"/>
+<text x="468" y="1072" font-size="20" fill="#976000" font-weight="700" text-anchor="start"><tspan x="468" dy="0">ALERTA</tspan></text>
+<text x="468" y="1102" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="468" dy="0">Guardar en recibidos/</tspan><tspan x="468" dy="25">HTTP 200 · mostrar alerta</tspan></text>
+<rect x="850" y="1040" width="300" height="130" rx="16" fill="#fff" stroke="#b92f49" stroke-width="1.7"/>
+<text x="868" y="1072" font-size="20" fill="#b92f49" font-weight="700" text-anchor="start"><tspan x="868" dy="0">BLOQUEADO</tspan></text>
+<text x="868" y="1102" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="868" dy="0">No guardar el archivo</tspan><tspan x="868" dy="25">HTTP 403</tspan></text>
+<path d="M200 1170 V1210 H600 V1245" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-green)"/>
+<path d="M600 1170 V1245" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<path d="M1000 1170 V1210 H600 V1245" fill="none" stroke="#b92f49" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-red)"/>
+<rect x="350" y="1245" width="500" height="85" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="368" y="1277" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Registrar la decisión</tspan></text>
+<text x="368" y="1307" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">Agregar metadatos a logs/eventos.jsonl</tspan></text>
+<path d="M600 1330 V1375" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<rect x="350" y="1375" width="500" height="85" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="368" y="1407" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="368" dy="0">Responder al cliente</tspan></text>
+<text x="368" y="1437" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="368" dy="0">Mostrar decisión, puntaje y reglas activadas</tspan></text>
+<text x="34" y="1504" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Se asume procesamiento sin fallos internos. Archivo y auditoría son escrituras separadas; no hay transacción atómica.</tspan></text>
+</svg>

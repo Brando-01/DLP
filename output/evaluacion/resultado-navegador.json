@@ -1,0 +1,57 @@
+{
+  "generatedAt": "2026-10-22T00:30:41.672Z",
+  "browser": "151.0.7922.34",
+  "extension": "cnkljphoglkiefeoidokhabhmekehfhh",
+  "tests": 8,
+  "results": [
+    {
+      "scenario": "Archivo sensible elegido manualmente",
+      "result": "BLOQUEADO",
+      "destinationReceipts": 0,
+      "evidence": "REAL_CHROMIUM_EXTENSION_FILE_CHOOSER"
+    },
+    {
+      "scenario": "Archivo público elegido y enviado",
+      "result": "PERMITIDO",
+      "destinationReceipts": 1,
+      "evidence": "REAL_CHROMIUM_EXTENSION_AND_RECEIVER"
+    },
+    {
+      "scenario": "Pegado sensible",
+      "result": "BLOQUEADO",
+      "evidence": "REAL_EXTENSION_SYNTHETIC_PASTE_EVENT",
+      "nativeClipboardTested": false
+    },
+    {
+      "scenario": "Pegado público y envío",
+      "result": "PERMITIDO",
+      "evidence": "REAL_EXTENSION_SYNTHETIC_PASTE_EVENT_AND_RECEIVER",
+      "nativeClipboardTested": false
+    },
+    {
+      "scenario": "Arrastre sensible",
+      "result": "BLOQUEADO",
+      "evidence": "REAL_EXTENSION_SYNTHETIC_DROP_EVENT"
+    },
+    {
+      "scenario": "Arrastre público",
+      "result": "PERMITIDO",
+      "evidence": "REAL_EXTENSION_SYNTHETIC_DROP_EVENT_AND_RECEIVER"
+    },
+    {
+      "scenario": "Control negativo: complemento desactivado",
+      "result": "SENSIBLE_RECIBIDO",
+      "evidence": "REAL_UNPROTECTED_RECEIVER",
+      "limitation": "Un usuario puede desactivar un complemento no administrado"
+    },
+    {
+      "scenario": "Agente indisponible con cierre ante fallo",
+      "result": "RETENIDO_SIN_ANALIZAR",
+      "evidence": "REAL_CHROMIUM_EXTENSION_OFFLINE",
+      "sensitiveDetected": false
+    }
+  ],
+  "nativeWindowsClipboardTested": false,
+  "physicalUSBTested": false,
+  "sourceHash": "3c8ede333367d9f0c1f4ef74d22051a823135633621d90d32a682fdbc9eea0a6"
+}

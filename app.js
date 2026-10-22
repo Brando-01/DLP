@@ -6,6 +6,7 @@ const path = require("node:path");
 const { TextDecoder } = require("node:util");
 const express = require("express");
 const multer = require("multer");
+const { rules, analyzeContent } = require("./lib/classifier");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -17,132 +18,6 @@ const eventsFile = path.join(logsDirectory, "eventos.jsonl");
 
 fs.mkdirSync(receivedDirectory, { recursive: true });
 fs.mkdirSync(logsDirectory, { recursive: true });
-
-const rules = [
-  {
-    id: "DLP-001",
-    name: "Clasificación confidencial",
-    description: "Detecta documentos marcados como confidenciales.",
-    pattern: /["']?CLASIFICACION["']?\s*:\s*["']?CONFIDENCIAL\b/i,
-    points: 3,
-  },
-  {
-    id: "DLP-002",
-    name: "Clasificación restringida",
-    description: "Bloquea inmediatamente los documentos restringidos.",
-    pattern: /["']?CLASIFICACION["']?\s*:\s*["']?RESTRINGIDO\b/i,
-    points: 5,
-  },
-  {
-    id: "DLP-003",
-    name: "Código de estudiante",
-    description: "Detecta un código de ocho dígitos en un campo de estudiante.",
-    pattern: /["']?CODIGO_ESTUDIANTE["']?\s*:\s*["']?\d{8}\b/i,
-    points: 2,
-  },
-  {
-    id: "DLP-004",
-    name: "Nota académica",
-    description: "Detecta una nota final con un valor entre 0 y 20.",
-    pattern: /["']?NOTA_FINAL["']?\s*:\s*["']?(?:[0-9]|1[0-9]|20)(?!\d)/i,
-    points: 2,
-  },
-  {
-    id: "DLP-005",
-    name: "Correo institucional",
-    description: "Detecta una dirección del dominio institucional ficticio.",
-    pattern: /[a-z0-9._%+-]+@universidad\.edu\.pe\b/i,
-    points: 1,
-  },
-  {
-    id: "DLP-006",
-    name: "Contraseña temporal",
-    description: "Detecta la etiqueta de una contraseña temporal.",
-    pattern: /CONTRASE[NÑ]A_TEMPORAL\s*:/i,
-    points: 3,
-  },
-  {
-    id: "DLP-007",
-    name: "Estudiante con calificación en texto",
-    description: "Relaciona un nombre de estudiante con una calificación final expresada en lenguaje corriente.",
-    patterns: [
-      /\b(?:ESTUDIANTE|ALUMN[OA])(?:\s+FICTICI[OA])?\s*:\s*\p{L}+(?:\s+\p{L}+){1,3}/iu,
-      /\b(?:CALIFICACI[OÓ]N|NOTA)\s+FINAL\s*(?:FUE|ES|:)?\s*(?:[0-9]|1[0-9]|20)(?!\d)/i,
-    ],
-    points: 3,
-  },
-];
-
-function parseCsvRows(content) {
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let quoted = false;
-
-  for (let index = 0; index < content.length; index += 1) {
-    const character = content[index];
-
-    if (character === '"') {
-      if (quoted && content[index + 1] === '"') {
-        cell += '"';
-        index += 1;
-      } else {
-        quoted = !quoted;
-      }
-    } else if (character === "," && !quoted) {
-      row.push(cell);
-      cell = "";
-    } else if ((character === "\n" || character === "\r") && !quoted) {
-      if (character === "\r" && content[index + 1] === "\n") index += 1;
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else {
-      cell += character;
-    }
-  }
-
-  if (quoted) return [];
-  if (cell || row.length) {
-    row.push(cell);
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function csvFieldsAsText(content) {
-  const rows = parseCsvRows(content.replace(/^\uFEFF/, ""));
-  if (rows.length < 2 || rows[0].length < 2) return "";
-
-  const headers = rows[0].map((header) => header.trim());
-  return rows.slice(1)
-    .map((row) => headers.map((header, index) => `${header}: ${row[index] ?? ""}`).join("\n"))
-    .join("\n");
-}
-
-function analyzeContent(content, fileName = "") {
-  const scanText = path.extname(fileName).toLowerCase() === ".csv"
-    ? `${content}\n${csvFieldsAsText(content)}`
-    : content;
-  const matches = rules
-    .filter((rule) => rule.pattern
-      ? rule.pattern.test(scanText)
-      : rule.patterns.every((pattern) => pattern.test(scanText)))
-    .map(({ id, name, points }) => ({ id, name, points }));
-
-  const score = matches.reduce((total, match) => total + match.points, 0);
-  let decision = "PERMITIDO";
-
-  if (score >= 3) {
-    decision = "BLOQUEADO";
-  } else if (score > 0) {
-    decision = "ALERTA";
-  }
-
-  return { decision, score, matches };
-}
 
 function safeFileName(originalName) {
   const baseName = path.basename(originalName);

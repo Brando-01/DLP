@@ -1,12 +1,20 @@
 {
   "name": "proyecto-dlp",
-  "version": "1.0.0",
-  "description": "Prototipo académico para detectar y prevenir fuga de información en cargas de archivos.",
-  "main": "app.js",
+  "version": "2.0.0",
+  "description": "Laboratorio DLP de endpoint Windows: clasificación, controles de salida, auditoría y evaluación multicanal.",
+  "main": "start.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "node --test",
-    "evaluate": "node evaluacion/evaluar.js"
+    "start": "node start.js",
+    "agent": "node endpoint/server.js",
+    "web": "node app.js",
+    "receiver": "node endpoint/receiver.js",
+    "site:demo": "node endpoint/demo-site.js",
+    "test": "node --test test/*.test.js",
+    "evaluate": "node evaluacion/evaluar.js",
+    "evaluate:endpoint": "node evaluacion/evaluar-endpoint.js",
+    "extension:build": "node extension/build.js",
+    "test:browser": "node evaluacion/browser-e2e.js",
+    "test:windows": "node evaluacion/windows-smoke.js"
   },
   "keywords": [
     "dlp",
@@ -14,8 +22,13 @@
     "express"
   ],
   "license": "MIT",
+  "engines": { "node": ">=24" },
+  "overrides": { "argparse": "2.0.1", "uuid": "11.1.1" },
   "dependencies": {
+    "exceljs": "4.4.0",
     "express": "^5.1.0",
-    "multer": "^2.0.2"
+    "mammoth": "1.13.0",
+    "multer": "^2.0.2",
+    "pdfjs-dist": "6.4.299"
   }
 }

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="990" viewBox="0 0 1440 990" role="img" aria-labelledby="title desc">
+<title id="title">Casos de uso y actores</title><desc id="desc">Las funciones web y las tareas técnicas locales se muestran en límites separados.</desc>
+<defs><marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="990" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 02 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Casos de uso y actores</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Las funciones web y las tareas técnicas locales se muestran en límites separados.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="250" y="160" width="920" height="460" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="270" y="191" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="270" dy="0">PORTAL DLP · INTERACCIÓN WEB</tspan></text>
+<circle cx="104" cy="303" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M104 320 V366 M75 337 H133 M104 366 L80 398 M104 366 L128 398" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="104" y="425" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="104" dy="0">Participante</tspan><tspan x="104" dy="24">de prueba</tspan></text>
+<circle cx="1300" cy="303" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M1300 320 V366 M1271 337 H1329 M1300 366 L1276 398 M1300 366 L1324 398" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="1300" y="425" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="1300" dy="0">Evaluador /</tspan><tspan x="1300" dy="24">auditor</tspan></text>
+<path d="M135 337 L305 270" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M135 337 L305 465" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1269 337 L1100 270" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1269 337 L1100 465" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<ellipse cx="490" cy="270" rx="182" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="490" y="265" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="490" dy="0">CU-01 Transferir</tspan><tspan x="490" dy="26">y ver decisión</tspan></text>
+<ellipse cx="490" cy="465" rx="182" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="490" y="460" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="490" dy="0">CU-04 Descargar</tspan><tspan x="490" dy="26">ejemplos ficticios</tspan></text>
+<ellipse cx="935" cy="270" rx="174" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="935" y="265" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">CU-02 Consultar</tspan><tspan x="935" dy="26">políticas activas</tspan></text>
+<ellipse cx="935" cy="465" rx="174" ry="65" fill="#fff" stroke="#087f82" stroke-width="2"/>
+<text x="935" y="460" font-size="21" fill="#142c43" font-weight="400" text-anchor="middle"><tspan x="935" dy="0">CU-03 Revisar</tspan><tspan x="935" dy="26">eventos recientes</tspan></text>
+<text x="278" y="585" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="278" dy="0">CU-01 comprende validación, análisis, decisión, almacenamiento condicional y registro.</tspan></text>
+<text x="250" y="664" font-size="18" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="250" dy="0">Los actores son responsabilidades: el portal actual no implementa usuarios, login ni roles.</tspan></text>
+<rect x="250" y="730" width="920" height="185" rx="16" fill="#fbfdff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="270" y="761" font-size="18" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="270" dy="0">OPERACIÓN TÉCNICA LOCAL · TERMINAL Y CÓDIGO</tspan></text>
+<circle cx="104" cy="761" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M104 778 V824 M75 795 H133 M104 824 L80 856 M104 824 L128 856" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="104" y="883" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="104" dy="0">Operador</tspan><tspan x="104" dy="24">técnico</tspan></text>
+<circle cx="1300" cy="761" r="17" fill="#fff" stroke="#142c43" stroke-width="2"/>
+<path d="M1300 778 V824 M1271 795 H1329 M1300 824 L1276 856 M1300 824 L1324 856" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<text x="1300" y="883" font-size="18" fill="#142c43" font-weight="600" text-anchor="middle"><tspan x="1300" dy="0">Evaluador</tspan></text>
+<path d="M135 795 H280" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<path d="M1269 795 H1135" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round"/>
+<rect x="282" y="782" width="390" height="98" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="300" y="814" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="300" dy="0">CU-05 Configurar políticas</tspan></text>
+<text x="300" y="844" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="300" dy="0">Editar app.js, probar y reiniciar</tspan></text>
+<rect x="735" y="782" width="400" height="98" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="753" y="814" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="753" dy="0">CU-06 Evaluar el control</tspan></text>
+<text x="753" y="844" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="753" dy="0">Pruebas y 20 casos ficticios</tspan></text>
+<text x="34" y="964" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Participante y evaluador pueden consultar las mismas pantallas. No hay separación de permisos en la aplicación actual.</tspan></text>
+</svg>

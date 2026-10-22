@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="920" viewBox="0 0 1440 920" role="img" aria-labelledby="title desc">
+<title id="title">Arquitectura de componentes</title><desc id="desc">Una aplicación Node.js coordina el portal, el motor de reglas y los archivos de evidencia.</desc>
+<defs><marker id="arrow-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#142c43"/></marker><marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#51677b"/></marker><marker id="arrow-line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#cddbe6"/></marker><marker id="arrow-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#087f82"/></marker><marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2866b1"/></marker><marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#976000"/></marker><marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#b92f49"/></marker><marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#167650"/></marker></defs>
+<style>text{font-family:'Segoe UI',Arial,sans-serif} .mono{font-family:Consolas,'Courier New',monospace}</style>
+<rect width="1440" height="920" fill="#fff"/>
+<text x="34" y="32" font-size="13" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="34" dy="0">DLP / 03 / IMPLEMENTACIÓN ACTUAL</tspan></text>
+<text x="34" y="72" font-size="31" fill="#142c43" font-weight="700" text-anchor="start"><tspan x="34" dy="0">Arquitectura de componentes</tspan></text>
+<text x="34" y="105" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">Una aplicación Node.js coordina el portal, el motor de reglas y los archivos de evidencia.</tspan></text>
+<path d="M34 125 H1406" fill="none" stroke="#cddbe6" stroke-width="2" stroke-linejoin="round"/>
+<rect x="40" y="275" width="275" height="180" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="58" y="307" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="58" dy="0">Navegador cliente</tspan></text>
+<text x="58" y="337" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="58" dy="0">HTML + CSS</tspan><tspan x="58" dy="25">public/app.js</tspan><tspan x="58" dy="25">FormData + fetch</tspan><tspan x="58" dy="25">Kali o Windows</tspan></text>
+<rect x="370" y="155" width="667" height="637" rx="16" fill="#fbfdff" stroke="#087f82" stroke-width="1.7"/>
+<text x="390" y="186" font-size="18" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="390" dy="0">UN PROCESO NODE.JS EN WINDOWS</tspan></text>
+<rect x="398" y="208" width="612" height="85" rx="16" fill="#fff" stroke="#2866b1" stroke-width="1.7"/>
+<text x="416" y="240" font-size="20" fill="#2866b1" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Recursos estáticos: public/</tspan></text>
+<text x="416" y="270" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">Portal, estilos, JavaScript y ejemplos ficticios</tspan></text>
+<rect x="398" y="340" width="612" height="95" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="416" y="372" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Express · API HTTP</tspan></text>
+<text x="416" y="402" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">/api/upload · /api/policies · /api/events · /api/health</tspan></text>
+<path d="M315 310 H350 V250 H398" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<path d="M315 388 H398" fill="none" stroke="#2866b1" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-blue)"/>
+<text x="343" y="372" font-size="15" fill="#2866b1" font-weight="400" text-anchor="middle"><tspan x="343" dy="0">API</tspan></text>
+<rect x="398" y="490" width="274" height="115" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="416" y="522" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Recepción y validación</tspan></text>
+<text x="416" y="552" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">Multer: archivo en memoria</tspan><tspan x="416" dy="25">Extensión, tamaño y UTF-8</tspan></text>
+<rect x="735" y="490" width="275" height="115" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="753" y="522" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="753" dy="0">analyzeContent</tspan></text>
+<text x="753" y="552" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="753" dy="0">7 reglas · normalización CSV</tspan><tspan x="753" dy="25">Suma de puntos → decisión</tspan></text>
+<path d="M535 435 V490" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<path d="M672 548 H735" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<rect x="398" y="661" width="612" height="88" rx="16" fill="#fff" stroke="#087f82" stroke-width="1.7"/>
+<text x="416" y="693" font-size="20" fill="#087f82" font-weight="700" text-anchor="start"><tspan x="416" dy="0">Aplicar la decisión y registrar</tspan></text>
+<text x="416" y="723" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="416" dy="0">Guardar si corresponde → appendEvent → responder</tspan></text>
+<path d="M870 605 V661" fill="none" stroke="#142c43" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-ink)"/>
+<rect x="1100" y="445" width="298" height="120" rx="16" fill="#fff" stroke="#167650" stroke-width="1.7"/>
+<text x="1118" y="477" font-size="20" fill="#167650" font-weight="700" text-anchor="start"><tspan x="1118" dy="0">recibidos/</tspan></text>
+<text x="1118" y="507" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1118" dy="0">Archivos con UUID</tspan><tspan x="1118" dy="25">PERMITIDO y ALERTA</tspan></text>
+<rect x="1100" y="660" width="298" height="120" rx="16" fill="#fff" stroke="#976000" stroke-width="1.7"/>
+<text x="1118" y="692" font-size="20" fill="#976000" font-weight="700" text-anchor="start"><tspan x="1118" dy="0">logs/eventos.jsonl</tspan></text>
+<text x="1118" y="722" font-size="17" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="1118" dy="0">Metadatos y decisiones</tspan><tspan x="1118" dy="25">Consulta: últimos 50</tspan></text>
+<path d="M1010 692 H1063 V510 H1100" fill="none" stroke="#167650" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-green)"/>
+<path d="M1010 722 H1100" fill="none" stroke="#976000" stroke-width="2" stroke-linejoin="round" marker-end="url(#arrow-amber)"/>
+<text x="1050" y="845" font-size="20" fill="#51677b" font-weight="400" text-anchor="middle"><tspan x="1050" dy="0">Sistema de archivos local</tspan></text>
+<text x="34" y="894" font-size="16" fill="#51677b" font-weight="400" text-anchor="start"><tspan x="34" dy="0">No requiere base de datos. El motor actual usa patrones de texto; Groq y el análisis antivirus aún no forman parte del sistema.</tspan></text>
+</svg>

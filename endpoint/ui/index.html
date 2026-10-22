@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DLP · Agente local</title><link rel="stylesheet" href="panel.css"><script defer src="panel.js"></script></head>
+<body>
+  <header><div><strong>DLP</strong><span>Agente de Windows · Laboratorio de protección de información</span></div><span id="connection">Conectando…</span></header>
+  <div class="layout">
+    <nav aria-label="Secciones del panel">
+      <button data-view="summary" class="selected">Estado y cobertura</button>
+      <button data-view="inventory">Archivos clasificados</button>
+      <button data-view="transfer">Control de salidas</button>
+      <button data-view="activity">Actividad y auditoría</button>
+      <button data-view="browser">Navegador</button>
+      <button data-view="settings">Configuración</button>
+    </nav>
+    <main>
+      <div id="notice" class="notice hidden" role="status" aria-live="polite"></div>
+      <section id="view-summary" class="view">
+        <div class="section-title"><div><h1>Estado del agente</h1><p>La cobertura depende de las carpetas, canales y conectores activos.</p></div><button id="refresh">Actualizar</button></div>
+        <div class="metrics"><article><span>Archivos inventariados</span><strong id="count-files">0</strong></article><article><span>Con indicadores sensibles</span><strong id="count-sensitive">0</strong></article><article><span>No analizados completamente</span><strong id="count-unknown">0</strong></article><article><span>Bloqueos registrados</span><strong id="count-blocked">0</strong></article></div>
+        <article class="panel"><h2>Cobertura por canal</h2><div class="table-scroll"><table><thead><tr><th>Canal</th><th>Estado</th><th>Alcance</th></tr></thead><tbody id="coverage"></tbody></table></div></article>
+        <div class="two-columns"><article class="panel"><h2>Exploración de archivos</h2><p id="scan-status">Pendiente</p><button id="scan">Reclasificar carpetas vigiladas</button><p class="muted">El sensor registra cambios. Las copias nativas del Explorador no pasan por las operaciones mediadas del agente.</p></article><article class="panel"><h2>Integridad de auditoría</h2><p id="audit-status">Pendiente</p><p class="muted">Se encadenan hashes SHA-256 de los eventos. Esto detecta alteraciones, pero no equivale a una firma digital frente a un administrador del equipo.</p><button id="download-report">Abrir informe PDF</button></article></div>
+      </section>
+      <section id="view-inventory" class="view hidden">
+        <div class="section-title"><div><h1>Archivos clasificados</h1><p>El contenido permanece en la PC. No se envía a Groq ni a un servicio de IA.</p></div><input id="file-search" type="search" placeholder="Buscar nombre o ruta" aria-label="Buscar archivos"></div>
+        <article class="panel"><div class="table-scroll"><table><thead><tr><th>Archivo y ubicación</th><th>Clasificación</th><th>Inspección</th><th>Puntos</th><th>Reglas</th></tr></thead><tbody id="inventory"></tbody></table></div></article>
+      </section>
+      <section id="view-transfer" class="view hidden">
+        <h1>Control de salidas</h1><p>Estas operaciones se deciden antes de escribir, enviar o solicitar una impresión. Cada resultado indica si el destino es de laboratorio.</p>
+        <article class="panel"><form id="transfer-form"><label>Archivo del inventario<select id="transfer-file" required></select></label><label>Canal o destino<select id="transfer-target" required></select></label><label id="printer-field" class="hidden">Impresora instalada<select id="printer"></select></label><button type="submit" id="transfer-submit">Evaluar y ejecutar la operación</button></form><div id="transfer-result" class="result hidden" role="status"></div></article>
+        <article class="panel"><h2>Qué demuestra cada prueba</h2><p>Una copia bloqueada por esta pantalla no demuestra bloqueo de una copia realizada directamente desde el Explorador. Para restringir un canal completo en Windows, utiliza los controles generales opcionales y verifica su efecto con un dispositivo de prueba.</p><p>Los destinos iniciales USB y red son directorios locales ficticios. Para usar un USB real o una ruta UNC, configura el destino y marca <code>lab: false</code>. El receptor HTTP se inicia con <code>npm.cmd run receiver</code>.</p></article>
+      </section>
+      <section id="view-activity" class="view hidden">
+        <div class="section-title"><div><h1>Actividad y auditoría</h1><p>Se muestra la decisión junto con el resultado efectivo y el tipo de evidencia.</p></div><button id="export-events">Exportar CSV</button></div>
+        <article class="panel"><div class="table-scroll"><table><thead><tr><th>Fecha y actividad</th><th>Canal / archivo</th><th>Decisión</th><th>Resultado</th><th>Evidencia</th></tr></thead><tbody id="events"></tbody></table></div></article>
+      </section>
+      <section id="view-browser" class="view hidden">
+        <h1>Conector del navegador</h1><p>El complemento consulta al agente local antes de liberar las interacciones manuales que soporta.</p>
+        <article class="panel"><h2>Instalación</h2><ol><li>Ejecuta <code>npm.cmd run extension:build</code>.</li><li>En Chrome o Edge, abre la página de extensiones, activa el modo de desarrollador y carga <code>extension/dist/chromium/</code> sin empaquetar.</li><li>Para pruebas en Firefox, abre <code>about:debugging#/runtime/this-firefox</code> y carga temporalmente el manifiesto de <code>extension/dist/firefox/</code>.</li><li>Abre las opciones del complemento y registra la dirección local y el token de vinculación.</li></ol><label>Token de vinculación<input id="browser-token" type="password" readonly autocomplete="off"></label><button id="show-token">Mostrar / ocultar token</button><button id="copy-token">Copiar token de vinculación</button><p class="muted">El token es exclusivo del navegador: no permite administrar carpetas o destinos. No lo incluyas en capturas ni lo publiques.</p></article>
+        <article class="panel"><h2>Interacciones cubiertas</h2><p>Selección manual de archivos mediante los campos compatibles, pegado de texto y arrastre de archivos. Las APIs programáticas, los componentes especiales de algunas páginas y las aplicaciones ajenas al navegador pueden requerir controles adicionales. Prueba cada escenario antes de atribuirle cobertura.</p><p>Con cierre ante fallo, si el agente no responde el complemento retiene la interacción. Eso es una restricción por indisponibilidad, no una detección de información sensible.</p></article>
+      </section>
+      <section id="view-settings" class="view hidden">
+        <h1>Configuración del agente</h1><p>Solo esta interfaz local puede administrar la configuración. Los cambios no aplican por sí mismos restricciones generales de Windows.</p>
+        <article class="panel"><h2>Carpetas protegidas</h2><p>Al iniciar se usa una carpeta de laboratorio con información ficticia. Puedes añadir Documentos, Escritorio, Descargas u otras rutas accesibles.</p><button id="add-personal">Añadir carpetas personales disponibles</button></article>
+        <article class="panel"><form id="config-form"><label>Configuración editable (JSON)<textarea id="config-json" rows="22" spellcheck="false"></textarea></label><p class="muted">Modos por canal: <code>audit</code> detecta y permite; <code>alert</code> alerta y permite; <code>enforce</code> bloquea según el umbral. El portapapeles nativo es observación posterior; <code>clipboardRemediation</code> permite una limpieza reactiva, no una garantía de prevención.</p><button type="submit">Guardar configuración</button><button type="button" id="reload-config" class="secondary">Recargar</button></form></article>
+        <article class="panel"><h2>Controles generales opcionales de Windows</h2><p>El script <code>endpoint/windows/System-Controls.ps1</code> prepara, aplica y restaura restricciones de escritura USB, salida SMB e impresión. Su acción predeterminada es mostrar el plan. La aplicación real requiere una terminal administrativa, afecta a todo el canal y debe probarse por separado.</p><p>No se modifican automáticamente el firewall, las políticas USB ni el servicio de impresión al arrancar este proyecto.</p></article>
+      </section>
+    </main>
+  </div>
+  <footer>Laboratorio académico DLP · Datos ficticios para la evaluación · Clasificación por reglas, sin análisis antivirus.</footer>
+</body></html>
