@@ -1,0 +1,9 @@
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>sha256</HashAlgorithms>
+  <EventFiltering>
+    <RuleGroup name="DLP laboratorio procesos" groupRelation="or"><ProcessCreate onmatch="exclude" /></RuleGroup>
+    <RuleGroup name="DLP laboratorio red" groupRelation="or"><NetworkConnect onmatch="exclude" /></RuleGroup>
+    <RuleGroup name="DLP laboratorio DNS" groupRelation="or"><DnsQuery onmatch="exclude" /></RuleGroup>
+    <RuleGroup name="DLP laboratorio archivos" groupRelation="or"><FileCreate onmatch="include"><TargetFilename condition="begin with">@@DESTINATION@@</TargetFilename><TargetFilename condition="begin with">@@PROTECTED@@</TargetFilename></FileCreate></RuleGroup>
+  </EventFiltering>
+</Sysmon>

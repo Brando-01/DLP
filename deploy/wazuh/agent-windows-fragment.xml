@@ -1,0 +1,5 @@
+<agent_config>
+  <localfile><location>Microsoft-Windows-Sysmon/Operational</location><log_format>eventchannel</log_format></localfile>
+  <localfile><location>C:\DLP\datos-endpoint\auditoria.jsonl</location><log_format>json</log_format></localfile>
+  <localfile><location>C:\DLP\datos-control\auditoria.jsonl</location><log_format>json</log_format></localfile>
+</agent_config>

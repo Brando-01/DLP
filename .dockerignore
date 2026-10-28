@@ -1,0 +1,16 @@
+node_modules
+.venv
+.env
+.git
+tmp
+datos-endpoint
+datos-control
+laboratorio
+logs
+recibidos
+output
+deploy/state
+deploy/certs
+**/__pycache__
+**/*.pem
+**/*.key

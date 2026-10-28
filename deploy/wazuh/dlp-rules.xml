@@ -1,0 +1,16 @@
+<group name="dlp_lab,">
+  <rule id="100200" level="3"><decoded_as>json</decoded_as><field name="channel" type="pcre2">^(web_proxy|mail|local_copy|usb|dns|endpoint_telemetry)$</field><field name="activity" type="pcre2" negate="yes">^WAZUH_</field><description>DLP: actividad del laboratorio</description></rule>
+  <rule id="100201" level="7"><if_sid>100200</if_sid><field name="decision">^ALERTA$</field><description>DLP: informacion sensible o actividad que requiere revision</description></rule>
+  <rule id="100202" level="9"><if_sid>100200</if_sid><field name="decision">^BLOQUEADO$</field><description>DLP: decision de restriccion; consultar resultado y evidencia</description></rule>
+  <rule id="100203" level="9"><if_sid>100202</if_sid><field name="cause">^NO_INSPECCIONABLE$</field><description>DLP: restriccion por contenido cifrado, parcial o no inspeccionable</description></rule>
+  <rule id="100204" level="10"><if_sid>100202</if_sid><field name="prevented">^true$</field><description>DLP: cancelacion reportada por el punto de control; verificar evidencia</description></rule>
+  <rule id="100205" level="8"><if_sid>100200</if_sid><field name="activity">^COPIA_SENSIBLE_CORRELACIONADA$</field><description>DLP: copia a destino no autorizado correlacionada por hash despues de escritura</description></rule>
+  <rule id="100210" level="7"><if_group>sysmon_event1</if_group><field name="win.eventdata.image" type="pcre2">(?i)\\rclone\.exe$</field><description>DLP: ejecucion de rclone; no demuestra exfiltracion</description></rule>
+  <rule id="100211" level="7"><if_group>sysmon_event3</if_group><field name="win.eventdata.destinationPort">^22$</field><description>DLP: conexion SSH observada; contenido cifrado</description></rule>
+  <rule id="100220" level="5"><if_sid>100200</if_sid><field name="channel">^dns$</field><description>DLP: consulta evaluada por el resolver autorizado</description></rule>
+  <rule id="100221" level="9"><if_sid>100220</if_sid><field name="cause" type="pcre2">^DNS_(FREQUENCY|LONG_LABEL)$</field><description>DLP: anomalia DNS restringida, sin atribuir contenido privado</description></rule>
+  <rule id="100230" level="8"><decoded_as>json</decoded_as><field name="event_type">^alert$</field><field name="alert.signature" type="pcre2">^DLP LAB</field><description>DLP: firma de Suricata $(alert.signature); comprobar modo IDS o IPS</description></rule>
+  <rule id="100240" level="3"><decoded_as>dlp-samba</decoded_as><description>DLP: operacion Samba en el recurso auditado</description></rule>
+  <rule id="100250" level="3"><decoded_as>dlp-dnsmasq</decoded_as><description>DLP: consulta DNS registrada por dnsmasq</description></rule>
+  <rule id="100251" level="8" frequency="40" timeframe="60"><if_matched_sid>100250</if_matched_sid><same_srcip /><description>DLP: frecuencia de DNS por origen; revisar posible tunel</description></rule>
+</group>

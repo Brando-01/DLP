@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-10-28T22:57:03.994Z",
+  "platform": "win32",
+  "ramGiB": 14,
+  "node": "v24.15.0",
+  "configurationPresent": true,
+  "classifier": {
+    "mode": "hybrid",
+    "provider": "Groq",
+    "model": "openai/gpt-oss-20b",
+    "keyConfigured": false,
+    "policyVersion": "dlp-semantic-2026-10-v1",
+    "externalProcessing": true,
+    "cacheEntries": 0,
+    "inProgress": 0,
+    "calls": 0,
+    "hits": 0,
+    "failures": 0
+  },
+  "python": {
+    "available": true,
+    "version": "Python: filtros HTTPS y SMTP disponibles"
+  },
+  "docker": {
+    "available": false
+  },
+  "groqLiveTested": false,
+  "notes": [
+    "La clave configurada no acredita conectividad ni exactitud. Usa groq:check con datos ficticios.",
+    "Los controles generales Windows requieren una sesión administrativa y verificación de red/USB en el equipo de laboratorio.",
+    "La alternativa Linux puede ejecutarse en la VM del proyecto si Docker Desktop del anfitrión falla."
+  ],
+  "wslLabPresent": true,
+  "wslDocker": {
+    "available": true,
+    "version": "29.1.3"
+  }
+}

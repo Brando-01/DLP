@@ -41,7 +41,7 @@ function renderStatus() {
   $("#count-unknown").textContent = state.inventory.unknown;
   $("#count-blocked").textContent = state.operations.prevented;
   $("#coverage").innerHTML = state.coverage.map((row) => `<tr><td>${escape(row.channel)}</td><td>${escape(row.active ? "Disponible" : "Requiere configuración o comprobación")}<span class="path">${escape(coverageLabels[row.mode] || row.mode)}</span></td><td>${escape(row.detail)}</td></tr>`).join("");
-  $("#scan-status").textContent = `${state.scan.running ? "Exploración en curso" : "Última exploración: " + when(state.scan.completedAt)}. Revisados: ${state.scan.examined}; inaccesibles: ${state.scan.inaccessible}${state.scan.capped ? "; se alcanzó el límite de inventario" : ""}.`;
+  $("#scan-status").textContent = `${state.scan.running ? "Exploración en curso" : "Última exploración: " + when(state.scan.completedAt)}. Revisados: ${state.scan.examined}; inaccesibles: ${state.scan.inaccessible}${state.scan.capped ? "; se alcanzó el límite de inventario" : ""}. ${state.classifier.backend === "central" ? "Las salidas consultan el control central; revisa allí el estado de Groq." : `Clasificador de salidas: ${state.classifier.mode}; Groq ${state.classifier.keyConfigured ? "con clave configurada" : "pendiente de clave"}.`}`;
   $("#audit-status").textContent = `${state.audit.events} eventos. Cadena: ${state.audit.chainValid ? "válida en la última comprobación" : "ALTERADA: revisar registros"}.`;
   const printerValue = $("#printer").value;
   $("#printer").replaceChildren(...(state.windows.printers || []).map((name) => new Option(name, name)));

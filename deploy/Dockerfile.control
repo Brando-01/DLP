@@ -1,0 +1,11 @@
+FROM node:24-bookworm-slim
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY lib ./lib
+COPY endpoint/config.js ./endpoint/config.js
+COPY control ./control
+RUN mkdir -p /app/datos-control && chown node:node /app/datos-control
+USER node
+EXPOSE 3100
+CMD ["node", "control/server.js"]

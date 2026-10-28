@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-10-28T22:52:59.675471+00:00",
+  "backend": "WSL2",
+  "kernel": "6.18.33.2-microsoft-standard-WSL2",
+  "groqLiveTested": false,
+  "classification": "RULES_ONLY_FOR_DEPLOYMENT_TEST",
+  "tests": 17,
+  "passed": true,
+  "error": null,
+  "modeRestored": true,
+  "results": [
+    {
+      "case": "CU-05/06",
+      "test": "HTTPS publico",
+      "passed": true,
+      "evidence": "REAL_PROXY_TLS_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-05/06",
+      "test": "HTTPS privado",
+      "passed": true,
+      "evidence": "REAL_PROXY_TLS_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-04",
+      "test": "Postfix MIME publico",
+      "passed": true,
+      "evidence": "REAL_POSTFIX_BEFORE_QUEUE_FILTER_AND_RECEIVER"
+    },
+    {
+      "case": "CU-04",
+      "test": "Postfix MIME privado",
+      "passed": true,
+      "evidence": "REAL_POSTFIX_BEFORE_QUEUE_FILTER_AND_RECEIVER"
+    },
+    {
+      "case": "CU-03",
+      "test": "Postfix adjunto publico.xlsx",
+      "passed": true,
+      "evidence": "REAL_POSTFIX_XLSX_MIME_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-03",
+      "test": "Postfix adjunto privado.xlsx",
+      "passed": true,
+      "evidence": "REAL_POSTFIX_XLSX_MIME_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-11",
+      "test": "cifrado.bin",
+      "passed": true,
+      "evidence": "REAL_TLS_REQUEST_BLOCKED_BEFORE_RECEIVER"
+    },
+    {
+      "case": "CU-12",
+      "test": "renombrado.jpg",
+      "passed": true,
+      "evidence": "REAL_TLS_REQUEST_BLOCKED_BEFORE_RECEIVER"
+    },
+    {
+      "case": "CU-08",
+      "test": "SSH operativo y denegado desde cliente",
+      "passed": true,
+      "evidence": "REAL_SSH_BANNER_NEGATIVE_CONTROL_AND_CLIENT_FIREWALL"
+    },
+    {
+      "case": "CU-10",
+      "test": "DNS permitido resuelto por dnsmasq",
+      "passed": true,
+      "evidence": "REAL_DNS_GUARD_AND_DNSMASQ_RESPONSE"
+    },
+    {
+      "case": "CU-10",
+      "test": "Carga en etiqueta DNS rechazada",
+      "passed": true,
+      "evidence": "REAL_DNS_REFUSED_BEFORE_UPSTREAM"
+    },
+    {
+      "case": "CU-05",
+      "test": "HTTPS directo sin proxy denegado",
+      "passed": true,
+      "evidence": "REAL_CLIENT_EGRESS_FIREWALL"
+    },
+    {
+      "case": "CU-09",
+      "test": "FTP permitido deja firma Suricata",
+      "passed": true,
+      "evidence": "REAL_FTP_TRANSFER_AND_PASSIVE_IDS_ALERT_NOT_PREVENTION"
+    },
+    {
+      "case": "CU-02",
+      "test": "Lectura Samba con full_audit",
+      "passed": true,
+      "evidence": "REAL_SMB_READ_AND_SERVER_AUDIT_NOT_LOCAL_COPY_PREVENTION"
+    },
+    {
+      "case": "SIEM",
+      "test": "Regla de bloqueo en wazuh-logtest",
+      "passed": true,
+      "evidence": "REAL_WAZUH_DECODER_AND_RULE_ENGINE"
+    },
+    {
+      "case": "SIEM",
+      "test": "Alertas vivas de los sensores",
+      "passed": true,
+      "evidence": "REAL_WAZUH_ALERTS_JSON"
+    },
+    {
+      "case": "SIEM",
+      "test": "Alertas correlacionadas en el panel central",
+      "passed": true,
+      "evidence": "REAL_WAZUH_FORWARDER_AND_CENTRAL_API"
+    }
+  ]
+}

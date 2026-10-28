@@ -1,0 +1,12 @@
+Port 22
+ListenAddress 0.0.0.0
+HostKey /etc/ssh/ssh_host_ed25519_key
+HostKey /etc/ssh/ssh_host_rsa_key
+PasswordAuthentication yes
+PermitRootLogin no
+AllowUsers dlplab
+UsePAM yes
+X11Forwarding no
+AllowTcpForwarding no
+PermitTunnel no
+Subsystem sftp internal-sftp

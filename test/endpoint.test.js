@@ -140,10 +140,10 @@ test("la decisión del navegador no se confunde con un bloqueo ejecutado", async
   const result = await runtime.inspectBrowser({ channel: "browser_paste", text: "DNI: 12345678", url: "https://example.com/form" });
   assert.equal(result.allowed, false);
   assert.equal(runtime.audit.events.at(-1).prevented, null);
-  const receipt = runtime.completeBrowser({ ticket: result.ticket, outcome: "CANCELLED" });
+  const receipt = await runtime.completeBrowser({ ticket: result.ticket, outcome: "CANCELLED" });
   assert.equal(receipt.prevented, true);
   assert.equal(runtime.audit.events.at(-1).evidence, "BROWSER_CLIENT_REPORT");
-  assert.throws(() => runtime.completeBrowser({ ticket: result.ticket, outcome: "CANCELLED" }), /ausente o caducada/);
+  await assert.rejects(() => runtime.completeBrowser({ ticket: result.ticket, outcome: "CANCELLED" }), /ausente o caducada/);
 });
 test("alterar el registro se detecta antes de nuevas operaciones", async (t) => {
   const temporaryFiles = await temporary(); t.after(temporaryFiles.cleanup);

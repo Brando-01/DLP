@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-22T00:31:49.048Z",
+  "generatedAt": "2026-10-28T22:33:37.132Z",
   "sensorAvailable": true,
   "interactiveSession": true,
   "removableDevices": 0,
@@ -18,7 +18,7 @@
       "scenario": "Impresión pública en controlador virtual Windows",
       "result": "PDF_GENERADO",
       "bytes": 37052,
-      "output": "laboratorio\\impresiones\\834bbe8e-a4a5-4623-acc4-f8c7ff852470.pdf",
+      "output": "laboratorio\\impresiones\\19449b16-a5ab-414a-a145-5f5210705a31.pdf",
       "evidence": "REAL_WINDOWS_PRINT_TO_PDF"
     }
   ]

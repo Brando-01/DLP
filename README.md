@@ -1,132 +1,163 @@
-# Laboratorio DLP de endpoint Windows
+# DLP administrado - versión 3
 
-Clasificación local de información sensible, vigilancia de carpetas, controles de salida, auditoría y evaluación de falsos positivos y negativos. Conserva el portal Windows/Kali, pero ya no depende solo de subir archivos a ese portal.
+Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correlación con Wazuh. Clasifica información sensible mediante reglas y contexto semántico de Groq. Evalúa permitido, detectado, alerta y bloqueado, además de falsos positivos y negativos. Usa exclusivamente datos ficticios y destinos del laboratorio. Inspecciona sensibilidad; no demuestra ausencia de malware.
 
-Usa exclusivamente datos ficticios y destinos autorizados. Es un prototipo académico, no un antivirus, EDR ni DLP empresarial invulnerable. Inspecciona sensibilidad; no demuestra ausencia de malware. No integra Groq ni envía contenido a un LLM.
+## Arranque en esta computadora
+
+Los servicios están preparados en una distribución propia **DLP-Control-WSL**. El agente corre en Windows. No se aplicaron políticas generales al anfitrión. La VM VirtualBox DLP-Control-v3 se conserva apagada como alternativa; el despliegue final se verifica en WSL2.
+
+```powershell
+npm.cmd run setup
+npm.cmd run wsl:start
+npm.cmd run wsl:sync
+npm.cmd run wsl:ca
+npm.cmd run agent
+```
+
+`wsl:sync` copia código/configuración y construye los servicios dentro de Linux. El primer despliegue tarda varios minutos. Después, sin cambios de código o clave, basta `wsl:start` y `agent`. El lanzador mantiene activa exclusivamente su distribución con un proceso auxiliar oculto; `deploy/wsl/Lab-WSL.ps1 -Action Stop` la detiene. Mantén abierta la terminal del agente.
+
+- Agente: http://127.0.0.1:3001
+- Consola: http://127.0.0.1:3100. Accede con **DLP_CONTROL_ADMIN_TOKEN** del `.env` local, distinto de la clave Groq.
+- Proxy: 127.0.0.1:8080. SMTP: 127.0.0.1:2525.
+- CA pública del proxy: `datos-control/certs-public/mitmproxy-ca-cert.pem`.
+
+El inventario utiliza reglas locales. Las salidas mediadas consultan la política central sobre una instantánea y comprueban su SHA-256. HTTPS se inspecciona antes de reenviar la solicitud; SMTP antes de la aceptación y relevo. La decisión y el recibo de ejecución se registran por separado.
+
+## Último paso: tu clave Groq
+
+Edita localmente `.env`, generado por setup:
+
+```dotenv
+DLP_LLM_MODE=hybrid
+GROQ_API_KEY=TU_CLAVE_LOCAL
+GROQ_MODEL=openai/gpt-oss-20b
+```
+
+```powershell
+npm.cmd run groq:check
+npm.cmd run wsl:sync
+npm.cmd run evaluate:hybrid
+```
+
+`groq:check` envía un ejemplo ficticio al proveedor. `evaluate:hybrid` consulta las muestras ficticias y genera métricas propias; puede exceder la cuota gratuita. La clave no se imprime ni se sube a Git. Modelos, precio y límites dependen de Groq y de tu cuenta.
+
+Sin clave, el modo híbrido retiene documentos que necesitan clasificación semántica. Un bloqueo local suficientemente fuerte evita enviarlos al proveedor. Clave ausente, cuota agotada, error, extracción parcial o respuesta ambigua no convierten un archivo en público. Para practicar solo con reglas configura temporalmente `DLP_LLM_MODE=off` y sincroniza; ese modo no acredita análisis semántico.
 
 ## Instalar en otra computadora
 
-Requisitos: Windows 10/11 con sesión interactiva y PowerShell 5.1; [Node.js 24 o superior](https://nodejs.org/en/download), incluido npm; [Git](https://git-scm.com/downloads) opcional si descargas ZIP. Verificado con Node 24.15.0. No requiere Ubuntu, Python, base de datos ni claves externas para ejecutar. Internet es necesario para instalar dependencias inicialmente.
+Requisitos Windows: Node.js 24+, PowerShell 5.1 y Git o ZIP. Para los servicios completos necesitas Docker Linux y Compose v2, directamente o dentro de una VM. Los controles generales requieren administrador en el Windows de laboratorio.
 
 ```powershell
 git clone https://github.com/Brando-01/DLP.git
 cd DLP
 npm.cmd ci
-npm.cmd run extension:build
-npm.cmd start
+npm.cmd run setup
 ```
 
-Con ZIP, abre PowerShell en la carpeta de package.json y comienza en npm.cmd ci. Abre el panel del agente en http://127.0.0.1:3001 y el portal adicional en http://localhost:3000. Mantén la terminal abierta; Ctrl+C detiene ambos. El panel solo escucha en loopback; el portal escucha en todas las interfaces para Kali: no lo expongas a Internet.
-
-## Demostración rápida
-
-1. Abre Inventario: el agente crea muestras ficticias en laboratorio/protegidos/. Un JSON con código y nota se clasifica aunque no diga confidencial.
-2. Crea o modifica un TXT allí sin subirlo a la web: el vigilante vuelve a clasificarlo. También hay escaneo periódico, por defecto cada 120 segundos.
-3. En Salidas controladas envía un público y un sensible al USB de laboratorio. El primero se escribe; el segundo no. El destino inicial es una carpeta, no un USB conectado.
-4. Para HTTP real, abre otra terminal y ejecuta `npm.cmd run receiver`. Selecciona el receptor en el panel: solo llegan los bytes permitidos.
-5. Selecciona Microsoft Print to PDF: un público genera un PDF bajo laboratorio/impresiones/; un sensible no llega al controlador. Se imprime texto extraído, no el diseño original.
-6. En Auditoría consulta decisión, resultado, canal y evidencia, verifica integridad y exporta CSV.
-
-Los destinos USB/red iniciales están marcados LABORATORIO. El receptor guarda sus salidas bajo laboratorio/; consulta su mensaje de inicio para el puerto.
-
-## Complemento del navegador
+**Con un motor Docker Linux disponible:**
 
 ```powershell
-npm.cmd run extension:build
-npm.cmd run site:demo
+docker compose --env-file .env -f deploy/compose.yaml --profile extended --profile wazuh up -d --build
+npm.cmd run agent
 ```
 
-Chrome: chrome://extensions, modo desarrollador, Cargar descomprimida, carpeta extension/dist/chromium. Edge: edge://extensions, misma carpeta. Firefox: about:debugging#/runtime/this-firefox, cargar complemento temporal, extension/dist/firefox/manifest.json. La instalación temporal de Firefox desaparece al cerrarlo; no es una distribución firmada.
+Para obtener la CA pública crea `datos-control/certs-public/` y ejecuta `docker compose --env-file .env -f deploy/compose.yaml cp proxy:/ca-public/mitmproxy-ca-cert.pem datos-control/certs-public/mitmproxy-ca-cert.pem`.
 
-En el panel abre Navegador, copia el token del conector, introdúcelo en Opciones del complemento con http://127.0.0.1:3001 y verifica la conexión. Recarga http://127.0.0.1:4200.
-
-Ese sitio es un receptor independiente sin DLP propio. Prueba selección manual, pegado y arrastre: se retiene un sensible y se permite un público. Desactivar el complemento muestra que el sitio recibe los sensibles sin protección. No publiques el token.
-
-Cubre interacciones DOM soportadas, no todas las APIs de subida, aplicaciones de escritorio ni todos los sitios. Algunas páginas rechazan eventos reemitidos. Un usuario puede desactivar una extensión no administrada. El cierre ante fallo retiene interacciones soportadas si no responde el agente: no equivale a detectar sensibilidad. Las selecciones superiores a 20 archivos o 10 MiB por archivo se retienen localmente sin una decisión de contenido del agente.
-
-## Clasificación y configuración
-
-En Configuración añade Documentos/Escritorio/Descargas o modifica watchRoots. No se exploran todos los discos automáticamente; se omiten enlaces, ubicaciones excluidas y archivos inaccesibles. Los límites e incidencias son visibles.
-
-- Reglas: lib/classifier.js. Once indicadores: clasificación, estudiante/nota, correo ficticio, contraseñas, DNI, secretos, Luhn y diagnóstico clínico.
-- Política por canal: lib/policy.js. Cada regla suma una vez por archivo. Los puntos no son probabilidades.
-- Por defecto: 0 permite; 1-2 alerta y permite; 3 o más bloquea.
-- audit detecta y permite; alert alerta y permite; enforce aplica el umbral. Una extracción desconocida/parcial se retiene en enforce: es restricción por falta de inspección, no reconocimiento sensible.
-- Extractores: lib/extract-worker.js. TXT, CSV, JSON, PDF con texto, DOCX, XLSX y extensiones de texto admitidas. Máximo 10 MiB, 200 000 caracteres, PDF hasta 100 páginas; límites de tiempo/memoria y expansión ZIP.
-- No hay OCR, descifrado, ejecución de macros ni análisis antivirus. El portal original mantiene TXT/CSV/JSON de hasta 1 MiB.
-
-Los destinos reales se configuran dentro de targets, por ejemplo:
-
-```json
-[
-  {"id":"usb-real","name":"USB autorizado","channel":"usb","path":"E:\\PruebasDLP","lab":false},
-  {"id":"smb-real","name":"Recurso de prueba","channel":"network_share","path":"\\\\SERVIDOR\\DLP","lab":false}
-]
-```
-
-El sensor debe confirmar el USB como extraíble; algunos discos externos se identifican como fijos y se rechazan conservadoramente. SMB requiere ruta UNC y permisos. Siguen siendo operaciones mediadas: no interceptan cualquier copia del Explorador.
-
-## Segundo plano e inicio de sesión
-
-Vista previa sin cambios:
+**Con WSL2 instalado, sin configurar Ubuntu manualmente:**
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\endpoint\windows\Install-Agent.ps1 -Action Plan
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/wsl/Lab-WSL.ps1 -Action Plan
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/wsl/Lab-WSL.ps1 -Action Create
+npm.cmd run wsl:sync
+npm.cmd run wsl:ca
+npm.cmd run agent
 ```
 
-Para instalar voluntariamente el inicio del usuario actual cambia Plan por Install; agrega -Start para iniciarlo. Uninstall retira solo el acceso directo propio y conserva registros, configuración y proceso activo. No instala un controlador ni servicio privilegiado. La bandeja permite abrir el panel o detener el agente. No lances otro agente si ya está iniciado con npm.
+Create descarga una imagen oficial Ubuntu WSL y verifica SHA-256. Sync instala el motor Docker dentro de esa distribución, sin depender de Docker Desktop. Solo debes instalar WSL2 antes si tu Windows aún no lo tiene. Elige un backend; detén el otro para liberar sus puertos.
 
-## Controles generales Windows, opcionales
-
-USBWrite impide escritura en almacenamiento extraíble; SMBOutbound bloquea TCP 139/445 y UDP 137/138; Printing detiene y deshabilita Spooler. Bloquean el canal completo, incluidos datos públicos, no selectivamente por contenido. SMB sobre QUIC no está cubierto.
-
-Primero consulta, sin cambios ni administrador:
+**Alternativa con VirtualBox 7.2+ y Python 3.12+:**
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\endpoint\windows\System-Controls.ps1 -Action Plan
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r integrations/requirements.txt -r deploy/vm/requirements.txt
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/vm/Lab-VM.ps1 -Action Plan
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/vm/Lab-VM.ps1 -Action Create
+npm.cmd run vm:start
+npm.cmd run vm:sync
+npm.cmd run vm:ca
+npm.cmd run agent
 ```
 
-Solo en una máquina de laboratorio, con PowerShell como administrador y tras revisar el impacto:
+Create descarga una imagen oficial Ubuntu 24.04, verifica SHA-256 y crea una VM nueva de 4 GiB y disco dinámico de 24 GiB. No requiere configurar Ubuntu manualmente ni sobrescribe VM existentes. Para apagarla usa `Lab-VM.ps1 -Action Stop`. En este anfitrión VirtualBox con Hyper-V presentó pausas; la validación final utiliza WSL2.
+
+**Laboratorio reducido sin Docker:** con Python y las dependencias instaladas, `npm.cmd run lab` inicia control, agente, receptor HTTPS/WebDAV, proxy, SMTP y DNS locales. No inicia Postfix, Samba, FTP, SSH, Suricata ni Wazuh. No lo ejecutes al mismo tiempo que la VM en los mismos puertos. `npm start` conserva el portal histórico y el agente; `DLP_CONTROL_EMBEDDED=1` agrega un control local.
+
+## Proteger la salida de una VM Windows
+
+La inspección de la salida requiere forzar los puntos de control y verificar cada aplicación. Un proxy configurado voluntariamente no obliga al resto de programas a utilizarlo.
 
 ```powershell
-.\endpoint\windows\System-Controls.ps1 -Action Apply -Controls USBWrite
-.\endpoint\windows\System-Controls.ps1 -Action Restore
+.\endpoint\windows\Managed-Egress.ps1 -Action Plan -GatewayAddress IP_DEL_SERVIDOR
+.\endpoint\windows\System-Controls.ps1 -Action Plan
 ```
 
-Restore es una operación posterior para retirar los cambios propios respaldados, no parte obligatoria de aplicar. Omitir -Controls solicita los tres controles. Puede ser necesario reconectar USB o reiniciar. El estado guardado acredita configuración, no prueba física. No se activaron estas políticas automáticamente en la PC del usuario. No borres el respaldo mientras estén activos. Restore conserva estados que identifica como ajenos y registra advertencias.
+En PowerShell como administrador del **equipo aislado**, `Managed-Egress.ps1 -Action Apply -ConfirmLab -GatewayAddress IP_DEL_SERVIDOR -CaCertificate RUTA_CA_PUBLICA` restringe salida al gateway y configura Chrome/Edge con proxy obligatorio, QUIC y DoH desactivados. Respalda reglas/perfiles/políticas; `-Action Restore` revierte los cambios propios. Configura la interfaz para usar el DNS autorizado del laboratorio y compruébalo. Firefox necesita proxy y CA por separado. Las aplicaciones con certificate pinning pueden fallar al inspeccionar TLS.
 
-## Observación nativa frente a prevención
+USB nativo: `System-Controls.ps1 -Action Apply -Controls USBWrite`, con Restore. Restringe todo el canal. La selección por contenido corresponde a operaciones iniciadas desde el agente. Debe comprobarse el dispositivo físico; una configuración guardada no demuestra bloqueo físico.
 
-El portapapeles se observa después de copiar. La limpieza reactiva es opcional, desactivada por defecto; no acredita que ninguna aplicación leyera antes el contenido. Las imágenes son no analizables. La copia iniciada desde el panel sí decide antes de escribir. Los trabajos externos de impresión solo se observan como metadatos si Windows permite consultarlos; no se afirma lectura del contenido ni bloqueo previo.
+Para otro equipo, `npm.cmd run endpoint:export -- http://IP_DEL_SERVIDOR:3100` genera `.env.endpoint`: cópialo como `.env` en el cliente. No incluye Groq ni el token administrativo. Contiene credenciales de inspección y telemetría: no lo publiques. HTTP se admite únicamente para red aislada y datos ficticios; utiliza TLS en despliegues reales. Configura las carpetas protegidas desde el panel; el agente no obtiene permisos para leer archivos ajenos o protegidos por el sistema.
 
-## Pruebas reproducibles
+Desde Kali se usa la IP Host-only del servidor. La VM entregada publica inicialmente en loopback, así que debes preparar esa interfaz y puertos antes de acceder desde Kali. No publiques el panel local 3001.
+
+## Doce casos y cobertura
+
+| Caso | Implementación | Límite |
+| --- | --- | --- |
+| CU-01 USB | Operación mediada y política Windows USBWrite | Selección por contenido mediada; restricción nativa del canal completo. Prueba física depende del equipo. |
+| CU-02 ruta no autorizada | Vigilante, correlación por hash, Samba full_audit | Alerta posterior a escritura; no bloqueo selectivo universal de copias nativas. |
+| CU-03 adjunto de correo | Postfix y filtro MIME Python | Extrae formatos admitidos antes de aceptar/relevar; receptor ficticio, sin Gmail real. |
+| CU-04 cuerpo de correo | Decodificación MIME | Base64, quoted-printable y asunto; no depende de body_checks sin decodificar. |
+| CU-05 HTTPS | mitmproxy y política central | Requiere CA confiada y salida forzada. |
+| CU-06 texto web | Cuerpo y parámetros HTTP | Formularios, JSON, XML y texto; WebSocket/no inspeccionable se retiene. |
+| CU-07 rclone | Proxy y firewall | E2E real WebDAV HTTPS; otros backends requieren prueba propia. |
+| CU-08 SCP/SFTP | Firewall por canal/destino | No descifra el contenido SSH. |
+| CU-09 FTP claro | vsftpd, Suricata y Wazuh | IDS detecta; firewall deniega el canal. Suricata pasivo no previene. |
+| CU-10 DNS | Resolver, dnsmasq y restricción de salida | Tipo, dominio, longitud y frecuencia; anomalía no demuestra sensibilidad. |
+| CU-11 cifrado | Política no inspeccionable | ZIP genérico, 7z/GPG y desconocidos/parciales se retienen en enforce; no descifra. |
+| CU-12 evasión | Firma real y base64 | DOCX/JPG, XLSX/PNG; rechaza cargas parciales. Sin reconstrucción arbitraria ni OCR. |
+
+## Wazuh y Sysmon
+
+El perfil `wazuh` inicia manager 4.14.1 y reenvía alertas al panel sin indexador. Consume la proyección acotada `siem.jsonl`, DNS, Samba y las alertas EVE de Suricata. La auditoría completa se conserva por separado. IDs locales: 100200..100251. Wazuh correlaciona alertas; la prevención la ejecutan proxy, filtro SMTP, resolver o firewall.
+
+En el Windows protegido instala Sysmon desde Microsoft y el agente Wazuh compatible. Ejecuta `endpoint/windows/Prepare-Sensors.ps1 -ManagerAddress IP_DEL_MANAGER` para generar XML con las rutas actuales. Configura manager/contraseña de enrolamiento y combina el fragmento generado con su configuración existente. No se instalan silenciosamente en la PC principal. El sensor informa disponibilidad y permisos; no inventa eventos si faltan. No reenvía líneas de comandos ni consultas DNS completas al panel.
+
+## Pruebas y métricas
 
 ```powershell
 npm.cmd test
+.venv\Scripts\python.exe -m unittest discover -s test -p 'test_*.py'
+npm.cmd run test:managed
+npm.cmd run wsl:verify
 npm.cmd run evaluate:endpoint
-npm.cmd run test:windows
-npm.cmd run evaluate
+npm.cmd run doctor
 ```
 
-Hay 32 pruebas funcionales. La evaluación endpoint usa 27 documentos repetidos en cinco canales: 135 operaciones, no 135 documentos independientes. USB/SMB son directorios de laboratorio; HTTP es un receptor real; clipboard/print usan dobles de prueba en esta batería. Se comprueba ausencia de efectos bloqueados y hashes de permitidos. test:windows añade una prueba nativa de Microsoft Print to PDF, sin modificar el portapapeles ni políticas.
+Resultados en `output/evaluacion/`. `wsl:verify` (o `vm:verify` para ese backend) usa temporalmente reglas locales para no consumir Groq y restaura el modo configurado. Comprueba receptores independientes, SSH, salida directa, DNS, FTP/Suricata, Samba y Wazuh. Conserva errores; un escenario listado o una prueba fallida no equivalen a cobertura lograda.
 
-Resultados en output/evaluacion/: resultado-endpoint.json, CSV y resultado-windows.json. Conservan errores y límites. Los casos son de desarrollo, no una validación independiente de generalización. evaluate conserva la evaluación histórica del portal de 20 documentos.
+`test:managed` necesita Python/mitmproxy. Usa puertos aleatorios, TLS/SMTP reales y receptores independientes. rclone es opcional: indica `DLP_RCLONE` con la ruta de su ejecutable; el resultado señala si se ejecutó. Las pruebas del modelo utilizan respuestas simuladas identificadas como tales. La evaluación real con clave es separada.
 
-test:browser es opcional y requiere Playwright y Chrome for Testing/Chromium compatible con extensiones. No son dependencias para ejecutar el DLP. Puedes indicar DLP_PLAYWRIGHT_MODULE y DLP_CHROMIUM_EXECUTABLE. Se verificó en Chromium 151 con ocho escenarios y un receptor independiente. Usa perfil temporal aislado; las pruebas de pegado y arrastre son eventos DOM sintéticos, no prueba del portapapeles físico. El resultado está en resultado-navegador.json. Firefox sigue sin validación E2E.
+Para detección se cuenta positivo si se reconoce sensibilidad; para prevención, si se retiene la operación. Registra aparte errores, restricciones por no inspección y falsos bloqueos de archivos públicos. Las muestras de desarrollo no demuestran exactitud sobre cualquier documento. Se conservan las evaluaciones históricas v1/v2.
 
-## Kali y red
+## Código y documentación
 
-Kali es un cliente/receptor opcional, no el equipo protegido por el sensor Windows. Accede al portal http://IP-HOST-ONLY-DE-WINDOWS:3000, no a localhost. La IP previa fue 192.168.56.1: verifica con ipconfig. Usa Host-only y firewall limitado a la red del laboratorio. No publiques el panel 3001.
+- `lib/semantic.js`: Groq, esquema estricto, límites y caché por hash.
+- `lib/extract-worker.js`, `lib/classifier.js`, `lib/policy.js`: extracción, reglas y decisión.
+- `control/`: consola, autenticación por función, política, decisiones y recibos.
+- `endpoint/`: agente, inventario, copias, puente PowerShell y panel.
+- `integrations/` y `deploy/`: filtros, sensores, contenedores y VM.
+- [Arquitectura administrada](docs/ARQUITECTURA_ADMINISTRADA.md).
+- [Informe PDF de la versión actual](output/pdf/Informe_DLP_Administrado_v3.pdf).
+- [Histórico v2](docs/HISTORICO_V2.md): no describe Groq ni el despliegue actual.
 
-Para recibir HTTP en Kali, instala Node 24 y el proyecto, configura DLP_RECEIVER_HOST=0.0.0.0 y ejecuta el receptor. Añade su IP Host-only y puerto 4100 al destino del agente. El receptor es de laboratorio, sin autenticación ni TLS; solo datos ficticios en red aislada.
-
-## Datos y documentación
-
-datos-endpoint/ guarda configuración, credenciales, inventario, auditoría y respaldos. laboratorio/ guarda muestras y salidas. Ambos están excluidos de Git. La auditoría encadena SHA-256: no es firma digital ni impide que un administrador reconstruya todo el registro. La API separa token administrativo y token del navegador, limita entradas y valida Host/orígenes; no es una plataforma multiusuario con protección antimanipulación.
-
-- [Arquitectura y casos de uso endpoint](docs/ARQUITECTURA_ENDPOINT.md).
-- [Informe universitario endpoint](output/pdf/Informe_DLP_Endpoint.pdf).
-- [Plan y evidencia de cobertura](docs/PLAN_ENDPOINT.md).
-- El [informe original](output/pdf/Informe_tecnico_DLP.pdf) describe el portal histórico, no la ampliación endpoint.
-
-No se afirma control selectivo universal de toda la PC: se diferencian prevención mediada, conector del navegador, observación reactiva y controles generales opcionales.
+`.env`, `.env.endpoint`, claves, VM y datos operativos están excluidos de Git. La auditoría encadenada detecta alteraciones ordinarias; no es firma digital ni protege frente a un administrador que reconstruya toda la cadena. El prototipo no incorpora driver de kernel ni protección antimanipulación empresarial; su cobertura corresponde a los puntos de control desplegados y verificados.

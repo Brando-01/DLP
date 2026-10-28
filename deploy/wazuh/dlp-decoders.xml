@@ -1,0 +1,4 @@
+<decoder name="dlp-samba"><prematch type="pcre2">DLP_SAMBA\|</prematch></decoder>
+<decoder name="dlp-samba-fields"><parent>dlp-samba</parent><regex type="pcre2">DLP_SAMBA\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|(.*)$</regex><order>srcuser,srcip,share,operation,result,filename</order></decoder>
+<decoder name="dlp-dnsmasq"><program_name>dnsmasq</program_name></decoder>
+<decoder name="dlp-dnsmasq-query"><parent>dlp-dnsmasq</parent><regex type="pcre2">query\[([^]]+)\] ([^ ]+) from ([0-9a-fA-F:.]+)</regex><order>querytype,domain,srcip</order></decoder>

@@ -36,10 +36,10 @@ function createEndpointApp(runtime) {
     if (req.method === "OPTIONS") return browserRoute ? res.sendStatus(204) : res.sendStatus(403);
     next();
   });
-  app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "Agente DLP local", version: "2.0.0" }));
+  app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "Agente DLP local", version: "3.0.0" }));
   app.get("/api/bootstrap", (req, res) => {
     if (req.headers["sec-fetch-site"] === "cross-site" || extensionOrigin(req.headers.origin)) return res.sendStatus(403);
-    res.json({ token: runtime.credentials.admin, version: "2.0.0" });
+    res.json({ token: runtime.credentials.admin, version: "3.0.0" });
   });
   app.use("/api", (req, res, next) => {
     const isBrowser = req.path.startsWith("/browser/");
@@ -65,8 +65,8 @@ function createEndpointApp(runtime) {
   });
   app.get("/api/pairing", (_req, res) => res.json({ browserToken: runtime.credentials.browser, agentUrl: "http://127.0.0.1:3001", instruction: "Introduce este token en las opciones del complemento. No lo publiques ni lo subas al repositorio." }));
   app.get("/api/report", (_req, res) => {
-    const file = path.join(PROJECT, "output", "pdf", "Informe_DLP_Endpoint.pdf");
-    if (!fs.existsSync(file)) return res.status(404).json({ error: "El informe endpoint todavía no está generado" });
+    const file = path.join(PROJECT, "output", "pdf", "Informe_DLP_Administrado_v3.pdf");
+    if (!fs.existsSync(file)) return res.status(404).json({ error: "El informe administrado todavía no está generado" });
     res.download(file);
   });
   app.post("/api/scan", (_req, res) => {
@@ -85,7 +85,7 @@ function createEndpointApp(runtime) {
   }));
   app.get("/api/browser/config", (_req, res) => res.json(runtime.browserConfig()));
   app.post("/api/browser/inspect", inspectLimit(async (req, res) => res.json(await runtime.inspectBrowser(req.body || {}))));
-  app.post("/api/browser/result", (req, res) => res.json(runtime.completeBrowser(req.body || {})));
+  app.post("/api/browser/result", async (req, res) => res.json(await runtime.completeBrowser(req.body || {})));
   app.use(express.static(path.join(__dirname, "ui"), { etag: false, maxAge: 0 }));
   app.use((error, _req, res, _next) => {
     const status = error.type === "entity.too.large" ? 413 : 400;

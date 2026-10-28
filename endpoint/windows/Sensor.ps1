@@ -33,7 +33,7 @@ function Get-DeviceStatus {
     try { $printers = @([System.Drawing.Printing.PrinterSettings]::InstalledPrinters) } catch {}
     $interactive = [Environment]::UserInteractive -and ([System.Diagnostics.Process]::GetCurrentProcess().SessionId -gt 0)
     $clipboardState = if ($interactive) { 'OBSERVACION_REACTIVA' } else { 'SESION_NO_INTERACTIVA' }
-    return @{ type = 'status'; clipboard = $clipboardState; interactive = $interactive; drives = $volumes; printers = $printers; printingObservation = $script:printStatus; notifications = [bool]$script:tray }
+    return @{ type = 'status'; clipboard = $clipboardState; interactive = $interactive; drives = $volumes; printers = $printers; printingObservation = $script:printStatus; notifications = [bool]$script:tray; sysmon = $script:sysmonStatus }
 }
 
 function Invoke-ControlledPrint([string]$Text, [string]$Printer, [string]$OutputPath) {
@@ -78,6 +78,9 @@ function Invoke-ControlledPrint([string]$Text, [string]$Printer, [string]$Output
 
 $script:tray = $null
 $script:run = $true
+$script:sysmonStatus = 'NO_COMPROBADO'
+$script:sysmonRecord = $null
+$script:lastSysmonPoll = [datetime]::MinValue
 $script:monitorClipboard = $true
 $script:monitorPrinting = $false
 $script:printStatus = 'NO_ACTIVADA'
@@ -192,6 +195,31 @@ try {
                 if ($script:seenJobs.Count -gt 1000) { $script:seenJobs.Clear() }
             } catch { $script:printStatus = 'NO_DISPONIBLE' }
             $lastJobs = [datetime]::UtcNow
+        }
+        if (([datetime]::UtcNow - $script:lastSysmonPoll).TotalSeconds -ge 5) {
+            try {
+                if ($null -eq $script:sysmonRecord) {
+                    $log = Get-WinEvent -ListLog 'Microsoft-Windows-Sysmon/Operational' -ErrorAction Stop
+                    $latest = Get-WinEvent -LogName $log.LogName -MaxEvents 1 -ErrorAction SilentlyContinue
+                    $script:sysmonRecord = if ($latest) { [long]$latest.RecordId } else { [long]0 }
+                }
+                $query = '*[System[(EventID=1 or EventID=3 or EventID=11 or EventID=22) and EventRecordID > ' + $script:sysmonRecord + ']]'
+                $events = @(Get-WinEvent -LogName 'Microsoft-Windows-Sysmon/Operational' -FilterXPath $query -Oldest -MaxEvents 100 -ErrorAction SilentlyContinue | Sort-Object RecordId)
+                foreach ($nativeEvent in $events) {
+                    $xml = [xml]$nativeEvent.ToXml()
+                    $fields = @{}
+                    foreach ($data in $xml.Event.EventData.Data) { $fields[[string]$data.Name] = [string]$data.'#text' }
+                    $dnsHash = $null
+                    if ($fields.QueryName) {
+                        $sha = [Security.Cryptography.SHA256]::Create()
+                        try { $dnsHash = [BitConverter]::ToString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($fields.QueryName))).Replace('-','').ToLowerInvariant() } finally { $sha.Dispose() }
+                    }
+                    Send-Message @{ type='sysmon-observed'; eventId=$nativeEvent.Id; recordId=$nativeEvent.RecordId; program=$fields.Image; destinationAddress=$fields.DestinationIp; destinationPort=$fields.DestinationPort; targetFile=$fields.TargetFilename; dnsNameHash=$dnsHash }
+                    $script:sysmonRecord = [long]$nativeEvent.RecordId
+                }
+                $script:sysmonStatus = if ($events.Count -eq 100) { 'LOTE_COMPLETO_PUEDE_HABER_EVENTOS_PENDIENTES' } else { 'EVENTOS_OBSERVADOS_SIN_BLOQUEO' }
+            } catch { $script:sysmonStatus = 'NO_DISPONIBLE_O_SIN_PERMISOS' }
+            $script:lastSysmonPoll = [datetime]::UtcNow
         }
         if (([datetime]::UtcNow - $lastStatus).TotalSeconds -ge 10) { Send-Message (Get-DeviceStatus); $lastStatus = [datetime]::UtcNow }
         Start-Sleep -Milliseconds 200

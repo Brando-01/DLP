@@ -1,6 +1,6 @@
 {
   "title": "Evaluación multicanal del laboratorio DLP de endpoint",
-  "generatedAt": "2026-10-22T00:21:27.450Z",
+  "generatedAt": "2026-10-28T22:31:55.239Z",
   "node": "v24.15.0",
   "platform": "win32",
   "cases": 27,
@@ -214,8 +214,8 @@
   "audit": {
     "events": 217,
     "chainValid": true,
-    "checkedAt": "2026-10-22T00:21:27.453Z",
-    "lastHash": "f58e75493a9791f139c138910447b5328f88d8c1185c73bfd7d17c6fa5b2574e",
+    "checkedAt": "2026-10-28T22:31:55.242Z",
+    "lastHash": "e2a22bcf3659538ef97cecce341de756e70bf6b68aba755cad320030a22fda55",
     "note": "Cadena SHA-256 para detectar alteraciones; no es una firma ni protege contra un administrador que reconstruya la cadena."
   },
   "results": [

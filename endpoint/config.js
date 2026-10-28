@@ -19,6 +19,7 @@ function defaultConfig() {
   return {
     schemaVersion: 1,
     watchRoots: [path.join(lab, "protegidos")],
+    restrictedDestinations: [],
     maxFiles: 2500,
     scanIntervalSeconds: 120,
     clipboardMonitor: true,
@@ -43,6 +44,9 @@ function validateConfig(value) {
     return path.resolve(p);
   }))];
   if (!config.watchRoots.length) throw new Error("Debe existir al menos una carpeta vigilada");
+  if (!Array.isArray(config.restrictedDestinations) || config.restrictedDestinations.length > 20 || config.restrictedDestinations.some((p) => typeof p !== "string" || !path.isAbsolute(p) || p.includes("\0"))) throw new Error("Destinos observados no válidos");
+  config.restrictedDestinations = [...new Set(config.restrictedDestinations.map((p) => path.resolve(p)))];
+  if (config.restrictedDestinations.some((p) => config.watchRoots.some((root) => isWithin(p, root) || isWithin(root, p)))) throw new Error("Las carpetas de origen y destinos no autorizados deben estar separadas");
   if (!Number.isInteger(config.maxFiles) || config.maxFiles < 1 || config.maxFiles > 20000) throw new Error("Límite de inventario inválido");
   if (!Number.isInteger(config.scanIntervalSeconds) || config.scanIntervalSeconds < 10 || config.scanIntervalSeconds > 3600) throw new Error("Intervalo de exploración inválido");
   for (const key of ["clipboardMonitor", "clipboardRemediation", "notifications", "browserFailClosed"]) if (typeof config[key] !== "boolean") throw new Error(`Configuración inválida: ${key}`);

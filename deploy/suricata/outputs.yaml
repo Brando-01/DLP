@@ -1,0 +1,13 @@
+%YAML 1.1
+---
+# Wazuh necesita alertas, no estadisticas con cientos de campos dinamicos.
+outputs:
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert:
+            metadata: no
+stats:
+  enabled: no

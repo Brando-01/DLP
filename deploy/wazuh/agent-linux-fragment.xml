@@ -1,0 +1,7 @@
+<agent_config>
+  <localfile><location>/var/log/dlp/auditoria.jsonl</location><log_format>json</log_format></localfile>
+  <localfile><location>/var/log/dlp/dns.jsonl</location><log_format>json</log_format></localfile>
+  <localfile><location>/var/log/suricata/eve.json</location><log_format>json</log_format></localfile>
+  <localfile><location>/var/log/samba/audit.log</location><log_format>syslog</log_format></localfile>
+  <localfile><location>/var/log/dnsmasq.log</location><log_format>syslog</log_format></localfile>
+</agent_config>

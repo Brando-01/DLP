@@ -21,7 +21,7 @@
         <div class="two-columns"><article class="panel"><h2>Exploración de archivos</h2><p id="scan-status">Pendiente</p><button id="scan">Reclasificar carpetas vigiladas</button><p class="muted">El sensor registra cambios. Las copias nativas del Explorador no pasan por las operaciones mediadas del agente.</p></article><article class="panel"><h2>Integridad de auditoría</h2><p id="audit-status">Pendiente</p><p class="muted">Se encadenan hashes SHA-256 de los eventos. Esto detecta alteraciones, pero no equivale a una firma digital frente a un administrador del equipo.</p><button id="download-report">Abrir informe PDF</button></article></div>
       </section>
       <section id="view-inventory" class="view hidden">
-        <div class="section-title"><div><h1>Archivos clasificados</h1><p>El contenido permanece en la PC. No se envía a Groq ni a un servicio de IA.</p></div><input id="file-search" type="search" placeholder="Buscar nombre o ruta" aria-label="Buscar archivos"></div>
+        <div class="section-title"><div><h1>Archivos clasificados</h1><p>El inventario usa reglas locales. Las salidas pueden requerir clasificación semántica con Groq según .env.</p></div><input id="file-search" type="search" placeholder="Buscar nombre o ruta" aria-label="Buscar archivos"></div>
         <article class="panel"><div class="table-scroll"><table><thead><tr><th>Archivo y ubicación</th><th>Clasificación</th><th>Inspección</th><th>Puntos</th><th>Reglas</th></tr></thead><tbody id="inventory"></tbody></table></div></article>
       </section>
       <section id="view-transfer" class="view hidden">
@@ -46,5 +46,5 @@
       </section>
     </main>
   </div>
-  <footer>Laboratorio académico DLP · Datos ficticios para la evaluación · Clasificación por reglas, sin análisis antivirus.</footer>
+  <footer>Laboratorio académico DLP · Datos ficticios · Clasificación local y Groq opcional · Control central en el puerto 3100.</footer>
 </body></html>

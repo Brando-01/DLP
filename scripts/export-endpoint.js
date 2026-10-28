@@ -1,0 +1,12 @@
+"use strict";
+require("../lib/environment");
+const fs = require("node:fs");
+const path = require("node:path");
+const { ROOT } = require("../lib/environment");
+const destination = process.argv[2] || process.env.DLP_CONTROL_URL;
+const url = new URL(destination);
+if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.pathname !== "/") throw new Error("Usa la URL base del servidor DLP");
+if (!process.env.DLP_INSPECT_TOKEN || !process.env.DLP_TELEMETRY_TOKEN) throw new Error("Ejecuta setup en el servidor primero");
+const values = { DLP_CONTROL_URL: url.origin, DLP_INSPECTION_BACKEND: "central", DLP_CONTROL_EMBEDDED: "0", DLP_LLM_MODE: "off", DLP_FORWARD_EVENTS: "1", DLP_INSPECT_TOKEN: process.env.DLP_INSPECT_TOKEN, DLP_TELEMETRY_TOKEN: process.env.DLP_TELEMETRY_TOKEN, DLP_ALLOW_LAB_HTTP: url.protocol === "http:" ? "1" : "0" };
+fs.writeFileSync(path.join(ROOT, ".env.endpoint"), Object.entries(values).map(([key, value]) => `${key}=${value}`).join("\n") + "\n", { mode: 0o600 });
+console.log(".env.endpoint preparado para copiar como .env al cliente de laboratorio. No contiene la clave Groq ni el token administrativo. Conserva credenciales de inspeccion/telemetria: no lo publiques.");

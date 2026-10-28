@@ -1,0 +1,2 @@
+mitmproxy==12.3.1
+aiosmtpd==1.4.6

@@ -11,6 +11,10 @@ const { inspectBuffer, extractText, MAX_FILE_BYTES } = require("../lib/inspectio
 const { analyzeContent, rules } = require("../lib/classifier");
 const { decide } = require("../lib/policy");
 const { WindowsBridge } = require("./windows-bridge");
+const { semanticClassifier } = require("../lib/semantic");
+const { forwardAudit } = require("../lib/telemetry");
+const { CopyMonitor } = require("./copy-monitor");
+const { managedInspection, reportCentral } = require("../lib/managed-inspection");
 
 const EXCLUDED = new Set(["node_modules", ".git", ".cache", "appdata", "windows", "program files", "program files (x86)", "datos-endpoint", "logs", "recibidos", "tmp", "$recycle.bin", "system volume information"]);
 const fileId = (file) => crypto.createHash("sha256").update(process.platform === "win32" ? file.toLowerCase() : file).digest("hex").slice(0, 24);
@@ -60,8 +64,10 @@ class EndpointRuntime extends EventEmitter {
       }
     }
     this.bridge.start();
+    this.stopTelemetry = forwardAudit(this.audit, this.dataDirectory);
     this.installWatchers();
     await this.scan();
+    this.copyMonitor = new CopyMonitor(this); this.copyMonitor.start();
     this.scanTimer = setInterval(() => this.scan().catch((e) => this.operationalError("ESCANEO", e)), this.config.scanIntervalSeconds * 1000);
     this.scanTimer.unref();
     this.audit.record({ channel: "agent", activity: "AGENTE_INICIADO", decision: "DETECTADO", prevented: false, detected: false, evidence: "PROCESS", watchRoots: this.config.watchRoots });
@@ -125,7 +131,6 @@ class EndpointRuntime extends EventEmitter {
             if (!force && previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs) continue;
             let inspection;
             if (stat.size > MAX_FILE_BYTES) inspection = { inspectionStatus: "UNANALYZABLE", classification: "NO_ANALIZABLE", score: 0, matches: [], reason: "Archivo superior a 10 MiB", size: stat.size, sha256: null };
-            else if (!INSPECTABLE.has(path.extname(file).toLowerCase())) inspection = { inspectionStatus: "UNANALYZABLE", classification: "NO_ANALIZABLE", score: 0, matches: [], reason: "Formato no admitido", size: stat.size, sha256: null };
             else {
               const snapshot = await this.readSnapshot(file);
               inspection = await inspectBuffer(snapshot.buffer, entry.name);
@@ -183,6 +188,8 @@ class EndpointRuntime extends EventEmitter {
     const config = validateConfig(input);
     writeJsonAtomic(this.configFile, config);
     this.config = config;
+    this.copyMonitor?.stop();
+    if (this.startedAt) { this.copyMonitor = new CopyMonitor(this); this.copyMonitor.start(); }
     this.installWatchers();
     this.configureBridge();
     clearInterval(this.scanTimer);
@@ -206,7 +213,7 @@ class EndpointRuntime extends EventEmitter {
     else throw new Error("No se recibió contenido analizable");
     let origin = "desconocido";
     try { const url = new URL(input.url); if (!["http:", "https:"].includes(url.protocol)) throw new Error(); origin = url.origin; } catch { throw new Error("Origen web no válido"); }
-    const inspection = await inspectBuffer(buffer, fileName);
+    const inspection = await managedInspection(buffer, fileName, input.channel, origin);
     const policy = decide(inspection, input.channel, this.config.policies);
     const ticket = crypto.randomUUID();
     this.tickets.set(ticket, { expires: Date.now() + 120000, channel: input.channel, fileName, inspection, policy, origin });
@@ -215,13 +222,14 @@ class EndpointRuntime extends EventEmitter {
     return { ...inspection, ...policy, ticket };
   }
 
-  completeBrowser(input) {
+  async completeBrowser(input) {
     const pending = this.tickets.get(input.ticket);
     if (!pending || pending.expires < Date.now()) throw new Error("Decisión de navegador ausente o caducada");
     if (!["CANCELLED", "RELEASED", "FAILED"].includes(input.outcome)) throw new Error("Resultado de navegador no válido");
     this.tickets.delete(input.ticket);
     const prevented = !pending.policy.allowed && input.outcome === "CANCELLED";
     const event = this.audit.record({ channel: pending.channel, activity: "RESULTADO_INTERACCION_WEB", file: pending.fileName, origin: pending.origin, classification: pending.inspection.classification, score: pending.inspection.score, matches: pending.inspection.matches, ...pending.policy, prevented, outcome: input.outcome, evidence: "BROWSER_CLIENT_REPORT", ticket: input.ticket });
+    await reportCentral(pending.inspection, input.outcome);
     return { recorded: true, id: event.id, prevented };
   }
 
@@ -232,13 +240,14 @@ class EndpointRuntime extends EventEmitter {
     if (!target && !["clipboard", "print"].includes(input.channel)) throw new Error("Destino no configurado");
     const channel = target ? target.channel : input.channel;
     const snapshot = await this.readSnapshot(item.path);
-    const inspection = await inspectBuffer(snapshot.buffer, item.name);
+    const inspection = await managedInspection(snapshot.buffer, item.name, channel, target?.url || `endpoint://${channel}`);
     const policy = decide(inspection, channel, this.config.policies);
     const operationId = crypto.randomUUID();
     const fields = { operationId, channel, activity: "TRANSFERENCIA_CONTROLADA", file: item.name, sourcePath: snapshot.path, destination: target ? target.name : channel === "print" ? String(input.printer || "").slice(0, 100) : "Portapapeles Windows", ...inspection, ...policy, evidence: target?.lab ? "LAB_CONTROLLED_OPERATION" : "CONTROLLED_OPERATION" };
     if (!policy.allowed) {
       const event = this.audit.record({ ...fields, outcome: "PREVENTED", prevented: true });
       this.notify(`Bloqueo DLP en ${channel}: ${item.name}`);
+      await reportCentral(inspection, "CANCELLED");
       return { ...event, message: "Operación detenida antes de escribir, enviar o imprimir el contenido" };
     }
     this.audit.record({ ...fields, outcome: "PREPARED", prevented: false });
@@ -284,15 +293,22 @@ class EndpointRuntime extends EventEmitter {
         }
       }
       const event = this.audit.record({ ...fields, outcome: "COMPLETED", prevented: false, receipt });
+      await reportCentral(inspection, "UPSTREAM_RESPONSE");
       return { ...event, message: policy.decision === "ALERTA" ? "Operación realizada con alerta" : "Operación realizada" };
     } catch (error) {
       const event = this.audit.record({ ...fields, decision: "ERROR", outcome: "FAILED", prevented: false, message: String(error.message).slice(0, 180) });
+      await reportCentral(inspection, "FAILED");
       return event;
     }
   }
 
   async handleNative(message) {
     if (message.type === "exit-request") { this.emit("exit-request"); return; }
+    if (message.type === "sysmon-observed") {
+      const program = String(message.program || "").slice(0, 250);
+      this.audit.record({ channel: "sysmon", activity: /[\\/]rclone\.exe$/i.test(program) ? "RCLONE_OBSERVADO" : "ACTIVIDAD_SISTEMA_OBSERVADA", decision: "DETECTADO", detected: false, prevented: false, nativeEventId: Number(message.eventId), nativeRecordId: Number(message.recordId), program, destinationAddress: String(message.destinationAddress || "").slice(0, 80), destinationPort: String(message.destinationPort || "").slice(0, 10), file: message.targetFile ? path.basename(String(message.targetFile)) : undefined, dnsNameHash: message.dnsNameHash, evidence: "SYSMON_EVENT_AFTER_ACTIVITY", outcome: "OBSERVED" });
+      return;
+    }
     if (message.type === "print-observed") {
       this.audit.record({ channel: "print_observed", activity: "TRABAJO_DE_IMPRESION_OBSERVADO", decision: "DETECTADO", classification: "NO_DETERMINADA", detected: false, prevented: false, printer: String(message.printer).slice(0, 100), file: String(message.document || "").slice(0, 160), evidence: "AFTER_SUBMISSION", outcome: "OBSERVED" });
       return;
@@ -333,7 +349,7 @@ class EndpointRuntime extends EventEmitter {
     let systemControls = { applied: false, verificationRequired: true };
     try { systemControls = JSON.parse(fs.readFileSync(path.join(this.dataDirectory, "controles-windows-estado.json"), "utf8")); } catch {}
     return {
-      version: "2.0.0", startedAt: this.startedAt, platform: process.platform, scan: this.scanState,
+      version: "3.0.0", startedAt: this.startedAt, platform: process.platform, scan: this.scanState, classifier: { ...semanticClassifier.status(), backend: process.env.DLP_INSPECTION_BACKEND || "local" },
       inventory: { total: items.length, sensitive: items.filter((x) => x.score > 0).length, unknown: items.filter((x) => x.inspectionStatus !== "COMPLETE").length },
       operations: { prevented: this.audit.events.filter((event) => event.prevented === true).length },
       windows: this.bridge.info, windowsControls: systemControls, audit: this.audit.status(), suggestedRoots: suggestedRoots(),
@@ -352,6 +368,8 @@ class EndpointRuntime extends EventEmitter {
 
   async stop() {
     this.stopping = true;
+    this.stopTelemetry?.();
+    this.copyMonitor?.stop();
     clearTimeout(this.debounce); clearInterval(this.scanTimer);
     for (const watcher of this.watchers) watcher.close();
     this.watchers = [];

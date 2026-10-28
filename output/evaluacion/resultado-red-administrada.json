@@ -1,0 +1,115 @@
+{
+  "generatedAt": "2026-10-28T22:31:15.832155+00:00",
+  "tests": 16,
+  "groqLiveTested": false,
+  "classification": "RULES_ONLY_FOR_NETWORK_VERIFICATION",
+  "tlsInspection": true,
+  "postfixTested": false,
+  "rcloneTested": true,
+  "results": [
+    {
+      "case": "CU-06 texto público",
+      "allowed": true,
+      "status": 200,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-06 DNI en cuerpo",
+      "allowed": false,
+      "status": 403,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-12 base64",
+      "allowed": false,
+      "status": 403,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-12 fragmento Content-Range",
+      "allowed": false,
+      "status": 403,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-05 publico.xlsx",
+      "allowed": true,
+      "status": 200,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-05 privado.xlsx",
+      "allowed": false,
+      "status": 403,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-05 renombrado.jpg",
+      "allowed": false,
+      "status": 403,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-11 contenedor no inspeccionable",
+      "allowed": false,
+      "status": 403,
+      "destinationVerified": true,
+      "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"
+    },
+    {
+      "case": "CU-04 cuerpo público MIME base64",
+      "allowed": true,
+      "destinationVerified": true,
+      "evidence": "REAL_SMTP_FILTER_AND_INDEPENDENT_SMTP_RECEIVER"
+    },
+    {
+      "case": "CU-04 cuerpo sensible MIME base64",
+      "allowed": false,
+      "destinationVerified": true,
+      "evidence": "REAL_SMTP_FILTER_AND_INDEPENDENT_SMTP_RECEIVER"
+    },
+    {
+      "case": "CU-03 adjunto público XLSX",
+      "allowed": true,
+      "destinationVerified": true,
+      "evidence": "REAL_SMTP_FILTER_AND_INDEPENDENT_SMTP_RECEIVER"
+    },
+    {
+      "case": "CU-03 adjunto sensible XLSX",
+      "allowed": false,
+      "destinationVerified": true,
+      "evidence": "REAL_SMTP_FILTER_AND_INDEPENDENT_SMTP_RECEIVER"
+    },
+    {
+      "case": "CU-03 destino no autorizado",
+      "allowed": false,
+      "destinationVerified": true,
+      "evidence": "REAL_SMTP_FILTER_AND_INDEPENDENT_SMTP_RECEIVER"
+    },
+    {
+      "case": "SMTP motor desconectado",
+      "allowed": false,
+      "destinationVerified": true,
+      "evidence": "REAL_SMTP_TEMPORARY_FAILURE"
+    },
+    {
+      "case": "CU-07 rclone WebDAV publico.txt",
+      "allowed": true,
+      "destinationVerified": true,
+      "evidence": "REAL_RCLONE_WEBDAV_HTTPS_PROXY_AND_RECEIVER"
+    },
+    {
+      "case": "CU-07 rclone WebDAV privado.txt",
+      "allowed": false,
+      "destinationVerified": true,
+      "evidence": "REAL_RCLONE_WEBDAV_HTTPS_PROXY_AND_RECEIVER"
+    }
+  ]
+}

@@ -1,0 +1,174 @@
+name: dlp-laboratorio
+services:
+  certificates:
+    image: dlp-lab-integrations:3
+    build: { context: .., dockerfile: deploy/Dockerfile.integrations }
+    command: ["python", "deploy/certificates.py"]
+    environment: { DLP_LAB_CERTS: /private, DLP_LAB_PUBLIC_CA: /public }
+    volumes: ["receiver_keys:/private", "public_ca:/public"]
+    networks: [internal]
+  control:
+    build: { context: .., dockerfile: deploy/Dockerfile.control }
+    environment:
+      DLP_CONTROL_HOST: 0.0.0.0
+      DLP_ALLOW_LAB_HTTP: "1"
+      DLP_LLM_MODE: ${DLP_LLM_MODE:-hybrid}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      GROQ_MODEL: ${GROQ_MODEL:-openai/gpt-oss-20b}
+      DLP_CONTROL_ADMIN_TOKEN: ${DLP_CONTROL_ADMIN_TOKEN:?Ejecuta npm run setup}
+      DLP_INSPECT_TOKEN: ${DLP_INSPECT_TOKEN:?Ejecuta npm run setup}
+      DLP_TELEMETRY_TOKEN: ${DLP_TELEMETRY_TOKEN:?Ejecuta npm run setup}
+    ports: ["${DLP_LAB_BIND:-127.0.0.1}:3100:3100"]
+    volumes: ["control_data:/app/datos-control"]
+    networks: { internal: { ipv4_address: 172.30.50.10 }, egress: {} }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3100/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+  receiver:
+    image: dlp-lab-integrations:3
+    command: ["python", "-m", "integrations.lab_sink"]
+    environment: { DLP_SINK_BIND: 0.0.0.0, DLP_SINK_PORT: "4201", DLP_SMTP_SINK_PORT: "2526", DLP_SINK_DIR: /receipts, DLP_LAB_CERTS: /keys }
+    depends_on: { certificates: { condition: service_completed_successfully } }
+    volumes: ["receiver_keys:/keys:ro", "receipts:/receipts"]
+    networks: { internal: { ipv4_address: 172.30.50.20 } }
+  proxy:
+    image: dlp-lab-integrations:3
+    entrypoint: ["sh", "/app/deploy/proxy-entry.sh"]
+    environment:
+      DLP_CONTROL_URL: http://172.30.50.10:3100
+      DLP_ALLOW_LAB_HTTP: "1"
+      DLP_INSPECT_TOKEN: ${DLP_INSPECT_TOKEN:?Ejecuta npm run setup}
+      DLP_CONNECTOR_LOG: /logs/proxy.jsonl
+    depends_on: { control: { condition: service_healthy }, certificates: { condition: service_completed_successfully } }
+    ports: ["${DLP_LAB_BIND:-127.0.0.1}:8080:8080"]
+    volumes: ["proxy_keys:/mitm-private", "public_ca:/ca-public", "sensor_logs:/logs"]
+    extra_hosts: ["sink.dlp.test:172.30.50.20"]
+    networks: { internal: { ipv4_address: 172.30.50.11 }, egress: {} }
+  mail-filter:
+    image: dlp-lab-integrations:3
+    command: ["python", "-m", "integrations.mail_filter"]
+    environment:
+      DLP_CONTROL_URL: http://172.30.50.10:3100
+      DLP_ALLOW_LAB_HTTP: "1"
+      DLP_INSPECT_TOKEN: ${DLP_INSPECT_TOKEN:?Ejecuta npm run setup}
+      DLP_MAIL_BIND: 0.0.0.0
+      DLP_MAIL_RELAY_HOST: 172.30.50.20
+      DLP_MAIL_RELAY_PORT: "2526"
+      DLP_CONNECTOR_LOG: /logs/mail.jsonl
+    volumes: ["sensor_logs:/logs"]
+    depends_on: { control: { condition: service_healthy } }
+    networks: { internal: { ipv4_address: 172.30.50.13 } }
+  postfix:
+    build: { context: .., dockerfile: deploy/postfix/Dockerfile }
+    depends_on: [mail-filter, receiver]
+    ports: ["${DLP_LAB_BIND:-127.0.0.1}:2525:25"]
+    networks: { internal: { ipv4_address: 172.30.50.12 }, management: {} }
+  dns:
+    image: dlp-lab-integrations:3
+    command: ["python", "-m", "integrations.dns_guard"]
+    environment: { DLP_DNS_BIND: 0.0.0.0, DLP_DNS_PORT: "53", DLP_DNS_UPSTREAM: 172.30.50.54, DLP_DNS_UPSTREAM_PORT: "5353", DLP_DNS_DOMAINS: dlp.test, DLP_DNS_LOG: /logs/dns.jsonl }
+    ports: ["${DLP_LAB_BIND:-127.0.0.1}:${DLP_DNS_HOST_PORT:-5300}:53/udp"]
+    volumes: ["sensor_logs:/logs"]
+    networks: { internal: { ipv4_address: 172.30.50.53 }, management: {} }
+  dnsmasq:
+    image: dlp-lab-services:3
+    build: { context: .., dockerfile: deploy/services/Dockerfile }
+    command: ["dnsmasq", "--keep-in-foreground", "--conf-file=/config/dnsmasq.conf"]
+    volumes: ["./services/dnsmasq.conf:/config/dnsmasq.conf:ro", "sensor_logs:/logs"]
+    networks: { internal: { ipv4_address: 172.30.50.54 } }
+  samba:
+    profiles: [extended]
+    image: dlp-lab-services:3
+    entrypoint: ["sh", "/config/service-entry.sh", "samba"]
+    environment: { DLP_LAB_PASSWORD: "${DLP_LAB_PASSWORD:?Ejecuta npm run setup}" }
+    volumes: ["./services:/config:ro", "finance:/srv/Finanzas", "sensor_logs:/logs"]
+    ports: ["${DLP_LAB_BIND:-127.0.0.1}:${DLP_SMB_HOST_PORT:-1445}:445"]
+    networks: { internal: { ipv4_address: 172.30.50.21 }, management: {} }
+  ftp:
+    profiles: [extended]
+    image: dlp-lab-services:3
+    entrypoint: ["sh", "/config/service-entry.sh", "ftp"]
+    environment: { DLP_LAB_PASSWORD: "${DLP_LAB_PASSWORD:?Ejecuta npm run setup}" }
+    volumes: ["./services:/config:ro", "ftp_receipts:/srv/ftp", "sensor_logs:/logs"]
+    networks: { internal: { ipv4_address: 172.30.50.22 } }
+  ssh:
+    profiles: [extended]
+    image: dlp-lab-services:3
+    entrypoint: ["sh", "/config/service-entry.sh", "ssh"]
+    environment: { DLP_LAB_PASSWORD: "${DLP_LAB_PASSWORD:?Ejecuta npm run setup}" }
+    volumes: ["./services:/config:ro", "ssh_receipts:/home/dlplab/receipts"]
+    networks: { internal: { ipv4_address: 172.30.50.23 } }
+  client:
+    profiles: [extended]
+    image: dlp-lab-services:3
+    entrypoint: ["sh", "/config/client-entry.sh"]
+    cap_add: [NET_ADMIN]
+    environment:
+      HTTP_PROXY: http://172.30.50.11:8080
+      HTTPS_PROXY: http://172.30.50.11:8080
+      CURL_CA_BUNDLE: /ca/mitmproxy-ca-cert.pem
+      DLP_ALLOW_LAB_FTP: ${DLP_ALLOW_LAB_FTP:-0}
+      DLP_ALLOW_LAB_SSH: ${DLP_ALLOW_LAB_SSH:-0}
+    volumes: ["./services:/config:ro", "public_ca:/ca:ro", "../laboratorio:/samples"]
+    depends_on: [proxy, postfix, dns]
+    networks: { internal: { ipv4_address: 172.30.50.30 } }
+  suricata:
+    profiles: [extended]
+    image: dlp-lab-services:3
+    network_mode: service:client
+    cap_add: [NET_ADMIN, NET_RAW]
+    depends_on: [client]
+    command: ["suricata", "-i", "eth0", "-S", "/rules/dlp.rules", "-l", "/logs/suricata", "--include", "/rules/outputs.yaml"]
+    volumes: ["./suricata:/rules:ro", "sensor_logs:/logs"]
+  wazuh-manager:
+    profiles: [wazuh]
+    image: wazuh/wazuh-manager:4.14.1
+    hostname: wazuh-manager
+    volumes:
+      - wazuh_etc:/var/ossec/etc
+      - ./wazuh/manager.conf:/wazuh-config-mount/etc/ossec.conf:ro
+      - ./wazuh/dlp-rules.xml:/var/ossec/etc/rules/dlp-rules.xml:ro
+      - ./wazuh/dlp-decoders.xml:/var/ossec/etc/decoders/dlp-decoders.xml:ro
+      - ./state/authd.pass:/var/ossec/etc/authd.pass:ro
+      - ./wazuh/filebeat-down:/etc/services.d/filebeat/down:ro
+      - control_data:/var/log/dlp:ro
+      - sensor_logs:/var/log/dlp-sensors:ro
+      - wazuh_logs:/var/ossec/logs
+      - wazuh_queue:/var/ossec/queue
+      - wazuh_agents:/var/ossec/etc/shared
+    ports: ["${DLP_LAB_BIND:-127.0.0.1}:1514:1514", "${DLP_LAB_BIND:-127.0.0.1}:1515:1515"]
+    networks: [internal, management]
+  wazuh-forwarder:
+    profiles: [wazuh]
+    image: dlp-lab-integrations:3
+    command: ["python", "-m", "integrations.wazuh_forwarder"]
+    environment:
+      DLP_CONTROL_URL: http://172.30.50.10:3100
+      DLP_ALLOW_LAB_HTTP: "1"
+      DLP_TELEMETRY_TOKEN: ${DLP_TELEMETRY_TOKEN:?Ejecuta npm run setup}
+      DLP_WAZUH_ALERTS: /wazuh/alerts/alerts.json
+    volumes: ["wazuh_logs:/wazuh:ro"]
+    depends_on: [wazuh-manager, control]
+    networks: [internal]
+networks:
+  internal:
+    internal: true
+    ipam: { config: [{ subnet: 172.30.50.0/24 }] }
+  egress: {}
+  management: {}
+volumes:
+  control_data: {}
+  receiver_keys: {}
+  public_ca: {}
+  proxy_keys: {}
+  receipts: {}
+  sensor_logs: {}
+  finance: {}
+  ftp_receipts: {}
+  ssh_receipts: {}
+  wazuh_logs: {}
+  wazuh_queue: {}
+  wazuh_agents: {}
+  wazuh_etc: {}

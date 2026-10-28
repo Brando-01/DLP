@@ -1,0 +1,16 @@
+compatibility_level = 3.6
+myhostname = mail.dlp.test
+mydomain = dlp.test
+myorigin = $mydomain
+mydestination =
+inet_interfaces = all
+inet_protocols = ipv4
+mynetworks = 127.0.0.0/8 172.30.50.0/24
+smtpd_relay_restrictions = permit_mynetworks, reject_unauth_destination
+smtpd_recipient_restrictions = permit_mynetworks, reject
+smtpd_proxy_filter = 172.30.50.13:2525
+smtpd_proxy_timeout = 120s
+message_size_limit = 10485760
+disable_vrfy_command = yes
+smtpd_banner = $myhostname DLP laboratorio
+maillog_file = /dev/stdout
