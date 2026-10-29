@@ -2,6 +2,10 @@
 
 Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correlación con Wazuh. Clasifica información sensible mediante reglas y contexto semántico de Groq. Evalúa permitido, detectado, alerta y bloqueado, además de falsos positivos y negativos. Usa exclusivamente datos ficticios y destinos del laboratorio. Inspecciona sensibilidad; no demuestra ausencia de malware.
 
+**Empieza por la [guía completa de instalación, navegadores y tokens](docs/INSTALACION_Y_NAVEGADORES.md).** Incluye primera instalación, Chrome/Brave/Edge, Firefox, qué token pegar, proxy/CA, acceso a WSL, arranque diario y solución de errores.
+
+Solo aportas tu **GROQ_API_KEY** en el .env privado. `npm.cmd run setup` genera las otras credenciales, incluso si copiaste .env.example con sus campos automáticos vacíos. El token de la extensión se copia desde **3001 > Navegador**; el token ADMIN de .env se utiliza únicamente en la consola **3100**.
+
 ## Arranque en esta computadora
 
 Los servicios están preparados en una distribución propia **DLP-Control-WSL**. El agente corre en Windows. No se aplicaron políticas generales al anfitrión. La VM VirtualBox DLP-Control-v3 se conserva apagada como alternativa; el despliegue final se verifica en WSL2.
@@ -169,6 +173,7 @@ Para detección se cuenta positivo si se reconoce sensibilidad; para prevención
 - `endpoint/`: agente, inventario, copias, puente PowerShell y panel.
 - `integrations/` y `deploy/`: filtros, sensores, contenedores y VM.
 - [Arquitectura administrada](docs/ARQUITECTURA_ADMINISTRADA.md).
+- [Instalación y navegadores paso a paso](docs/INSTALACION_Y_NAVEGADORES.md).
 - [Informe PDF de la versión actual](output/pdf/Informe_DLP_Administrado_v3.pdf).
 - [Histórico v2](docs/HISTORICO_V2.md): no describe Groq ni el despliegue actual.
 

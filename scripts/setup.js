@@ -1,24 +1,13 @@
 "use strict";
 const fs = require("node:fs");
 const path = require("node:path");
-const crypto = require("node:crypto");
+const { prepareEnvironment } = require("../lib/setup-environment");
 const root = path.resolve(__dirname, "..");
 async function setup(directory = root) {
-  const file = path.join(directory, ".env");
   const template = fs.readFileSync(path.join(root, ".env.example"), "utf8");
-  if (!fs.existsSync(file)) {
-    const value = template.replace(/^(DLP_CONTROL_ADMIN_TOKEN|DLP_INSPECT_TOKEN|DLP_TELEMETRY_TOKEN|DLP_LAB_PASSWORD|DLP_WAZUH_ENROLLMENT_PASSWORD)=$/gm, (_, name) => `${name}=${crypto.randomBytes(32).toString("hex")}`);
-    fs.writeFileSync(file, value, { flag: "wx", mode: 0o600 });
-    console.log("Configuración local creada: .env. GROQ_API_KEY está vacía. Las credenciales se generaron sin imprimirlas.");
-  } else {
-    let existing = fs.readFileSync(file, "utf8");
-    if (!/^DLP_INSPECTION_BACKEND=/m.test(existing)) { existing += "\nDLP_INSPECTION_BACKEND=central\n"; fs.writeFileSync(file, existing, { mode: 0o600 }); }
-    if (!/^DLP_CONTROL_EMBEDDED=/m.test(existing)) { existing += "\nDLP_CONTROL_EMBEDDED=0\n"; fs.writeFileSync(file, existing, { mode: 0o600 }); }
-    console.log(".env existente conservado; backend central preparado.");
-  }
-  const values = process.env;
-  // loadEnvFile conserva las variables explícitas del proceso y no imprime valores.
-  process.loadEnvFile(file);
+  const { file, created, repaired, values } = prepareEnvironment(directory, template);
+  console.log(created ? ".env creado. Las credenciales internas se generaron sin imprimirlas." : `.env existente conservado. Variables nuevas o vacías preparadas: ${repaired.length}.`);
+  console.log("Solo necesitas aportar GROQ_API_KEY. No copies esa clave en la extensión; su token se obtiene del panel Navegador.");
   const state = path.join(directory, "deploy/state"); fs.mkdirSync(state, { recursive: true });
   if (values.DLP_WAZUH_ENROLLMENT_PASSWORD) fs.writeFileSync(path.join(state, "authd.pass"), values.DLP_WAZUH_ENROLLMENT_PASSWORD + "\n", { mode: 0o600 });
   const finance = path.join(directory, "laboratorio/Finanzas"), desktop = path.join(directory, "laboratorio/Escritorio");

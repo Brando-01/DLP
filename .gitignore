@@ -3,6 +3,7 @@ recibidos/
 logs/
 .env
 .env.endpoint
+.env.*.tmp
 npm-debug.log*
 datos-endpoint/
 laboratorio/
