@@ -2,6 +2,7 @@
 
 const $ = (selector) => document.querySelector(selector);
 let token = "", state = null, files = [], events = [], config = null, activeView = "summary";
+let liveData = null, livePaused = false, liveBusy = false;
 const escape = (s) => String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const pill = (s) => `<span class="pill ${/^[A-Z_]+$/.test(s || "") ? s : ""}">${escape(s)}</span>`;
 const when = (value) => value ? new Intl.DateTimeFormat("es-PE", { dateStyle: "short", timeStyle: "medium" }).format(new Date(value)) : "Pendiente";
@@ -17,11 +18,32 @@ async function api(route, options = {}) {
   return body;
 }
 function show(view) {
+  if (!document.getElementById(`view-${view}`)) return;
   activeView = view;
+  history.replaceState(null, "", `#${view}`);
   document.querySelectorAll(".view").forEach((node) => node.classList.toggle("hidden", node.id !== `view-${view}`));
   document.querySelectorAll("nav button").forEach((node) => node.classList.toggle("selected", node.dataset.view === view));
   if (view === "settings") loadConfig().catch((e) => notice(e.message, true));
   if (view === "browser") api("/api/pairing").then((v) => { $("#browser-token").value = v.browserToken; }).catch((e) => notice(e.message, true));
+  if (view === "live") refreshLive();
+}
+function renderLive() {
+  if (!liveData) return;
+  const clients = liveData.browserClients.filter((c) => c.active);
+  $("#live-browser").textContent = clients.length ? clients.map((c) => `Conectado · versión ${c.version} · latido ${when(c.lastSeen)} · navegación ${c.navigation ? "activada" : "desactivada"}`).join("\n") : "Sin latido de conexión reciente. Recarga la extensión 3.1 y pulsa Guardar y comprobar conexión en sus opciones.";
+  const w = liveData.windows;
+  const fresh = w.available && w.updatedAt && Date.now() - Date.parse(w.updatedAt) < 30000;
+  $("#live-windows").textContent = fresh ? `Sensor activo · ${w.processCount ?? "—"} procesos en la última muestra · ${when(w.updatedAt)}. Sysmon: ${w.sysmon || "sin comprobar"}. Portapapeles: ${w.clipboard}. Impresión: ${w.printingObservation}.` : "Sin latido reciente del sensor Windows. Los eventos antiguos no acreditan que esté activo ahora.";
+  const category = $("#live-filter").value;
+  const filtered = liveData.events.filter((e) => category === "all" || category === "navigation" && e.channel === "browser_navigation" || category === "files" && ["filesystem", "local_copy"].includes(e.channel) || category === "windows" && ["process_observed", "sysmon", "print_observed", "clipboard_observed"].includes(e.channel) || category === "transfers" && ["usb", "network_share", "http_transfer", "browser_file", "browser_paste", "browser_drop", "print", "clipboard"].includes(e.channel));
+  $("#live-events").innerHTML = filtered.length ? filtered.map((e) => `<tr><td>${escape(when(e.timestamp))}<span class="path">${escape(e.activity)}</span></td><td>${escape(e.origin || e.destination || e.file || e.program || "—")}${e.processId ? `<span class="path">PID ${escape(e.processId)}</span>` : ""}</td><td>${escape(e.channel)}</td><td>${e.outcome === "OBSERVED" ? "Observado" : pill(e.decision)}<span class="path">${escape(e.evidence || "—")}${e.prevented === true ? " · operación impedida" : ""}</span></td></tr>`).join("") : '<tr><td colspan="4">No hay eventos de esta categoría. Visita un sitio o realiza una prueba; no se fabrica actividad para llenar esta tabla.</td></tr>';
+}
+async function refreshLive() {
+  if (livePaused || liveBusy || !token) return;
+  liveBusy = true;
+  try { liveData = await api("/api/live"); $("#live-updated").textContent = `Actualización cada 2 segundos · última respuesta ${when(liveData.serverTime)}`; renderLive(); }
+  catch (error) { $("#live-updated").textContent = `Sin conexión: ${error.message}`; }
+  finally { liveBusy = false; }
 }
 function renderInventory() {
   const query = $("#file-search").value.toLowerCase();
@@ -32,7 +54,7 @@ function renderInventory() {
   if (files.some((f) => f.id === current)) $("#transfer-file").value = current;
 }
 function renderEvents() {
-  $("#events").innerHTML = events.length ? events.map((event) => `<tr><td>${escape(when(event.timestamp))}<span class="path">${escape(event.activity)}</span></td><td>${escape(event.channel)}<span class="path">${escape(event.file || event.message || "")}</span></td><td>${pill(event.decision)}</td><td>${escape(event.outcome || "REGISTRADO")}<span class="path">${event.prevented === true ? "Operación impedida" : event.prevented === null ? "Resultado pendiente" : "Sin prueba de bloqueo previo"}</span></td><td>${escape(event.evidence || "—")}</td></tr>`).join("") : '<tr><td colspan="5">Todavía no hay eventos.</td></tr>';
+  $("#events").innerHTML = events.length ? events.map((event) => `<tr><td>${escape(when(event.timestamp))}<span class="path">${escape(event.activity)}</span></td><td>${escape(event.channel)}<span class="path">${escape(event.origin || event.destination || event.file || event.program || event.message || "")}</span></td><td>${pill(event.decision)}</td><td>${escape(event.outcome || "REGISTRADO")}<span class="path">${event.prevented === true ? "Operación impedida" : event.prevented === null ? "Resultado pendiente" : "Sin prueba de bloqueo previo"}</span></td><td>${escape(event.evidence || "—")}</td></tr>`).join("") : '<tr><td colspan="5">Todavía no hay eventos.</td></tr>';
 }
 function renderStatus() {
   const coverageLabels = { DETECCION: "Vigilancia de carpetas", BLOQUEO_EN_OPERACION_MEDIADA: "Transferencia mediada", BLOQUEO_ANTES_DEL_ENVIO: "Envío mediado", COMPLEMENTO_REQUERIDO: "Requiere complemento", OBSERVACION_REACTIVA: "Observación posterior", BLOQUEO_EN_IMPRESION_MEDIADA: "Impresión mediada", ACTIVACION_ADMINISTRATIVA_SEPARADA: "Activación separada" };
@@ -76,6 +98,8 @@ async function download(route, fileName) {
 }
 document.querySelectorAll("nav button").forEach((node) => node.addEventListener("click", () => show(node.dataset.view)));
 $("#refresh").addEventListener("click", refresh);
+$("#live-filter").addEventListener("change", renderLive);
+$("#pause-live").addEventListener("click", () => { livePaused = !livePaused; $("#pause-live").textContent = livePaused ? "Reanudar vista" : "Pausar vista"; if (livePaused) $("#live-updated").textContent = "Vista pausada; la captura de eventos continúa"; else refreshLive(); });
 $("#file-search").addEventListener("input", renderInventory);
 $("#scan").addEventListener("click", async () => { try { await api("/api/scan", { method: "POST" }); notice("Exploración solicitada. El inventario se actualizará conforme avance."); await refresh(); } catch (e) { notice(e.message, true); } });
 $("#transfer-target").addEventListener("change", () => $("#printer-field").classList.toggle("hidden", $("#transfer-target").value !== "channel:print"));
@@ -106,9 +130,9 @@ $("#add-personal").addEventListener("click", () => {
 $("#show-token").addEventListener("click", () => { $("#browser-token").type = $("#browser-token").type === "password" ? "text" : "password"; });
 $("#copy-token").addEventListener("click", async () => { try { await navigator.clipboard.writeText($("#browser-token").value); notice("Token copiado. Pégalo únicamente en las opciones del complemento."); } catch { notice("No se pudo copiar. Muéstralo y cópialo manualmente.", true); } });
 $("#export-events").addEventListener("click", () => download("/api/events.csv", "eventos-dlp.csv").catch((e) => notice(e.message, true)));
-$("#download-report").addEventListener("click", () => download("/api/report", "Informe_DLP_Endpoint.pdf").catch((e) => notice(e.message, true)));
+$("#download-report").addEventListener("click", () => download("/api/report", "Informe_DLP_Administrado_v3.pdf").catch((e) => notice(e.message, true)));
 
 (async () => {
-  try { const bootstrap = await fetch("/api/bootstrap"); if (!bootstrap.ok) throw new Error("Abre este panel desde http://127.0.0.1:3001"); token = (await bootstrap.json()).token; await loadConfig(); await refresh(); setInterval(refresh, 8000); }
+  try { const bootstrap = await fetch("/api/bootstrap"); if (!bootstrap.ok) throw new Error("Abre este panel desde http://127.0.0.1:3001"); token = (await bootstrap.json()).token; await loadConfig(); await refresh(); show(location.hash.slice(1) || "summary"); setInterval(refresh, 8000); setInterval(() => { if (activeView === "live") refreshLive(); }, 2000); }
   catch (error) { notice(error.message, true); }
 })();

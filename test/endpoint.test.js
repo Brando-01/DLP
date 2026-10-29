@@ -33,6 +33,24 @@ test("inventaría documentos fuera del portal y detecta modificaciones y nuevas 
   assert.equal(item("publico.txt").classification, "CONFIDENCIAL");
   assert.ok(runtime.audit.events.some((e) => e.activity === "CLASIFICAR_ARCHIVO" && e.file === "publico.txt" && e.detected));
 });
+
+test("latido reciente y navegación observada no se confunden con prevención ni conservan la URL privada", async (t) => {
+  const { runtime } = await fixture(t);
+  const clientId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  assert.throws(() => runtime.browserObserver.navigation({ clientId }), /latido/);
+  runtime.browserObserver.heartbeat({ clientId, version: "3.1.0", navigation: true });
+  const input = { clientId, tabId: 2, kind: "COMMITTED", url: "https://example.test/privado?clave=SECRETO#dato" };
+  assert.equal(runtime.browserObserver.navigation(input).recorded, true);
+  assert.equal(runtime.browserObserver.navigation(input).duplicate, true);
+  const event = runtime.audit.events.at(-1);
+  assert.equal(event.origin, "https://example.test"); assert.equal(event.prevented, false); assert.equal(event.detected, false);
+  assert.ok(!JSON.stringify(event).includes("SECRETO"));
+  runtime.browserObserver.clients.get(clientId).lastSeen = new Date(Date.now() - 180000).toISOString();
+  assert.equal(runtime.browserObserver.status()[0].active, false);
+  assert.throws(() => runtime.browserObserver.navigation(input), /latido/);
+  runtime.browserObserver.heartbeat({ clientId, version: "3.1.0", navigation: false, enabled: false });
+  assert.equal(runtime.browserObserver.status()[0].active, false);
+});
 test("USB mediado: permite bytes públicos exactos y no escribe archivos bloqueados", async (t) => {
   const { runtime, item, root } = await fixture(t);
   const allowed = await runtime.transfer({ fileId: item("publico.txt").id, targetId: "usb" });

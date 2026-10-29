@@ -54,6 +54,7 @@ function createEndpointApp(runtime) {
   app.put("/api/config", async (req, res) => res.json(await runtime.updateConfig(req.body)));
   app.get("/api/files", (_req, res) => res.json([...runtime.inventory.values()].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))));
   app.get("/api/events", (_req, res) => res.json(runtime.audit.recent(300)));
+  app.get("/api/live", (_req, res) => res.json({ serverTime: new Date().toISOString(), browserClients: runtime.browserObserver.status(), windows: runtime.bridge.info, watchRoots: runtime.config.watchRoots, events: runtime.audit.recent(120) }));
   app.get("/api/audit/integrity", (_req, res) => res.json(runtime.audit.status()));
   app.get("/api/events.csv", (_req, res) => {
     const columns = ["timestamp", "channel", "activity", "file", "classification", "decision", "outcome", "prevented", "evidence"];
@@ -84,6 +85,8 @@ function createEndpointApp(runtime) {
     res.status(result.outcome === "PREVENTED" ? 403 : result.outcome === "FAILED" ? 422 : 200).json(result);
   }));
   app.get("/api/browser/config", (_req, res) => res.json(runtime.browserConfig()));
+  app.post("/api/browser/heartbeat", (req, res) => res.json(runtime.browserObserver.heartbeat(req.body)));
+  app.post("/api/browser/navigation", (req, res) => res.json(runtime.browserObserver.navigation(req.body)));
   app.post("/api/browser/inspect", inspectLimit(async (req, res) => res.json(await runtime.inspectBrowser(req.body || {}))));
   app.post("/api/browser/result", async (req, res) => res.json(await runtime.completeBrowser(req.body || {})));
   app.use(express.static(path.join(__dirname, "ui"), { etag: false, maxAge: 0 }));

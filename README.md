@@ -111,6 +111,18 @@ Desde Kali se usa la IP Host-only del servidor. La VM entregada publica inicialm
 
 ## Doce casos y cobertura
 
+### Actividad en vivo y acceso al entorno Linux
+
+Abre http://127.0.0.1:3001/#live. La vista consulta eventos cada dos segundos y muestra dominios visitados, archivos, operaciones de salida y procesos observados. También muestra el último latido de cada conector y del sensor Windows; un evento histórico no cuenta como conexión actual.
+
+La extensión 3.1 necesita recargarse desde la página de extensiones y aceptar el permiso webNavigation. En Opciones, pulsa Guardar y comprobar conexión; comprueba el estado Conectado en la vista y visita un sitio. Se registra solamente el origen (dominio y puerto), sin ruta, búsquedas, parámetros, fragmentos ni contenido de página. La opción Registrar dominios visitados permite desactivar esa observación. Las inspecciones de subidas/pegado son independientes.
+
+El sensor Windows detecta inicios y cierres de procesos mediante muestras cada cinco segundos; los procesos muy breves pueden pasar inadvertidos. Sysmon aporta eventos adicionales si está instalado y accesible. La observación no equivale a bloqueo ni a registrar toda acción de todas las aplicaciones. `node evaluacion/windows-observer.js` verifica el latido sin órdenes y un inicio/cierre real sin leer el portapapeles de prueba.
+
+Para entrar al entorno activo desde PowerShell de Windows: `wsl -d DLP-Control-WSL -u root`. La VM alternativa VirtualBox usa dlpadmin con contraseña de consola bloqueada y autenticación por clave SSH; no hay una contraseña que introducir en su pantalla de login. No hace falta encenderla para este despliegue WSL.
+
+### Matriz de canales
+
 | Caso | Implementación | Límite |
 | --- | --- | --- |
 | CU-01 USB | Operación mediada y política Windows USBWrite | Selección por contenido mediada; restricción nativa del canal completo. Prueba física depende del equipo. |

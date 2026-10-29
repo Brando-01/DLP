@@ -8,6 +8,24 @@ Add-Type -AssemblyName System.Drawing
 Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Threading;
+public static class DlpCommandInput {
+    private static readonly ConcurrentQueue<string> lines = new ConcurrentQueue<string>();
+    public static volatile bool Closed;
+    public static void Start() {
+        var thread = new Thread(() => {
+            try { string line; while ((line = Console.In.ReadLine()) != null) {
+                if (line.Length > 1000000 || lines.Count >= 128) break;
+                lines.Enqueue(line);
+            }} finally { Closed = true; }
+        });
+        thread.IsBackground = true; thread.Start();
+    }
+    public static string Next() { string line; return lines.TryDequeue(out line) ? line : null; }
+    public static bool Empty { get { return lines.IsEmpty; } }
+}
 public static class DlpClipboardNative {
     [DllImport("user32.dll")] public static extern uint GetClipboardSequenceNumber();
     [DllImport("user32.dll")] public static extern IntPtr GetClipboardOwner();
@@ -33,7 +51,7 @@ function Get-DeviceStatus {
     try { $printers = @([System.Drawing.Printing.PrinterSettings]::InstalledPrinters) } catch {}
     $interactive = [Environment]::UserInteractive -and ([System.Diagnostics.Process]::GetCurrentProcess().SessionId -gt 0)
     $clipboardState = if ($interactive) { 'OBSERVACION_REACTIVA' } else { 'SESION_NO_INTERACTIVA' }
-    return @{ type = 'status'; clipboard = $clipboardState; interactive = $interactive; drives = $volumes; printers = $printers; printingObservation = $script:printStatus; notifications = [bool]$script:tray; sysmon = $script:sysmonStatus }
+    return @{ type = 'status'; clipboard = $clipboardState; interactive = $interactive; drives = $volumes; printers = $printers; printingObservation = $script:printStatus; notifications = [bool]$script:tray; sysmon = $script:sysmonStatus; processObservation='PERIODIC_SNAPSHOT_5_SECONDS'; processCount=$script:processes.Count }
 }
 
 function Invoke-ControlledPrint([string]$Text, [string]$Printer, [string]$OutputPath) {
@@ -86,6 +104,9 @@ $script:monitorPrinting = $false
 $script:printStatus = 'NO_ACTIVADA'
 $script:lastSequence = [DlpClipboardNative]::GetClipboardSequenceNumber()
 $script:seenJobs = @{}
+$script:processes = @{}
+foreach ($nativeProcess in [Diagnostics.Process]::GetProcesses()) { try { $script:processes[[int]$nativeProcess.Id] = $nativeProcess.ProcessName } catch {} finally { $nativeProcess.Dispose() } }
+$lastProcessPoll = [datetime]::UtcNow
 try {
     $script:tray = New-Object System.Windows.Forms.NotifyIcon
     $script:tray.Icon = [System.Drawing.SystemIcons]::Shield
@@ -100,16 +121,15 @@ try {
 } catch { $script:tray = $null }
 
 Send-Message (Get-DeviceStatus)
-$readTask = [Console]::In.ReadLineAsync()
+[DlpCommandInput]::Start()
 $lastStatus = [datetime]::UtcNow
 $lastJobs = [datetime]::UtcNow
 
 try {
     while ($script:run) {
         [System.Windows.Forms.Application]::DoEvents()
-        if ($readTask.IsCompleted) {
-            $line = $readTask.GetAwaiter().GetResult()
-            if ($null -eq $line) { break }
+        $line = [DlpCommandInput]::Next()
+        if ($null -ne $line) {
             $request = $null
             try {
                 if ($line.Length -gt 1000000) { throw 'Solicitud demasiado grande' }
@@ -151,7 +171,21 @@ try {
             } catch {
                 if ($request -and $request.id) { Send-Message @{ id = $request.id; ok = $false; error = $_.Exception.Message } }
             }
-            $readTask = [Console]::In.ReadLineAsync()
+        }
+        if ([DlpCommandInput]::Closed -and [DlpCommandInput]::Empty) { break }
+
+        if (([datetime]::UtcNow - $lastProcessPoll).TotalSeconds -ge 5) {
+            $current = @{}
+            foreach ($nativeProcess in [Diagnostics.Process]::GetProcesses()) { try { $current[[int]$nativeProcess.Id] = $nativeProcess.ProcessName } catch {} finally { $nativeProcess.Dispose() } }
+            $changes = 0
+            foreach ($processKey in @($current.Keys)) {
+                if (-not $script:processes.ContainsKey($processKey) -and $changes -lt 100) { Send-Message @{type='process-observed';phase='START';processId=$processKey;program=$current[$processKey]}; $changes++ }
+            }
+            foreach ($processKey in @($script:processes.Keys)) {
+                if (-not $current.ContainsKey($processKey) -and $changes -lt 100) { Send-Message @{type='process-observed';phase='EXIT';processId=$processKey;program=$script:processes[$processKey]}; $changes++ }
+            }
+            $script:processes = $current
+            $lastProcessPoll = [datetime]::UtcNow
         }
 
         if ($script:monitorClipboard) {

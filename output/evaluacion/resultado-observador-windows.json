@@ -1,0 +1,9 @@
+{
+  "generatedAt": "2026-10-29T00:27:07.495Z",
+  "heartbeatWithoutCommands": true,
+  "actualProcessStartObserved": true,
+  "actualProcessExitObserved": true,
+  "clipboardReadForTest": false,
+  "sysmon": "NO_DISPONIBLE_O_SIN_PERMISOS",
+  "evidence": "REAL_WINDOWS_SENSOR_IDLE_AND_PROCESS_LIFECYCLE"
+}

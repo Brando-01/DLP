@@ -45,3 +45,15 @@ test("un dominio excluido no envía el contenido al clasificador", async () => {
   assert.equal(result.decision, "FUERA_DE_ALCANCE");
   assert.equal(calls, 1);
 });
+
+test("navegación: usa el origen del evento nativo y elimina búsquedas y fragmentos antes de enviar", async () => {
+  let payload;
+  const handle = connector(async (url, options) => {
+    if (url.endsWith("/config")) return response({ domains: ["*"], failClosed: true });
+    payload = JSON.parse(options.body); return response({ recorded: true });
+  }, { clientId: "d".repeat(36), logNavigation: true });
+  const native = { ...sender, frameId: 0, navigationEvent: true, url: "https://destino.example/ruta/privada?q=SECRETO#oculto" };
+  await handle({ type: "NAVIGATION", kind: "COMMITTED", url: "https://mentira.example" }, native);
+  assert.equal(payload.url, "https://destino.example"); assert.ok(!JSON.stringify(payload).includes("SECRETO"));
+  await assert.rejects(handle({ type: "NAVIGATION", kind: "COMMITTED" }, sender), /evento del navegador/);
+});

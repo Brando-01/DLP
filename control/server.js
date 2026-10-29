@@ -97,6 +97,7 @@ function createControl(options = {}) {
       for (const key of ["program", "destinationAddress", "destinationPort"]) if (typeof item[key] === "string") clean[key] = item[key].slice(0, key === "program" ? 250 : 80);
       if (Number.isInteger(item.ruleId) && item.ruleId >= 100000 && item.ruleId < 120000) clean.ruleId = item.ruleId;
       if (typeof item.channel === "string") clean.sourceChannel = item.channel.slice(0, 60);
+      if (item.channel === "browser_navigation" && typeof item.destination === "string") { try { const u = new URL(item.destination); if (["http:", "https:"].includes(u.protocol)) clean.destination = u.origin; } catch {} }
       audit.record(clean);
       accepted += 1;
       if (identity) telemetryIds.set(identity, Date.now());

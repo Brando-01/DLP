@@ -16,7 +16,7 @@ Objetivo acordado: agente de Windows y controles de salida con doce escenarios, 
 
 ## Verificación del 28 de octubre de 2026
 
-40 pruebas Node; 5 pruebas Python; 16 escenarios HTTPS/SMTP/rclone con receptores independientes; 17 comprobaciones del despliegue Linux sobre WSL2; 8 escenarios Chromium; 135 operaciones del agente con adaptadores simulados identificados donde corresponde; impresión Windows real a PDF. Los JSON de output/evaluacion conservan el alcance y las limitaciones. La batería Linux final tiene passed=true y modeRestored=true.
+42 pruebas Node; 5 pruebas Python; 16 escenarios HTTPS/SMTP/rclone con receptores independientes; 17 comprobaciones del despliegue Linux sobre WSL2; 11 escenarios Chromium, incluida navegación real y actualización automática del panel; 135 operaciones del agente con adaptadores simulados identificados donde corresponde; impresión Windows real a PDF. La ampliación de observabilidad comprueba además latidos sin órdenes y un inicio/cierre de proceso real, sin leer el portapapeles durante esa prueba. Los JSON de output/evaluacion conservan el alcance y las limitaciones. La batería Linux final tiene passed=true y modeRestored=true. El PDF v3 conserva el informe de la entrega base; esta ampliación de vista en vivo está descrita en README.
 
 Pendiente de la clave del usuario: conectividad y exactitud de Groq en vivo. Pendiente del equipo de destino: USB físico, Apply administrativo, incorporación de Sysmon/agente Wazuh y prueba de las aplicaciones concretas. Estas comprobaciones no se sustituyen por una captura de configuración.
 

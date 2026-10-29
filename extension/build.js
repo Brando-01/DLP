@@ -3,9 +3,9 @@ const fs = require("node:fs");
 const path = require("node:path");
 const files = ["connector.js", "background.js", "content.js", "content.css", "options.html", "options.css", "options.js"];
 const common = {
-  manifest_version: 3, name: "DLP de laboratorio · Conector", version: "2.0.0",
+  manifest_version: 3, name: "DLP de laboratorio · Conector", version: "3.1.0",
   description: "Inspecciona interacciones manuales soportadas mediante el agente DLP local.",
-  permissions: ["storage"], host_permissions: ["http://127.0.0.1/*", "http://localhost/*"],
+  permissions: ["storage", "webNavigation", "alarms"], host_permissions: ["http://127.0.0.1/*", "http://localhost/*"],
   content_scripts: [{ matches: ["http://*/*", "https://*/*"], js: ["content.js"], css: ["content.css"], run_at: "document_start", all_frames: true }],
   options_ui: { page: "options.html", open_in_tab: true },
   action: { default_title: "Configurar el conector DLP" },

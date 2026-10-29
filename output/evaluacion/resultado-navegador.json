@@ -1,9 +1,19 @@
 {
-  "generatedAt": "2026-10-28T22:40:17.921Z",
+  "generatedAt": "2026-10-29T00:29:35.725Z",
   "browser": "151.0.7922.34",
   "extension": "cnkljphoglkiefeoidokhabhmekehfhh",
-  "tests": 8,
+  "tests": 11,
   "results": [
+    {
+      "scenario": "Navegación real y latido del conector",
+      "result": "OBSERVADO",
+      "evidence": "REAL_WEBNAVIGATION_API_AND_AGENT_HEARTBEAT"
+    },
+    {
+      "scenario": "Ruta SPA sin almacenar consulta o fragmento",
+      "result": "OBSERVADO",
+      "evidence": "REAL_HISTORY_STATE_EVENT_ORIGIN_ONLY"
+    },
     {
       "scenario": "Archivo sensible elegido manualmente",
       "result": "BLOQUEADO",
@@ -43,6 +53,11 @@
       "result": "SENSIBLE_RECIBIDO",
       "evidence": "REAL_UNPROTECTED_RECEIVER",
       "limitation": "Un usuario puede desactivar un complemento no administrado"
+    },
+    {
+      "scenario": "Vista en vivo recibe una visita posterior sin recarga manual",
+      "result": "OBSERVADO",
+      "evidence": "REAL_NAVIGATION_AND_AUTOMATIC_PANEL_REFRESH"
     },
     {
       "scenario": "Agente indisponible con cierre ante fallo",

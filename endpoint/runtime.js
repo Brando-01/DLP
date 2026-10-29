@@ -15,6 +15,7 @@ const { semanticClassifier } = require("../lib/semantic");
 const { forwardAudit } = require("../lib/telemetry");
 const { CopyMonitor } = require("./copy-monitor");
 const { managedInspection, reportCentral } = require("../lib/managed-inspection");
+const { BrowserObserver } = require("./browser-observer");
 
 const EXCLUDED = new Set(["node_modules", ".git", ".cache", "appdata", "windows", "program files", "program files (x86)", "datos-endpoint", "logs", "recibidos", "tmp", "$recycle.bin", "system volume information"]);
 const fileId = (file) => crypto.createHash("sha256").update(process.platform === "win32" ? file.toLowerCase() : file).digest("hex").slice(0, 24);
@@ -29,6 +30,7 @@ class EndpointRuntime extends EventEmitter {
     this.credentials = state.credentials;
     this.configFile = state.file;
     this.audit = new AuditLog(this.dataDirectory);
+    this.browserObserver = new BrowserObserver(this);
     this.inventory = new Map();
     this.watchers = [];
     this.tickets = new Map();
@@ -303,6 +305,10 @@ class EndpointRuntime extends EventEmitter {
   }
 
   async handleNative(message) {
+    if (message.type === "process-observed") {
+      this.audit.record({ channel: "process_observed", activity: message.phase === "START" ? "PROCESO_INICIADO" : "PROCESO_FINALIZADO", program: String(message.program || "").slice(0, 160), processId: Number(message.processId), decision: "DETECTADO", detected: false, prevented: false, outcome: "OBSERVED", evidence: "PERIODIC_PROCESS_SNAPSHOT" });
+      return;
+    }
     if (message.type === "exit-request") { this.emit("exit-request"); return; }
     if (message.type === "sysmon-observed") {
       const program = String(message.program || "").slice(0, 250);
@@ -353,11 +359,12 @@ class EndpointRuntime extends EventEmitter {
       inventory: { total: items.length, sensitive: items.filter((x) => x.score > 0).length, unknown: items.filter((x) => x.inspectionStatus !== "COMPLETE").length },
       operations: { prevented: this.audit.events.filter((event) => event.prevented === true).length },
       windows: this.bridge.info, windowsControls: systemControls, audit: this.audit.status(), suggestedRoots: suggestedRoots(),
+      browserClients: this.browserObserver.status(),
       coverage: [
         { channel: "Archivos locales", mode: "DETECCION", active: this.watchers.length > 0, detail: "Carpetas configuradas, archivos accesibles y formatos admitidos; no intercepta lecturas ni copias nativas." },
         { channel: "USB / carpetas compartidas", mode: "BLOQUEO_EN_OPERACION_MEDIADA", active: true, detail: "El agente decide antes de escribir. Los destinos de laboratorio están identificados; el Explorador no pasa por esta operación." },
         { channel: "Subida HTTP", mode: "BLOQUEO_ANTES_DEL_ENVIO", active: true, detail: "Solo transferencias ejecutadas por el agente a destinos configurados." },
-        { channel: "Navegador", mode: "COMPLEMENTO_REQUERIDO", active: this.audit.events.some((e) => e.evidence === "BROWSER_CLIENT_REPORT"), detail: "Selección manual, pegado y arrastre soportados; no todas las APIs o aplicaciones." },
+        { channel: "Navegador", mode: "COMPLEMENTO_REQUERIDO", active: this.browserObserver.status().some((c) => c.active), detail: "Latido de vinculación y sitios visitados; selección, pegado y arrastre soportados. La navegación observada no prueba bloqueo." },
         { channel: "Portapapeles Windows", mode: "OBSERVACION_REACTIVA", active: this.config.clipboardMonitor && this.bridge.info.available && this.bridge.info.clipboard === "OBSERVACION_REACTIVA", detail: "Observar o limpiar después de copiar no demuestra bloqueo previo. La copia mediada sí se decide antes de escribir." },
         { channel: "Impresión", mode: "BLOQUEO_EN_IMPRESION_MEDIADA", active: this.bridge.info.available, detail: "La impresión del agente se decide antes de enviar el trabajo. Trabajos externos solo se observan si el sensor puede consultarlos." },
         { channel: "Controles generales Windows", mode: "ACTIVACION_ADMINISTRATIVA_SEPARADA", active: systemControls.applied === true, detail: "USB de solo lectura, salida SMB y servicio de impresión. El estado es un recibo de configuración, no una prueba física; bloquean el canal completo." },

@@ -27,7 +27,7 @@ class WindowsBridge extends EventEmitter {
           const { resolve, reject, timer } = this.pending.get(message.id);
           clearTimeout(timer); this.pending.delete(message.id);
           message.ok ? resolve(message.result) : reject(new Error(message.error || "Operación Windows no disponible"));
-        } else if (message.type === "status") { this.info = { ...this.info, ...message, available: true }; this.emit("status", this.info); }
+        } else if (message.type === "status") { this.info = { ...this.info, ...message, available: true, updatedAt: new Date().toISOString() }; this.emit("status", this.info); }
         else this.emit("sensor", message);
       } catch { this.emit("diagnostic", "Respuesta no válida del sensor Windows"); }
     });

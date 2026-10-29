@@ -35,10 +35,26 @@
     }
     return async function handle(message, sender) {
       if (!sender || sender.id !== extensionId) throw new Error("Emisor no autorizado");
-      if (message.type === "PING" && !sender.tab) return { ok: true, config: await browserConfig() };
+      if (["PING", "HEARTBEAT"].includes(message.type) && !sender.tab) {
+        const settings = await readSettings();
+        if (settings.enabled === false) {
+          try { await request("/api/browser/heartbeat", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, version: message.version || "3.1.0", navigation: false, enabled: false }) }); } catch {}
+          return { ok: true, disabled: true };
+        }
+        const heartbeat = await request("/api/browser/heartbeat", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, version: message.version || "3.1.0", navigation: settings.logNavigation !== false }) });
+        return { ok: true, config: await browserConfig(), heartbeat };
+      }
       if (!sender.tab || !/^https?:\/\//.test(sender.url || "")) throw new Error("Solo se aceptan interacciones de una página HTTP o HTTPS");
       const settings = await readSettings();
       if (settings.enabled === false) return { allowed: true, decision: "FUERA_DE_ALCANCE", reason: "Complemento desactivado" };
+      if (message.type === "NAVIGATION") {
+        if (sender.navigationEvent !== true || sender.frameId !== 0) throw new Error("La navegación debe proceder del evento del navegador");
+        if (settings.logNavigation === false) return { recorded: false };
+        const cfg = await browserConfig();
+        if (!coveredDomain(sender.url, cfg.domains)) return { recorded: false };
+        const target = new URL(sender.url);
+        return request("/api/browser/navigation", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, url: target.origin, kind: message.kind, tabId: sender.tab.id }) });
+      }
       if (message.type === "RESULT") {
         return request("/api/browser/result", { method: "POST", body: JSON.stringify({ ticket: message.ticket, outcome: message.outcome }) });
       }

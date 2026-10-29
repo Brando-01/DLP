@@ -6,6 +6,7 @@
   <div class="layout">
     <nav aria-label="Secciones del panel">
       <button data-view="summary" class="selected">Estado y cobertura</button>
+      <button data-view="live">Actividad en vivo</button>
       <button data-view="inventory">Archivos clasificados</button>
       <button data-view="transfer">Control de salidas</button>
       <button data-view="activity">Actividad y auditoría</button>
@@ -23,6 +24,11 @@
       <section id="view-inventory" class="view hidden">
         <div class="section-title"><div><h1>Archivos clasificados</h1><p>El inventario usa reglas locales. Las salidas pueden requerir clasificación semántica con Groq según .env.</p></div><input id="file-search" type="search" placeholder="Buscar nombre o ruta" aria-label="Buscar archivos"></div>
         <article class="panel"><div class="table-scroll"><table><thead><tr><th>Archivo y ubicación</th><th>Clasificación</th><th>Inspección</th><th>Puntos</th><th>Reglas</th></tr></thead><tbody id="inventory"></tbody></table></div></article>
+      </section>
+      <section id="view-live" class="view hidden">
+        <div class="section-title"><div><h1>Actividad en vivo</h1><p id="live-updated" role="status">Esperando al agente…</p></div><button id="pause-live">Pausar vista</button></div>
+        <div class="two-columns"><article class="panel"><h2>Conector del navegador</h2><p id="live-browser">Sin comprobar</p><p class="muted">Registra sitios HTTP/HTTPS al navegar con la extensión 3.1. Solo guarda dominio y puerto; excluye búsquedas, parámetros, fragmentos y contenido de páginas. Las ventanas privadas requieren habilitar allí la extensión.</p></article><article class="panel"><h2>Sensores de Windows</h2><p id="live-windows">Sin comprobar</p><p class="muted">Los procesos se observan cada 5 segundos: los muy breves pueden pasar inadvertidos. Sysmon añade eventos si está instalado y accesible. Esta vista no acredita control universal de la PC.</p></article></div>
+        <article class="panel"><div class="section-title"><div><h2>Eventos recibidos</h2><p>Actualizar la vista no crea eventos. Navegación y procesos son observación; los bloqueos indican su evidencia.</p></div><label>Mostrar<select id="live-filter"><option value="all">Toda la actividad</option><option value="navigation">Sitios visitados</option><option value="files">Archivos y copias</option><option value="windows">Procesos y Windows</option><option value="transfers">Transferencias y navegador</option></select></label></div><div class="table-scroll"><table><thead><tr><th>Hora / actividad</th><th>Sitio, archivo o programa</th><th>Canal</th><th>Estado y evidencia</th></tr></thead><tbody id="live-events"></tbody></table></div></article>
       </section>
       <section id="view-transfer" class="view hidden">
         <h1>Control de salidas</h1><p>Estas operaciones se deciden antes de escribir, enviar o solicitar una impresión. Cada resultado indica si el destino es de laboratorio.</p>
