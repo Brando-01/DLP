@@ -227,3 +227,12 @@ Consulta PROTECCION_APLICACIONES_Y_SALIDAS.md para plan, alcance y restauración
 
 Al actualizar: reinicia agente, sincroniza central, reconstruye/recarga extensión y refresca las pestañas una vez.
 Después de cada rechazo normal ya no debe ser necesario refrescar; si una web específica sigue esperando, registra navegador, versión, aviso y pasos con datos ficticios para una prueba de compatibilidad propia.
+
+## 8. Dependencias y uso de laboratorio
+
+El lockfile actualiza body-parser a 2.4.0, multer a 2.5.0 y qs a 6.17.1.
+La comprobación `npm audit --omit=dev --audit-level=high` ya no informa avisos altos/críticos en esta revisión.
+Persisten ocho entradas moderadas por minimatch y su cadena transitiva de ExcelJS/archiver.
+No se forzó una degradación de ExcelJS ni una sustitución mayor incompatible para ocultar esos avisos.
+No ejecutes `npm audit fix --force` a ciegas. Esto sigue siendo un prototipo para datos ficticios y red aislada, no un DLP certificado para producción.
+Repite audit al instalar: la base de avisos puede cambiar.
