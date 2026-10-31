@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-10-29T00:29:35.725Z",
+  "generatedAt": "2026-10-31T22:35:13.996Z",
   "browser": "151.0.7922.34",
   "extension": "cnkljphoglkiefeoidokhabhmekehfhh",
-  "tests": 11,
+  "tests": 16,
   "results": [
     {
       "scenario": "Navegación real y latido del conector",
@@ -25,6 +25,11 @@
       "result": "PERMITIDO",
       "destinationReceipts": 1,
       "evidence": "REAL_CHROMIUM_EXTENSION_AND_RECEIVER"
+    },
+    {
+      "scenario": "Rechazo termina el flujo y permite elegir público sin recargar",
+      "result": "RECUPERADO",
+      "evidence": "REAL_INPUT_CHANGE_CANCEL_AND_SUBSEQUENT_UPLOAD"
     },
     {
       "scenario": "Pegado sensible",
@@ -55,6 +60,26 @@
       "limitation": "Un usuario puede desactivar un complemento no administrado"
     },
     {
+      "scenario": "Excel con fórmula sensible sin caché",
+      "result": "BLOQUEADO",
+      "evidence": "REAL_CHROMIUM_EXTENSION_NO_EMPTY_FORMULA_BYPASS"
+    },
+    {
+      "scenario": "Vacío válido vacio.txt",
+      "result": "PERMITIDO",
+      "evidence": "REAL_CHROMIUM_EXTENSION_AND_RECEIVER_HASH"
+    },
+    {
+      "scenario": "Vacío válido vacio.docx",
+      "result": "PERMITIDO",
+      "evidence": "REAL_CHROMIUM_EXTENSION_AND_RECEIVER_HASH"
+    },
+    {
+      "scenario": "Vacío válido vacio.xlsx",
+      "result": "PERMITIDO",
+      "evidence": "REAL_CHROMIUM_EXTENSION_AND_RECEIVER_HASH"
+    },
+    {
       "scenario": "Vista en vivo recibe una visita posterior sin recarga manual",
       "result": "OBSERVADO",
       "evidence": "REAL_NAVIGATION_AND_AUTOMATIC_PANEL_REFRESH"
@@ -68,5 +93,5 @@
   ],
   "nativeWindowsClipboardTested": false,
   "physicalUSBTested": false,
-  "sourceHash": "3c8ede333367d9f0c1f4ef74d22051a823135633621d90d32a682fdbc9eea0a6"
+  "sourceHash": "1cc8f5e0731c88f4f2177629ef7a5284c75d3cfd711b793eab9b3c4073e48d05"
 }

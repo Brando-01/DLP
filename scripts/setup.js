@@ -27,6 +27,8 @@ async function setup(directory = root) {
     "vacio.xlsx": await xlsxBuffer([]),
     "sin_texto.pdf": pdfBuffer(""),
     "base64_privado.txt": Buffer.from(Buffer.from("DNI: 12345678").toString("base64")),
+    "formula_sensible.xlsx": await xlsxBuffer([[{ formula: '"DNI: 12345678"' }]]),
+    "formula_publica.xlsx": await xlsxBuffer([[{ formula: "1+2", result: 3 }]]),
   };
   for (const [name, buffer] of Object.entries(samples)) { const destination = path.join(finance, name); if (!fs.existsSync(destination)) fs.writeFileSync(destination, buffer); }
   const { loadState, writeJsonAtomic } = require("../endpoint/config");

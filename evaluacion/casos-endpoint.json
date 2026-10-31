@@ -12,6 +12,7 @@
   {"id":"P11","file":"vacio.txt","format":"txt","text":"","sensitive":false,"reason":"Texto vacío válido: no requiere análisis semántico."},
   {"id":"P12","file":"vacio.docx","format":"docx","text":"","sensitive":false,"reason":"Word válido en blanco sin imágenes ni objetos."},
   {"id":"P13","file":"vacio.xlsx","format":"xlsx","rows":[],"sensitive":false,"reason":"Libro Excel válido sin celdas ni objetos."},
+  {"id":"P14","file":"formula_publica.xlsx","format":"xlsx","rows":[[{"formula":"1+2","result":3}]],"sensitive":false,"reason":"Fórmula aritmética pública con resultado guardado, sin ejecutar el cálculo."},
   {"id":"S01","file":"confidencial.txt","format":"txt","text":"CLASIFICACION: CONFIDENCIAL\nInforme interno ficticio.","sensitive":true,"reason":"Documento clasificado como confidencial."},
   {"id":"S02","file":"restringido.json","format":"json","text":"{\"clasificacion\":\"RESTRINGIDO\",\"proceso\":\"interno ficticio\"}","sensitive":true,"reason":"Instrucción interna restringida."},
   {"id":"S03","file":"notas.json","format":"json","text":"{\"codigo_estudiante\":\"20261234\",\"nota_final\":18}","sensitive":true,"reason":"Código y nota individual ficticios."},
@@ -27,6 +28,7 @@
   {"id":"S13","file":"directorio_interno.txt","format":"txt","text":"Directorio no publicado. Contacto personal ficticio: ana@universidad.edu.pe","sensitive":true,"reason":"Directorio privado que puede recibir solo una alerta y seguir transfiriéndose."},
   {"id":"S14","file":"redaccion_distinta.txt","format":"txt","text":"Informe privado: María Torres obtuvo diecisiete en su evaluación del curso. No destinado a publicación.","sensitive":true,"reason":"Redacción privada que no utiliza las etiquetas ni los patrones previstos."},
   {"id":"S15","file":"identidad_sin_sigla.txt","format":"txt","text":"Expediente reservado. Documento nacional de identidad: 12345678.","sensitive":true,"reason":"Identificador personal expresado sin la sigla DNI; prueba de cobertura del patrón."},
+  {"id":"S16","file":"formula_sensible.xlsx","format":"xlsx","rows":[[{"formula":"\"DNI: 12345678\""}]],"sensitive":true,"reason":"DNI ficticio en una fórmula sin caché; se reconocen indicadores y se retiene la extracción parcial, sin ejecutar Excel."},
   {"id":"U01","file":"escaneo_privado.pdf","format":"pdf","text":"","sensitive":true,"reason":"Representa un PDF privado sin texto extraíble. Se mide la restricción por no inspección, no una clasificación correcta."},
   {"id":"U02","file":"archivo_publico.bin","format":"bin","text":"Contenido público en un formato no admitido.","sensitive":false,"reason":"El rechazo por formato reduce disponibilidad; se cuenta en la evaluación integral de prevención."}
 ]

@@ -48,6 +48,7 @@ No intercepta WhatsApp Desktop ni todas las operaciones de Windows.
 
 El token de la demo es distinto del agente normal: vuelve a vincular al cambiar de modo.
 No uses el token ADMIN del central ni la clave Groq en la extensión.
+La versión actual del complemento es **3.1.1**. Compruébala en la página de extensiones y en el latido del panel; una pestaña abierta antes de recargar puede conservar el código antiguo hasta refrescarse.
 
 ### Secuencia manual obligatoria
 
@@ -64,6 +65,8 @@ Abre 4200 y utiliza las muestras de `laboratorio/Finanzas/`.
 | Arrastre | Arrastrar privado y luego público al área | Privado retenido; público recibido |
 | Formato real | Elegir `renombrado.jpg` | Se reconoce el Word sensible, pese a la extensión |
 | Base64 | Elegir `base64_privado.txt` | Se decodifica y detecta el DNI ficticio |
+| Fórmula sensible | Elegir `formula_sensible.xlsx` | Se inspecciona la definición sin ejecutar Excel. No pasa como vacío; se retiene también si falta el resultado guardado |
+| Fórmula pública calculada | Elegir `formula_publica.xlsx` | La definición y el resultado guardado son inspeccionables; se permite en la demo por reglas |
 | Sin texto inspeccionable | Elegir `sin_texto.pdf` | Retenido por falta de OCR; no se inventa detección sensible |
 | Agente detenido | Ctrl+C; intentar adjuntar público | Retenido por indisponibilidad; no se informa como sensibilidad confirmada |
 
@@ -142,6 +145,10 @@ Reinicia el agente tras editar .env. No envíes documentos personales reales al 
 Si solo necesitas reglas, configura `DLP_LLM_MODE=off` y sincroniza/reinicia; no presentes ese modo como análisis semántico.
 Falta de clave, cuota o timeout **sigue reteniendo contenido no vacío**: es cierre ante fallo, no un falso hallazgo sensible.
 Vacíos acreditados por el extractor no necesitan IA; PDF sin texto, Office con objetos sin texto y formatos desconocidos siguen retenidos.
+
+El lector de Excel examina también las fórmulas, las hojas ocultas y los destinos de hipervínculos. No ejecuta fórmulas, macros ni solicitudes externas. Si falta el resultado de una fórmula, la extracción queda parcial, aunque la definición contenga indicadores sensibles reconocibles. Un resultado guardado público tampoco oculta una fórmula sensible. Recalcular un libro conocido puede completar su resultado, pero no sustituye la clasificación.
+
+En Word y Excel, agregar una frase pública no convierte en inspeccionables las imágenes, comentarios u objetos que el lector no cubre. El documento queda parcial y se retiene en enforce. Esto puede incluir documentos normales con logos o gráficos: el aviso describe falta de inspección, no una detección confirmada de datos privados. Esta versión no añade OCR ni garantiza inspección de todos los metadatos y componentes de Office.
 
 Para inspección HTTPS del proxy, usa el proxy 127.0.0.1:8080 y su CA pública conforme a la guía de instalación.
 Instalar una CA permite interceptar TLS: hazlo solo en el perfil/equipo de laboratorio y no desactives la validación TLS.
@@ -227,6 +234,18 @@ Consulta PROTECCION_APLICACIONES_Y_SALIDAS.md para plan, alcance y restauración
 
 Al actualizar: reinicia agente, sincroniza central, reconstruye/recarga extensión y refresca las pestañas una vez.
 Después de cada rechazo normal ya no debe ser necesario refrescar; si una web específica sigue esperando, registra navegador, versión, aviso y pasos con datos ficticios para una prueba de compatibilidad propia.
+
+## Regresiones verificadas en esta revisión
+
+- 66 pruebas Node, 5 Python y 16 escenarios con Chromium real aprobados localmente.
+- 16 escenarios de red HTTPS/SMTP/rclone WebDAV aprobados contra receptores independientes, con reglas locales y sin consultas reales a Groq.
+- 160 operaciones mediadas verificadas (32 documentos de desarrollo por 5 canales), con auditoría íntegra. El informe conserva los falsos positivos y negativos; no representa una precisión universal. USB/SMB usan directorios de prueba y portapapeles/impresión usan dobles, identificados en el resultado.
+- La secuencia sensible retenido → público recibido funciona sin recargar en el sitio de prueba.
+- TXT/Word/Excel vacíos válidos llegan al receptor con el hash esperado.
+- La fórmula sensible sin resultado guardado se retiene, y después se puede elegir otro archivo.
+- Los lotes mixtos no liberan archivos; cada ticket informa cancelación o fallo según su decisión.
+- La prueba del navegador usa un perfil aislado, reglas locales y un receptor independiente. No equivale a probar Gmail, una IA real o WhatsApp Desktop. Firefox necesita su propia validación manual.
+- Las pruebas no activan restricciones USB, firewall o certificados en el Windows anfitrión ni verifican un driver de bloqueo selectivo para aplicaciones nativas.
 
 ## 8. Dependencias y uso de laboratorio
 

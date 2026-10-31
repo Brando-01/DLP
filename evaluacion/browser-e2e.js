@@ -35,6 +35,8 @@ async function run() {
     const publicText = "Horario publico de biblioteca", privateText = "DNI: 12345678";
     const publicPath = path.join(sources, "publico.txt"), privatePath = path.join(sources, "privado.txt");
     await fs.writeFile(publicPath, publicText); await fs.writeFile(privatePath, privateText);
+    const formulaPath = path.join(sources, "formula_sensible.xlsx");
+    await fs.writeFile(formulaPath, await xlsxBuffer([[{ formula: '"DNI: 12345678"' }]]));
     const emptyFiles = [["vacio.txt", Buffer.alloc(0)], ["vacio.docx", await docxBuffer("")], ["vacio.xlsx", await xlsxBuffer([])]];
     for (const [name, bytes] of emptyFiles) await fs.writeFile(path.join(sources, name), bytes);
     runtime = new EndpointRuntime({ dataDirectory: path.join(directory, "estado"), bridge: new FakeBridge(), config: { watchRoots: [sources], notifications: false } });
@@ -120,6 +122,13 @@ async function run() {
     const evidenceDirectory = path.join(PROJECT, "output", "evidencias"); await fs.mkdir(evidenceDirectory, { recursive: true });
     await worker.evaluate(async () => chrome.storage.local.set({ enabled: true }));
     await page.reload();
+    const formulaReceipts = site.receipts.length;
+    start = runtime.audit.events.length;
+    await choose(formulaPath);
+    await waitFor(() => receipt("browser_file", start, true), "El Excel con fórmula sensible pasó como vacío");
+    assert.equal(await page.locator("#file").evaluate(node => node.files.length), 0);
+    assert.equal(site.receipts.length, formulaReceipts);
+    results.push({ scenario: "Excel con fórmula sensible sin caché", result: "BLOQUEADO", evidence: "REAL_CHROMIUM_EXTENSION_NO_EMPTY_FORMULA_BYPASS" });
     for (const [name, bytes] of emptyFiles) {
       const count = site.receipts.length;
       await choose(path.join(sources, name));
@@ -131,7 +140,7 @@ async function run() {
     }
     await waitFor(() => runtime.browserObserver.status().some((c) => c.active && c.navigation), "El conector no volvió a estar activo");
     const panel = await context.newPage(); await panel.goto(agentUrl);
-    await panel.waitForFunction(() => document.querySelector("#count-files").textContent === "5");
+    await panel.waitForFunction(() => document.querySelector("#count-files").textContent === "6");
     await panel.locator('[data-view="live"]').click();
     await panel.locator("#live-browser").filter({ hasText: "Conectado" }).waitFor();
     await panel.locator("#live-filter").selectOption("navigation");

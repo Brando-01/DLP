@@ -41,10 +41,10 @@
       if (["PING", "HEARTBEAT"].includes(message.type) && !sender.tab) {
         const settings = await readSettings();
         if (settings.enabled === false) {
-          try { await request("/api/browser/heartbeat", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, version: message.version || "3.1.0", navigation: false, enabled: false }) }); } catch {}
+          try { await request("/api/browser/heartbeat", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, version: message.version || "3.1.1", navigation: false, enabled: false }) }); } catch {}
           return { ok: true, disabled: true };
         }
-        const heartbeat = await request("/api/browser/heartbeat", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, version: message.version || "3.1.0", navigation: settings.logNavigation !== false }) });
+        const heartbeat = await request("/api/browser/heartbeat", { method: "POST", body: JSON.stringify({ clientId: settings.clientId, version: message.version || "3.1.1", navigation: settings.logNavigation !== false }) });
         return { ok: true, config: await browserConfig(), heartbeat };
       }
       if (!sender.tab || !/^https?:\/\//.test(sender.url || "")) throw new Error("Solo se aceptan interacciones de una página HTTP o HTTPS");

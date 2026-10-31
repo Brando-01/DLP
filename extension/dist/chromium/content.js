@@ -36,7 +36,8 @@
   }
   function explain(result) {
     if (!result.allowed && (result.decision === "NO_ANALIZADO" || result.cause === "NO_INSPECCIONABLE" || result.inspectionStatus && result.inspectionStatus !== "COMPLETE" || result.semantic?.required && result.semantic.status !== "COMPLETE")) {
-      return `DLP: interacción retenida por análisis incompleto, no por una detección confirmada de datos sensibles. ${result.reason || result.decision}. Puedes volver a seleccionar un archivo.`;
+      const indicators = result.detected === true || result.score > 0;
+      return `DLP: interacción retenida por análisis incompleto${indicators ? "; también hay indicadores sensibles" : ", sin una detección confirmada de datos sensibles"}. ${result.reason || result.decision}. Puedes volver a seleccionar un archivo.`;
     }
     return `${result.allowed ? "DLP: operación permitida con observación" : "DLP: interacción retenida"}. ${result.reason || result.decision}${result.score != null ? ` · ${result.score} puntos` : ""}`;
   }
@@ -53,7 +54,7 @@
   function resetFile(input) { input.value = ""; fileEvents(input, true); }
   function reportBatch(batch, outcome) {
     // Los recibos de auditoría no mantienen ocupado el control de la página.
-    for (const result of batch?.results || []) void report(result, outcome);
+    for (const result of batch?.results || []) void report(result, outcome === "CANCELLED" && result.allowed ? "FAILED" : outcome);
   }
   async function encode(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());

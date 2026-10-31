@@ -42,7 +42,7 @@ test("setup prepara el enrolamiento y mantiene el token del navegador separado y
   assert.equal((await fs.readFile(path.join(tmp.root, "deploy/state/authd.pass"), "utf8")).trim(), values.DLP_WAZUH_ENROLLMENT_PASSWORD);
   await setup(tmp.root);
   assert.deepEqual(JSON.parse(await fs.readFile(credentialFile, "utf8")), local);
-  for (const name of ["vacio.txt", "vacio.docx", "vacio.xlsx", "sin_texto.pdf", "base64_privado.txt", "publico.docx", "privado.docx"]) {
+  for (const name of ["vacio.txt", "vacio.docx", "vacio.xlsx", "sin_texto.pdf", "base64_privado.txt", "publico.docx", "privado.docx", "formula_sensible.xlsx", "formula_publica.xlsx"]) {
     assert.ok((await fs.stat(path.join(tmp.root, "laboratorio/Finanzas", name))).isFile(), name);
   }
   assert.equal((await fs.stat(path.join(tmp.root, "laboratorio/Finanzas/vacio.txt"))).size, 0);

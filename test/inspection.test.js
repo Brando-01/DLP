@@ -71,6 +71,60 @@ test("un formato desconocido o texto parcial no se permite silenciosamente", asy
   const timeout = await extractText(Buffer.from("hola"), "hola.txt", { timeoutMs: 1 });
   assert.equal(timeout.status, "UNANALYZABLE");
 });
+
+test("Excel no permite fórmulas sensibles como vacío ni confía solo en su resultado guardado", async () => {
+  let calls = 0;
+  const classifier = { classify: async () => { calls += 1; return { status: "COMPLETE", required: true, classification: "PUBLICO" }; } };
+  for (const result of [undefined, "", 0, "Horario público"]) {
+    const bytes = await xlsxBuffer([[{ formula: '"DNI: 12345678"', ...(result === undefined ? {} : { result }) }]]);
+    const inspected = await inspectBuffer(bytes, "formula-sensible.xlsx", { semantic: true, classifier });
+    assert.notEqual(inspected.semantic.status, "EMPTY_CONTENT");
+    assert.equal(inspected.emptyContent, false);
+    assert.ok(inspected.score >= 3);
+    assert.equal(decide(inspected, "browser_file").allowed, false);
+  }
+  assert.equal(calls, 0, "Las reglas fuertes o la extracción parcial evitan la consulta externa");
+});
+
+test("Excel conserva fórmulas públicas completas y retiene cálculos sin resultado sin ejecutarlos", async () => {
+  const complete = await inspectBuffer(await xlsxBuffer([[{ formula: "1+2", result: 3 }]]), "calculado.xlsx");
+  assert.equal(complete.inspectionStatus, "COMPLETE");
+  assert.equal(complete.emptyContent, false);
+  assert.equal(decide(complete, "browser_file").allowed, true);
+  const unresolved = await inspectBuffer(await xlsxBuffer([[{ formula: "1+2" }]]), "sin-resultado.xlsx");
+  assert.equal(unresolved.inspectionStatus, "PARTIAL");
+  assert.equal(unresolved.emptyContent, false);
+  assert.equal(unresolved.score, 0);
+  assert.equal(decide(unresolved, "browser_file").allowed, false);
+});
+
+test("Excel inspecciona fórmulas compartidas, hojas ocultas y destino de hipervínculos", async () => {
+  const ExcelJS = require("exceljs");
+  const book = new ExcelJS.Workbook();
+  book.addWorksheet("Visible").getCell("A1").value = "Horario público";
+  const hidden = book.addWorksheet("Oculta", { state: "veryHidden" });
+  hidden.getCell("A1").value = { formula: '"DNI: 12345678"', result: "" };
+  hidden.getCell("A2").value = { sharedFormula: "A1", result: "" };
+  const formula = await inspectBuffer(Buffer.from(await book.xlsx.writeBuffer()), "compartida.xlsx");
+  assert.equal(formula.emptyContent, false);
+  assert.ok(formula.score >= 3);
+  assert.equal(decide(formula, "browser_file").allowed, false);
+  const link = await inspectBuffer(await xlsxBuffer([[{ text: "Sitio de ejemplo", hyperlink: "https://example.test/?ACCESS_TOKEN=FICTICIO123" }]]), "enlace.xlsx");
+  assert.ok(link.score >= 3);
+  assert.equal(decide(link, "browser_file").allowed, false);
+});
+
+test("agregar texto público no oculta objetos de Office que el lector no puede inspeccionar", async () => {
+  const JSZip = require("jszip");
+  for (const [name, bytes, entry] of [["word.docx", await docxBuffer("Horario público"), "word/media/image1.png"], ["excel.xlsx", await xlsxBuffer([["Horario público"]]), "xl/embeddings/objeto.bin"]]) {
+    const zip = await JSZip.loadAsync(bytes); zip.file(entry, "CONTENIDO_FICTICIO_NO_INSPECCIONADO");
+    const inspected = await inspectBuffer(await zip.generateAsync({ type: "nodebuffer" }), name);
+    assert.equal(inspected.inspectionStatus, "PARTIAL", name);
+    assert.equal(inspected.score, 0, name);
+    assert.equal(inspected.emptyContent, false, name);
+    assert.equal(decide(inspected, "browser_file").allowed, false, name);
+  }
+});
 test("modo auditoría detecta sin atribuir un bloqueo y modo alerta permite", () => {
   const inspection = { ...analyzeContent("CLASIFICACION: CONFIDENCIAL"), inspectionStatus: "COMPLETE" };
   const audit = validatePolicies({ usb: { mode: "audit", blockScore: 3 } });

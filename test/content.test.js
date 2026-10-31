@@ -105,3 +105,16 @@ test("selección demasiado grande se cancela sin inspección ni publicación", a
   assert.equal(h.input.files.length, 0);
   assert.ok(h.input.events.some((e) => e.type === "cancel"));
 });
+test("un lote mixto no libera archivos y confirma cada ticket según su decisión", async () => {
+  const h = harness(async m => ({ allowed: m.fileName === "publico.txt", decision: m.fileName === "publico.txt" ? "PERMITIDO" : "BLOQUEADO", ticket: m.fileName }));
+  h.choose([h.file("publico.txt"), h.file("privado.txt")]); await tick();
+  assert.equal(h.input.files.length, 0);
+  assert.deepEqual(h.sent.filter(m => m.type === "RESULT").map(m => [m.ticket, m.outcome]), [["publico.txt", "FAILED"], ["privado.txt", "CANCELLED"]]);
+});
+test("una inspección parcial conserva en el aviso los indicadores sensibles reconocidos", async () => {
+  const h = harness(async () => ({ allowed: false, decision: "BLOQUEADO", cause: "NO_INSPECCIONABLE", score: 3, inspectionStatus: "PARTIAL", reason: "Fórmula pendiente" }));
+  h.choose([h.file()]); await tick();
+  const notice = h.nodes.findLast(node => node.id === "dlp-agent-notice" && !node.removed);
+  assert.ok(notice.textContent.includes("también hay indicadores sensibles"));
+  assert.ok(!notice.textContent.includes("sin una detección confirmada"));
+});
