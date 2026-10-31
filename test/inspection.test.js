@@ -28,6 +28,39 @@ test("extrae texto de Word y campos tabulares de Excel sin ejecutar sus contenid
   assert.equal(excel.inspectionStatus, "COMPLETE");
   assert.equal(excel.score, 4);
 });
+test("vacíos válidos TXT, Word y Excel no necesitan Groq ni quedan retenidos", async () => {
+  const classifier = { classify: async () => { throw new Error("No consultar IA para contenido vacío acreditado"); } };
+  for (const [name, bytes] of [["vacio.txt", Buffer.alloc(0)], ["espacios.txt", Buffer.from(" \r\n\t")], ["vacio.docx", await docxBuffer("")], ["vacio.xlsx", await xlsxBuffer([])]]) {
+    const result = await inspectBuffer(bytes, name, { semantic: true, classifier });
+    assert.equal(result.inspectionStatus, "COMPLETE", name);
+    assert.equal(result.emptyContent, true, name);
+    assert.equal(result.classification, "PUBLICO", name);
+    assert.equal(result.semantic.status, "EMPTY_CONTENT", name);
+    assert.equal(result.semantic.required, false, name);
+    assert.equal(decide(result, "browser_file").allowed, true, name);
+  }
+});
+test("una extracción sin texto no confunde Office con imágenes o contenido opaco con vacío", async () => {
+  const JSZip = require("jszip");
+  for (const [name, bytes, entry] of [["imagen.docx", await docxBuffer(""), "word/media/image1.png"], ["objeto.docx", await docxBuffer(""), "word/embeddings/objeto.bin"], ["comentario.docx", await docxBuffer(""), "word/comments.xml"], ["imagen.xlsx", await xlsxBuffer([]), "xl/media/image1.png"]]) {
+    const zip = await JSZip.loadAsync(bytes);
+    zip.file(entry, "DNI: 12345678");
+    const result = await inspectBuffer(await zip.generateAsync({ type: "nodebuffer" }), name, { semantic: true });
+    assert.equal(result.inspectionStatus, "UNANALYZABLE", name);
+    assert.equal(result.emptyContent, false, name);
+    assert.equal(decide(result, "browser_file").allowed, false, name);
+  }
+  const externalDrawing = await JSZip.loadAsync(await docxBuffer(""));
+  externalDrawing.file("word/document.xml", (await externalDrawing.file("word/document.xml").async("string")).replace("<w:t></w:t>", "<w:drawing/>"));
+  const imageOnly = await inspectBuffer(await externalDrawing.generateAsync({ type: "nodebuffer" }), "externa.docx", { semantic: true });
+  assert.equal(imageOnly.inspectionStatus, "UNANALYZABLE");
+  assert.equal(decide(imageOnly, "browser_file").allowed, false);
+  for (const name of ["vacio.docx", "vacio.xlsx", "vacio.pdf", "vacio.exe", "vacio.gpg", "vacio.jpg", "vacio.png"]) {
+    const result = await inspectBuffer(Buffer.alloc(0), name, { semantic: true });
+    assert.equal(result.inspectionStatus, "UNANALYZABLE", name);
+    assert.equal(decide(result, "browser_file").allowed, false, name);
+  }
+});
 test("un formato desconocido o texto parcial no se permite silenciosamente", async () => {
   const executable = await inspectBuffer(Buffer.from("no es un antivirus"), "programa.exe");
   assert.equal(executable.classification, "NO_ANALIZABLE");

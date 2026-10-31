@@ -4,6 +4,8 @@ Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correl
 
 **Empieza por la [guía completa de instalación, navegadores y tokens](docs/INSTALACION_Y_NAVEGADORES.md).** Incluye primera instalación, Chrome/Brave/Edge, Firefox, qué token pegar, proxy/CA, acceso a WSL, arranque diario y solución de errores.
 
+**Para probar los cambios de subidas y archivos vacíos:** [arranque rápido, pruebas manuales y los 12 casos](docs/PRUEBAS_RAPIDAS_Y_CASOS.md). `npm.cmd run demo` inicia agente y receptores locales por reglas, sin Groq, WSL ni cambios al firewall. Es una demo limitada, no protección universal del equipo.
+
 Solo aportas tu **GROQ_API_KEY** en el .env privado. `npm.cmd run setup` genera las otras credenciales, incluso si copiaste .env.example con sus campos automáticos vacíos. El token de la extensión se copia desde **3001 > Navegador**; el token ADMIN de .env se utiliza únicamente en la consola **3100**.
 
 **Aplicaciones nativas, conversores web e inventario Groq:** consulta [Protección de aplicaciones y salidas](docs/PROTECCION_APLICACIONES_Y_SALIDAS.md). Incluye restricciones por EXE para WhatsApp/Discord, destinos de subida autorizados, perfil de salida por aplicación para Chrome/Edge/Firefox y restauración. Los scripts empiezan en Plan; no se activan al instalar. La restricción de un cliente nativo bloquea su red completa, no solo adjuntos sensibles. La exclusividad de salida necesita un endpoint aislado y gateway separado; no está acreditada en el Windows principal con servicios localhost.

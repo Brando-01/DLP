@@ -38,6 +38,15 @@ test("la indisponibilidad conserva la política de cierre ante fallo", async () 
   assert.equal(open.allowed, true);
   assert.equal(open.unavailable, true);
 });
+test("inspección espera al central; configuración y recibos mantienen tiempo acotado", async t => {
+  const original = AbortSignal.timeout, timeouts = [];
+  AbortSignal.timeout = (ms) => { timeouts.push(ms); return new AbortController().signal; };
+  t.after(() => { AbortSignal.timeout = original; });
+  const handle = connector(async (url) => url.endsWith("/config") ? response({ domains: ["*"], failClosed: true }) : response({ allowed: true }));
+  await handle({ type: "INSPECT", channel: "browser_file", fileName: "publico.txt", text: "Horario público" }, sender);
+  await handle({ type: "RESULT", ticket: "ficticio", outcome: "RELEASED" }, sender);
+  assert.deepEqual(timeouts, [12000, 65000, 12000]);
+});
 test("un dominio excluido no envía el contenido al clasificador", async () => {
   let calls = 0;
   const handle = connector(async () => { calls += 1; return response({ domains: ["otro.example"], failClosed: true }); });

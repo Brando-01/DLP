@@ -21,7 +21,10 @@
       const settings = await readSettings();
       const base = validateAgentUrl(settings.agentUrl);
       if (!/^[a-f0-9]{64}$/.test(settings.token || "")) throw new Error("Vincula el complemento con el token del panel local");
-      const response = await fetchImpl(base + route, { ...options, headers: { "X-DLP-Token": settings.token, ...(options.body ? { "Content-Type": "application/json" } : {}) }, signal: AbortSignal.timeout(12000) });
+      // El central tiene 55 s (extracción + semántica). No cancelar a los 12 s
+      // una inspección válida; el resto de operaciones conserva el límite corto.
+      const timeoutMs = route === "/api/browser/inspect" ? 65000 : 12000;
+      const response = await fetchImpl(base + route, { ...options, headers: { "X-DLP-Token": settings.token, ...(options.body ? { "Content-Type": "application/json" } : {}) }, signal: AbortSignal.timeout(timeoutMs) });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || "El agente no pudo completar la inspección");
       return result;

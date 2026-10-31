@@ -20,6 +20,9 @@ jobs:
         with: { python-version: '3.12' }
       - run: npm ci
       - run: npm test
+      - run: npm run browser:install -- --with-deps
+      - run: npm run extension:build
+      - run: npm run test:browser
       - run: python -m venv .venv
       - run: .venv/bin/python -m pip install -r integrations/requirements.txt
       - run: .venv/bin/python -m unittest discover -s test -p 'test_*.py'
