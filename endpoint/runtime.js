@@ -14,7 +14,7 @@ const { WindowsBridge } = require("./windows-bridge");
 const { semanticClassifier } = require("../lib/semantic");
 const { forwardAudit } = require("../lib/telemetry");
 const { CopyMonitor } = require("./copy-monitor");
-const { managedInspection, reportCentral } = require("../lib/managed-inspection");
+const { managedInspection, reportCentral, classifyAtRest } = require("../lib/managed-inspection");
 const { BrowserObserver } = require("./browser-observer");
 
 const EXCLUDED = new Set(["node_modules", ".git", ".cache", "appdata", "windows", "program files", "program files (x86)", "datos-endpoint", "logs", "recibidos", "tmp", "$recycle.bin", "system volume information"]);
@@ -37,6 +37,7 @@ class EndpointRuntime extends EventEmitter {
     this.scanState = { running: false, completedAt: null, examined: 0, skipped: 0, inaccessible: 0, capped: false, roots: [] };
     this.bridge = options.bridge || new WindowsBridge({ enabled: options.native !== false && process.env.DLP_DISABLE_NATIVE !== "1" });
     this.adapters = options.adapters || {};
+    this.classifyAtRest = options.classifyAtRest || classifyAtRest;
     this.startedAt = null;
     this.stopping = false;
     this.lastNotification = 0;
@@ -113,6 +114,8 @@ class EndpointRuntime extends EventEmitter {
     if (this.scanState.running || this.stopping) return this.scanState;
     this.scanState = { running: true, startedAt: new Date().toISOString(), completedAt: null, examined: 0, skipped: 0, inaccessible: 0, capped: false, roots: [] };
     const seen = new Set();
+    let semanticBudget = this.config.semanticFilesPerScan;
+    const semanticEnabled = this.config.inventorySemantic && process.env.DLP_LLM_MODE === "hybrid";
     const walk = async (directory) => {
       if (this.stopping || this.scanState.capped || this.ignore(directory)) return;
       let entries;
@@ -130,18 +133,29 @@ class EndpointRuntime extends EventEmitter {
           try {
             const stat = await fsp.stat(file);
             const previous = this.inventory.get(id);
-            if (!force && previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs) continue;
+            const semanticPending = semanticEnabled && previous && previous.score < 3 && previous.inspectionStatus === "COMPLETE" && previous.semantic?.status !== "COMPLETE" && previous.semantic?.status !== "BYPASSED_LOCAL_BLOCK" && Date.now() >= (previous.semanticRetryAt || 0);
+            if (!force && previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs && !semanticPending && previous.inventorySemanticEnabled === semanticEnabled) continue;
             let inspection;
             if (stat.size > MAX_FILE_BYTES) inspection = { inspectionStatus: "UNANALYZABLE", classification: "NO_ANALIZABLE", score: 0, matches: [], reason: "Archivo superior a 10 MiB", size: stat.size, sha256: null };
             else {
               const snapshot = await this.readSnapshot(file);
               inspection = await inspectBuffer(snapshot.buffer, entry.name);
+              if (semanticEnabled && inspection.inspectionStatus === "COMPLETE" && inspection.score < 3) {
+                if (semanticBudget > 0) {
+                  semanticBudget -= 1;
+                  const semanticInspection = await this.classifyAtRest(snapshot.buffer, entry.name);
+                  // Una respuesta pendiente nunca borra los indicadores de las reglas locales.
+                  inspection = { ...inspection, ...semanticInspection };
+                } else inspection.semantic = { required: true, status: "QUEUED" };
+              }
             }
-            const item = { id, path: file, name: entry.name, ...inspection, mtimeMs: stat.mtimeMs, scannedAt: new Date().toISOString() };
+            if (inspection.semantic?.required && inspection.semantic.status !== "COMPLETE" && inspection.score === 0) inspection.classification = "PENDIENTE";
+            const semanticRetryAt = inspection.semantic?.required && inspection.semantic.status !== "COMPLETE" && inspection.semantic.status !== "QUEUED" ? Date.now() + 15 * 60 * 1000 : 0;
+            const item = { id, path: file, name: entry.name, ...inspection, inventorySemanticEnabled: semanticEnabled, semanticRetryAt, mtimeMs: stat.mtimeMs, scannedAt: new Date().toISOString() };
             this.inventory.set(id, item);
             this.scanState.examined += 1;
-            if (!previous || previous.sha256 !== item.sha256 || previous.mtimeMs !== item.mtimeMs) {
-              this.audit.record({ channel: "filesystem", activity: "CLASIFICAR_ARCHIVO", decision: inspection.score > 0 ? "DETECTADO" : inspection.inspectionStatus !== "COMPLETE" ? "NO_ANALIZABLE" : "PERMITIDO", file: entry.name, sourcePath: file, classification: inspection.classification, score: inspection.score, matches: inspection.matches, inspectionStatus: inspection.inspectionStatus, detected: inspection.score > 0, prevented: false, evidence: "FILE_SENSOR", sha256: inspection.sha256 });
+            if (!previous || previous.sha256 !== item.sha256 || previous.mtimeMs !== item.mtimeMs || previous.semantic?.status !== item.semantic?.status || previous.classification !== item.classification) {
+              this.audit.record({ channel: "filesystem", activity: "CLASIFICAR_ARCHIVO", decision: inspection.score > 0 ? "DETECTADO" : inspection.inspectionStatus !== "COMPLETE" || inspection.semantic?.required && inspection.semantic.status !== "COMPLETE" ? "NO_ANALIZABLE" : "PERMITIDO", file: entry.name, sourcePath: file, classification: inspection.classification, score: inspection.score, matches: inspection.matches, inspectionStatus: inspection.inspectionStatus, semanticStatus: inspection.semantic?.status, detected: inspection.score > 0, prevented: false, evidence: "FILE_SENSOR", sha256: inspection.sha256 });
             }
           } catch { this.scanState.inaccessible += 1; }
         }
@@ -356,7 +370,7 @@ class EndpointRuntime extends EventEmitter {
     try { systemControls = JSON.parse(fs.readFileSync(path.join(this.dataDirectory, "controles-windows-estado.json"), "utf8")); } catch {}
     return {
       version: "3.0.0", startedAt: this.startedAt, platform: process.platform, scan: this.scanState, classifier: { ...semanticClassifier.status(), backend: process.env.DLP_INSPECTION_BACKEND || "local" },
-      inventory: { total: items.length, sensitive: items.filter((x) => x.score > 0).length, unknown: items.filter((x) => x.inspectionStatus !== "COMPLETE").length },
+      inventory: { total: items.length, sensitive: items.filter((x) => x.score > 0).length, unknown: items.filter((x) => x.inspectionStatus !== "COMPLETE" || x.semantic?.required && x.semantic.status !== "COMPLETE").length, semanticEnabled: this.config.inventorySemantic && process.env.DLP_LLM_MODE === "hybrid", semanticBudget: this.config.semanticFilesPerScan },
       operations: { prevented: this.audit.events.filter((event) => event.prevented === true).length },
       windows: this.bridge.info, windowsControls: systemControls, audit: this.audit.status(), suggestedRoots: suggestedRoots(),
       browserClients: this.browserObserver.status(),

@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1950" viewBox="0 0 2400 1950" role="img"><title>Casos de uso y funcionamiento del DLP</title><desc>Los 12 escenarios se relacionan con su punto de control, la decisión y la evidencia final.</desc><defs><marker id="ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#162d43"/></marker><marker id="muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#53697b"/></marker><marker id="teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#087f83"/></marker><marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2864ad"/></marker><marker id="amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#986208"/></marker><marker id="red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#ae3550"/></marker><marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#167958"/></marker><marker id="line" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#cbd8e3"/></marker><marker id="bg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#f4f7fa"/></marker><marker id="white" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#ffffff"/></marker></defs><style>text{font-family:'Segoe UI',Arial,sans-serif}</style>
+<rect x="0" y="0" width="2400" height="1950" rx="0" fill="#ffffff" stroke="#ffffff" stroke-width="2"/>
+<text x="64" y="53" font-size="23" fill="#087f83" font-weight="700">DLP ADMINISTRADO  /  FIGURA 01</text>
+<text x="64" y="112" font-size="47" fill="#162d43" font-weight="700">Casos de uso y funcionamiento del DLP</text>
+<text x="64" y="159" font-size="25" fill="#53697b" font-weight="400">Los 12 escenarios se relacionan con su punto de control, la decisión y la evidencia final.</text>
+<path d="M64 191H2336" fill="none" stroke="#cbd8e3" stroke-width="3" stroke-linejoin="round"/>
+<rect x="64" y="223" width="720" height="113" rx="16" fill="#ffffff" stroke="#2864ad" stroke-width="2"/>
+<text x="88" y="261" font-size="27" fill="#2864ad" font-weight="700">Usuario del laboratorio</text>
+<text x="88" y="300" font-size="24" fill="#53697b" font-weight="400">Realiza acciones con documentos y datos ficticios.</text>
+<rect x="840" y="223" width="720" height="113" rx="16" fill="#ffffff" stroke="#087f83" stroke-width="2"/>
+<text x="864" y="261" font-size="27" fill="#087f83" font-weight="700">Administrador</text>
+<text x="864" y="300" font-size="24" fill="#53697b" font-weight="400">Configura destinos, modos, reglas y conectores.</text>
+<rect x="1616" y="223" width="720" height="113" rx="16" fill="#ffffff" stroke="#986208" stroke-width="2"/>
+<text x="1640" y="261" font-size="27" fill="#986208" font-weight="700">Evaluador</text>
+<text x="1640" y="300" font-size="24" fill="#53697b" font-weight="400">Define etiquetas reales y contrasta FP / FN.</text>
+<rect x="64" y="383" width="514" height="636" rx="16" fill="#f4f7fa" stroke="#cbd8e3" stroke-width="2"/>
+<text x="87" y="425" font-size="25" fill="#087f83" font-weight="700">EQUIPO Y ARCHIVOS</text>
+<rect x="650" y="383" width="514" height="636" rx="16" fill="#f4f7fa" stroke="#cbd8e3" stroke-width="2"/>
+<text x="673" y="425" font-size="25" fill="#087f83" font-weight="700">CORREO ELECTRÓNICO</text>
+<rect x="1236" y="383" width="514" height="636" rx="16" fill="#f4f7fa" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1259" y="425" font-size="25" fill="#087f83" font-weight="700">WEB Y NUBE</text>
+<rect x="1822" y="383" width="514" height="636" rx="16" fill="#f4f7fa" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1845" y="425" font-size="25" fill="#2864ad" font-weight="700">PROTOCOLOS DE RED</text>
+<rect x="82" y="454" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="102" y="485" font-size="21" fill="#087f83" font-weight="700">CU-01</text>
+<text x="102" y="521" font-size="26" fill="#162d43" font-weight="650">Copia a USB</text>
+<text x="102" y="554" font-size="22" fill="#53697b" font-weight="400">Agente: copia mediada por el motor.</text>
+<text x="102" y="583" font-size="22" fill="#53697b" font-weight="400">USB nativo: política del canal.</text>
+<rect x="82" y="616" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="102" y="647" font-size="21" fill="#087f83" font-weight="700">CU-02</text>
+<text x="102" y="683" font-size="26" fill="#162d43" font-weight="650">Copia a ruta no autorizada</text>
+<text x="102" y="716" font-size="22" fill="#53697b" font-weight="400">Agente: correlación por hash.</text>
+<text x="102" y="745" font-size="22" fill="#53697b" font-weight="400">Samba full_audit: lectura de origen.</text>
+<rect x="82" y="778" width="478" height="140" rx="16" fill="#fff9ed" stroke="#dec98c" stroke-width="2"/>
+<text x="102" y="812" font-size="22" fill="#986208" font-weight="400">La copia nativa se observa después</text>
+<text x="102" y="841" font-size="22" fill="#986208" font-weight="400">de escribirse. USB físico y políticas</text>
+<text x="102" y="870" font-size="22" fill="#986208" font-weight="400">del Windows destino requieren</text>
+<text x="102" y="899" font-size="22" fill="#986208" font-weight="400">validación en ese equipo.</text>
+<text x="87" y="966" font-size="22" fill="#087f83" font-weight="600">Agente Node.js + sensor PowerShell</text>
+<text x="87" y="997" font-size="22" fill="#53697b" font-weight="400">Mediado ≠ toda operación nativa</text>
+<rect x="668" y="454" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="688" y="485" font-size="21" fill="#087f83" font-weight="700">CU-03</text>
+<text x="688" y="521" font-size="26" fill="#162d43" font-weight="650">Adjunto sensible</text>
+<text x="688" y="554" font-size="22" fill="#53697b" font-weight="400">XLSX con DNI / tarjetas ficticias.</text>
+<text x="688" y="583" font-size="22" fill="#53697b" font-weight="400">Postfix → filtro Python de MIME.</text>
+<rect x="668" y="616" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="688" y="647" font-size="21" fill="#087f83" font-weight="700">CU-04</text>
+<text x="688" y="683" font-size="26" fill="#162d43" font-weight="650">Datos en cuerpo o asunto</text>
+<text x="688" y="716" font-size="22" fill="#53697b" font-weight="400">Texto, base64 y quoted-printable.</text>
+<text x="688" y="745" font-size="22" fill="#53697b" font-weight="400">El filtro consulta al motor central.</text>
+<rect x="668" y="778" width="478" height="140" rx="16" fill="#eef8f5" stroke="#95c7b8" stroke-width="2"/>
+<text x="688" y="812" font-size="22" fill="#167958" font-weight="400">Se analiza antes del relevo SMTP.</text>
+<text x="688" y="841" font-size="22" fill="#167958" font-weight="400">250: aceptado · 550: rechazado.</text>
+<text x="688" y="870" font-size="22" fill="#167958" font-weight="400">451: fallo temporal del motor.</text>
+<text x="688" y="899" font-size="22" fill="#167958" font-weight="400">Se comprueba el buzón receptor.</text>
+<text x="673" y="966" font-size="22" fill="#087f83" font-weight="600">Postfix + filtro MIME antes de cola</text>
+<text x="673" y="997" font-size="22" fill="#53697b" font-weight="400">Cuerpo y adjuntos → inspección</text>
+<rect x="1254" y="454" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1274" y="485" font-size="21" fill="#087f83" font-weight="700">CU-05</text>
+<text x="1274" y="521" font-size="26" fill="#162d43" font-weight="650">Subida web por HTTPS</text>
+<text x="1274" y="554" font-size="22" fill="#53697b" font-weight="400">Archivo hacia un destino de prueba.</text>
+<text x="1274" y="583" font-size="22" fill="#53697b" font-weight="400">mitmproxy retiene antes de reenviar.</text>
+<rect x="1254" y="616" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1274" y="647" font-size="21" fill="#087f83" font-weight="700">CU-06</text>
+<text x="1274" y="683" font-size="26" fill="#162d43" font-weight="650">Texto en un sitio público</text>
+<text x="1274" y="716" font-size="22" fill="#53697b" font-weight="400">Formulario, pegado o parámetros.</text>
+<text x="1274" y="745" font-size="22" fill="#53697b" font-weight="400">Proxy + extensión para flujos cubiertos.</text>
+<rect x="1254" y="778" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1274" y="809" font-size="21" fill="#087f83" font-weight="700">CU-07</text>
+<text x="1274" y="845" font-size="26" fill="#162d43" font-weight="650">Sincronización con rclone</text>
+<text x="1274" y="878" font-size="22" fill="#53697b" font-weight="400">WebDAV real por el proxy HTTPS.</text>
+<text x="1274" y="907" font-size="22" fill="#53697b" font-weight="400">Otros backends: validar por separado.</text>
+<text x="1259" y="966" font-size="22" fill="#087f83" font-weight="600">mitmproxy + certificado de laboratorio</text>
+<text x="1259" y="997" font-size="22" fill="#53697b" font-weight="400">Firewall obligatorio para evitar bypass</text>
+<rect x="1840" y="454" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1860" y="485" font-size="21" fill="#2864ad" font-weight="700">CU-08</text>
+<text x="1860" y="521" font-size="26" fill="#162d43" font-weight="650">SFTP / SCP sobre SSH</text>
+<text x="1860" y="554" font-size="22" fill="#53697b" font-weight="400">Firewall: restricción del canal.</text>
+<text x="1860" y="583" font-size="22" fill="#53697b" font-weight="400">El contenido SSH no se descifra.</text>
+<rect x="1840" y="616" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1860" y="647" font-size="21" fill="#2864ad" font-weight="700">CU-09</text>
+<text x="1860" y="683" font-size="26" fill="#162d43" font-weight="650">FTP en claro</text>
+<text x="1860" y="716" font-size="22" fill="#53697b" font-weight="400">Suricata IDS → firma → Wazuh.</text>
+<text x="1860" y="745" font-size="22" fill="#53697b" font-weight="400">Detectar no equivale a bloquear.</text>
+<rect x="1840" y="778" width="478" height="140" rx="12" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="1860" y="809" font-size="21" fill="#2864ad" font-weight="700">CU-10</text>
+<text x="1860" y="845" font-size="26" fill="#162d43" font-weight="650">Canal o túnel DNS</text>
+<text x="1860" y="878" font-size="22" fill="#53697b" font-weight="400">DNS guard + dnsmasq + firewall.</text>
+<text x="1860" y="907" font-size="22" fill="#53697b" font-weight="400">Reglas de dominio, tipo y frecuencia.</text>
+<text x="1845" y="966" font-size="22" fill="#087f83" font-weight="600">Control del canal y telemetría</text>
+<text x="1845" y="997" font-size="22" fill="#53697b" font-weight="400">Sin clasificación del contenido cifrado</text>
+<path d="M321 1019V1062" fill="none" stroke="#087f83" stroke-width="3" stroke-linejoin="round" marker-end="url(#teal)"/>
+<path d="M907 1019V1062" fill="none" stroke="#087f83" stroke-width="3" stroke-linejoin="round" marker-end="url(#teal)"/>
+<path d="M1493 1019V1062" fill="none" stroke="#087f83" stroke-width="3" stroke-linejoin="round" marker-end="url(#teal)"/>
+<path d="M2079 1019V1079" fill="none" stroke="#2864ad" stroke-width="3" stroke-linejoin="round" marker-end="url(#blue)"/>
+<rect x="64" y="1079" width="1686" height="463" rx="16" fill="#f3faf9" stroke="#087f83" stroke-width="2"/>
+<text x="89" y="1121" font-size="27" fill="#087f83" font-weight="700">MOTOR CENTRAL · CONTENIDO QUE SÍ LLEGA A INSPECCIÓN</text>
+<rect x="89" y="1152" width="783" height="120" rx="16" fill="#ffffff" stroke="#986208" stroke-width="2"/>
+<text x="113" y="1190" font-size="27" fill="#986208" font-weight="700">CU-11 · Archivo cifrado</text>
+<text x="113" y="1229" font-size="24" fill="#53697b" font-weight="400">ZIP / 7z / GPG no inspeccionable → retener en enforce.</text>
+<rect x="907" y="1152" width="817" height="120" rx="16" fill="#ffffff" stroke="#986208" stroke-width="2"/>
+<text x="931" y="1190" font-size="27" fill="#986208" font-weight="700">CU-12 · Evasión por formato</text>
+<text x="931" y="1229" font-size="24" fill="#53697b" font-weight="400">Firma real, base64 limitado; fragmento incompleto → retener.</text>
+<rect x="89" y="1311" width="482" height="166" rx="16" fill="#ffffff" stroke="#087f83" stroke-width="2"/>
+<text x="113" y="1349" font-size="27" fill="#087f83" font-weight="700">1 · Extraer y analizar</text>
+<text x="113" y="1388" font-size="24" fill="#53697b" font-weight="400">TXT, Office, PDF compatibles.</text>
+<text x="113" y="1421" font-size="24" fill="#53697b" font-weight="400">Aplicar reglas y límites.</text>
+<text x="113" y="1454" font-size="24" fill="#53697b" font-weight="400">Sin OCR ni descifrado.</text>
+<rect x="654" y="1311" width="505" height="166" rx="16" fill="#ffffff" stroke="#087f83" stroke-width="2"/>
+<text x="678" y="1349" font-size="27" fill="#087f83" font-weight="700">2 · Clasificación híbrida</text>
+<text x="678" y="1388" font-size="24" fill="#53697b" font-weight="400">Groq si corresponde.</text>
+<text x="678" y="1421" font-size="24" fill="#53697b" font-weight="400">Nunca rebaja reglas fuertes.</text>
+<text x="678" y="1454" font-size="24" fill="#53697b" font-weight="400">Fallo o duda → pendiente.</text>
+<rect x="1242" y="1311" width="482" height="166" rx="16" fill="#ffffff" stroke="#087f83" stroke-width="2"/>
+<text x="1266" y="1349" font-size="27" fill="#087f83" font-weight="700">3 · Política del canal</text>
+<text x="1266" y="1388" font-size="24" fill="#53697b" font-weight="400">Modo audit / alert / enforce.</text>
+<text x="1266" y="1421" font-size="24" fill="#53697b" font-weight="400">Destino y umbrales.</text>
+<text x="1266" y="1454" font-size="24" fill="#53697b" font-weight="400">Decisión + ticket.</text>
+<path d="M571 1394H654" fill="none" stroke="#087f83" stroke-width="3" stroke-linejoin="round" marker-end="url(#teal)"/>
+<path d="M1159 1394H1242" fill="none" stroke="#087f83" stroke-width="3" stroke-linejoin="round" marker-end="url(#teal)"/>
+<text x="89" y="1518" font-size="23" fill="#53697b" font-weight="400">Groq recibe texto extraído para clasificar; no ejecuta ni analiza malware en la PC.</text>
+<rect x="1822" y="1079" width="514" height="463" rx="16" fill="#ffffff" stroke="#2864ad" stroke-width="2"/>
+<text x="1846" y="1117" font-size="27" fill="#2864ad" font-weight="700">RED / OBSERVACIÓN</text>
+<text x="1846" y="1156" font-size="24" fill="#53697b" font-weight="400">SSH: permitir o negar el canal.</text>
+<text x="1846" y="1189" font-size="24" fill="#53697b" font-weight="400">FTP: firma IDS y alerta.</text>
+<text x="1846" y="1222" font-size="24" fill="#53697b" font-weight="400">DNS: permitir / rechazar consulta.</text>
+<text x="1846" y="1255" font-size="24" fill="#53697b" font-weight="400"></text>
+<text x="1846" y="1288" font-size="24" fill="#53697b" font-weight="400">Copias nativas y procesos:</text>
+<text x="1846" y="1321" font-size="24" fill="#53697b" font-weight="400">registrar actividad observada.</text>
+<text x="1846" y="1354" font-size="24" fill="#53697b" font-weight="400"></text>
+<text x="1846" y="1387" font-size="24" fill="#53697b" font-weight="400">Los metadatos llegan a auditoría.</text>
+<text x="1846" y="1420" font-size="24" fill="#53697b" font-weight="400">No prueban por sí solos una fuga.</text>
+<path d="M1483 1542V1590H322V1621" fill="none" stroke="#087f83" stroke-width="3" stroke-linejoin="round" marker-end="url(#teal)"/>
+<text x="90" y="1579" font-size="22" fill="#087f83" font-weight="600">Conector: ejecutar la decisión y confirmar el resultado</text>
+<rect x="64" y="1621" width="1686" height="137" rx="16" fill="#ffffff" stroke="#cbd8e3" stroke-width="2"/>
+<text x="88" y="1667" font-size="26" fill="#167958" font-weight="700">PERMITIDO</text>
+<text x="88" y="1710" font-size="22" fill="#53697b" font-weight="400">Se libera la operación.</text>
+<text x="502" y="1667" font-size="26" fill="#2864ad" font-weight="700">DETECTADO</text>
+<text x="502" y="1710" font-size="22" fill="#53697b" font-weight="400">Actividad observada.</text>
+<text x="916" y="1667" font-size="26" fill="#986208" font-weight="700">ALERTA</text>
+<text x="916" y="1710" font-size="22" fill="#53697b" font-weight="400">Se avisa; puede liberarse.</text>
+<text x="1330" y="1667" font-size="26" fill="#ae3550" font-weight="700">BLOQUEADO</text>
+<text x="1330" y="1710" font-size="22" fill="#53697b" font-weight="400">Se cancela / retiene.</text>
+<path d="M2079 1542V1621" fill="none" stroke="#2864ad" stroke-width="3" stroke-linejoin="round" marker-end="url(#blue)"/>
+<rect x="1822" y="1621" width="514" height="137" rx="16" fill="#ffffff" stroke="#2864ad" stroke-width="2"/>
+<text x="1846" y="1659" font-size="27" fill="#2864ad" font-weight="700">AUDITORÍA Y EVALUACIÓN</text>
+<text x="1846" y="1698" font-size="24" fill="#53697b" font-weight="400">Recibos + hashes del receptor.</text>
+<text x="1846" y="1731" font-size="24" fill="#53697b" font-weight="400">Wazuh · precisión, recall, FP / FN.</text>
+<path d="M1750 1688H1822" fill="none" stroke="#2864ad" stroke-width="3" stroke-linejoin="round" marker-end="url(#blue)"/>
+<path d="M64 1836H2336" fill="none" stroke="#cbd8e3" stroke-width="3" stroke-linejoin="round"/>
+<text x="64" y="1874" font-size="22" fill="#53697b" font-weight="400">Lectura: casos → conectores → inspección o control de canal → efecto comprobado → auditoría.</text>
+<text x="64" y="1905" font-size="22" fill="#53697b" font-weight="400">Alcance: laboratorio controlado. La cobertura depende de conectores, permisos y políticas de salida activadas.</text>
+</svg>

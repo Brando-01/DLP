@@ -3,6 +3,12 @@
 const $ = (selector) => document.querySelector(selector);
 let token = "", state = null, files = [], events = [], config = null, activeView = "summary";
 let liveData = null, livePaused = false, liveBusy = false;
+function renderProtection(value) {
+  const labels = { NOT_APPLIED: "Sin perfil estricto aplicado: las aplicaciones nativas pueden conservar rutas de salida.", AUDIT_REQUIRED: "Hace falta una comprobación reciente del firewall y las políticas.", APPLIED_UNVERIFIED: "Perfil aplicado; falta comprobar su configuración y probar las salidas.", CONFIGURATION_VERIFIED: "Configuración comprobada. Aún debes validar los envíos y las rutas alternativas en el equipo.", DRIFT: "Se detectaron cambios en las restricciones. No atribuyas cobertura al perfil." };
+  $("#protection-status").textContent = `${labels[value.state] || "Sin estado verificado."}${value.checkedAt ? " Comprobación: " + when(value.checkedAt) : ""}${value.findings?.length ? " " + value.findings.join("; ") : ""}`;
+  const native = value.nativeApplications;
+  if (native) $("#protection-status").textContent += ` Aplicaciones nativas: ${native.state === "CONFIGURATION_VERIFIED" ? "reglas por EXE comprobadas; valida el efecto y las rutas de proxy" : native.state === "NOT_APPLIED" ? "sin restricciones por EXE aplicadas" : native.state === "DRIFT" ? "hay cambios o versiones sin cubrir" : "pendiente de comprobar"}.`;
+}
 const escape = (s) => String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const pill = (s) => `<span class="pill ${/^[A-Z_]+$/.test(s || "") ? s : ""}">${escape(s)}</span>`;
 const when = (value) => value ? new Intl.DateTimeFormat("es-PE", { dateStyle: "short", timeStyle: "medium" }).format(new Date(value)) : "Pendiente";
@@ -48,7 +54,7 @@ async function refreshLive() {
 function renderInventory() {
   const query = $("#file-search").value.toLowerCase();
   const visible = files.filter((item) => `${item.name} ${item.path}`.toLowerCase().includes(query));
-  $("#inventory").innerHTML = visible.length ? visible.map((item) => `<tr><td>${escape(item.name)}<span class="path">${escape(item.path)}</span></td><td>${pill(item.classification)}</td><td>${pill(item.inspectionStatus)}${item.reason ? `<span class="path">${escape(item.reason)}</span>` : ""}</td><td>${item.score}</td><td>${escape(item.matches.map((m) => m.id).join(", ") || "—")}</td></tr>`).join("") : '<tr><td colspan="5">Sin archivos en el inventario o sin coincidencias con la búsqueda.</td></tr>';
+  $("#inventory").innerHTML = visible.length ? visible.map((item) => `<tr><td>${escape(item.name)}<span class="path">${escape(item.path)}</span></td><td>${pill(item.classification)}</td><td>${pill(item.inspectionStatus)}<span class="path">Semántica: ${escape(item.semantic?.status || "REGLAS_LOCALES")}${item.semantic?.cacheHit ? " · caché" : ""}</span>${item.reason ? `<span class="path">${escape(item.reason)}</span>` : ""}</td><td>${item.score}</td><td>${escape(item.matches.map((m) => m.id).join(", ") || "—")}</td></tr>`).join("") : '<tr><td colspan="5">Sin archivos en el inventario o sin coincidencias con la búsqueda.</td></tr>';
   const current = $("#transfer-file").value;
   $("#transfer-file").replaceChildren(...files.map((item) => new Option(`${item.name} · ${item.classification}`, item.id)));
   if (files.some((f) => f.id === current)) $("#transfer-file").value = current;
@@ -63,7 +69,7 @@ function renderStatus() {
   $("#count-unknown").textContent = state.inventory.unknown;
   $("#count-blocked").textContent = state.operations.prevented;
   $("#coverage").innerHTML = state.coverage.map((row) => `<tr><td>${escape(row.channel)}</td><td>${escape(row.active ? "Disponible" : "Requiere configuración o comprobación")}<span class="path">${escape(coverageLabels[row.mode] || row.mode)}</span></td><td>${escape(row.detail)}</td></tr>`).join("");
-  $("#scan-status").textContent = `${state.scan.running ? "Exploración en curso" : "Última exploración: " + when(state.scan.completedAt)}. Revisados: ${state.scan.examined}; inaccesibles: ${state.scan.inaccessible}${state.scan.capped ? "; se alcanzó el límite de inventario" : ""}. ${state.classifier.backend === "central" ? "Las salidas consultan el control central; revisa allí el estado de Groq." : `Clasificador de salidas: ${state.classifier.mode}; Groq ${state.classifier.keyConfigured ? "con clave configurada" : "pendiente de clave"}.`}`;
+  $("#scan-status").textContent = `${state.scan.running ? "Exploración en curso" : "Última exploración: " + when(state.scan.completedAt)}. Revisados: ${state.scan.examined}; inaccesibles: ${state.scan.inaccessible}${state.scan.capped ? "; se alcanzó el límite de inventario" : ""}. Inventario semántico ${state.inventory.semanticEnabled ? "activado; presupuesto " + state.inventory.semanticBudget + " documentos por exploración" : "desactivado; solo reglas locales"}. ${state.classifier.backend === "central" ? "El control central realiza la clasificación; revisa allí el estado de Groq." : `Clasificador: ${state.classifier.mode}; Groq ${state.classifier.keyConfigured ? "con clave configurada" : "pendiente de clave"}.`}`;
   $("#audit-status").textContent = `${state.audit.events} eventos. Cadena: ${state.audit.chainValid ? "válida en la última comprobación" : "ALTERADA: revisar registros"}.`;
   const printerValue = $("#printer").value;
   $("#printer").replaceChildren(...(state.windows.printers || []).map((name) => new Option(name, name)));
@@ -84,7 +90,9 @@ async function loadConfig() {
 }
 async function refresh() {
   try {
-    [state, files, events] = await Promise.all([api("/api/status"), api("/api/files"), api("/api/events")]);
+    let protection;
+    [state, files, events, protection] = await Promise.all([api("/api/status"), api("/api/files"), api("/api/events"), api("/api/protection")]);
+    renderProtection(protection);
     renderStatus(); renderInventory(); renderEvents();
     $("#connection").textContent = `Agente conectado · ${state.windows.available ? "sensor Windows disponible" : "sensor Windows sin comprobar"}`;
   } catch (error) { $("#connection").textContent = "Sin conexión con el agente"; notice(error.message, true); }
@@ -98,6 +106,12 @@ async function download(route, fileName) {
 }
 document.querySelectorAll("nav button").forEach((node) => node.addEventListener("click", () => show(node.dataset.view)));
 $("#refresh").addEventListener("click", refresh);
+$("#audit-protection").addEventListener("click", async () => {
+  const button = $("#audit-protection"); button.disabled = true;
+  try { renderProtection(await api("/api/protection/audit", { method: "POST" })); }
+  catch (error) { notice(error.message, true); }
+  finally { button.disabled = false; }
+});
 $("#live-filter").addEventListener("change", renderLive);
 $("#pause-live").addEventListener("click", () => { livePaused = !livePaused; $("#pause-live").textContent = livePaused ? "Reanudar vista" : "Pausar vista"; if (livePaused) $("#live-updated").textContent = "Vista pausada; la captura de eventos continúa"; else refreshLive(); });
 $("#file-search").addEventListener("input", renderInventory);

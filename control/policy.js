@@ -18,9 +18,17 @@ function defaults() { return { schemaVersion: 1, policies: validatePolicies(), b
 function validatePolicy(value) {
   if (!value || value.schemaVersion !== 1 || value.fragmentMode !== "block" || value.maxParts !== 20) throw new Error("Versión o límites de política no admitidos");
   const result = { ...defaults(), policies: validatePolicies(value.policies) };
+  result.profile = value.profile || "standard";
+  if (!["standard", "restricted"].includes(result.profile)) throw new Error("Perfil no admitido");
   for (const key of ["blockedDomains", "uploadDomains", "mailDomains"]) {
     if (!Array.isArray(value[key]) || value[key].length > 200 || value[key].some((x) => typeof x !== "string" || !/^(\*|(?:\*\.)?[a-z0-9.-]+)$/i.test(x))) throw new Error(`Lista inválida: ${key}`);
     result[key] = [...new Set(value[key].map((x) => x.toLowerCase()))];
+  }
+  if (result.profile === "restricted") {
+    if (!result.uploadDomains.length || result.uploadDomains.includes("*") || !result.mailDomains.length || result.mailDomains.includes("*")) throw new Error("El perfil estricto requiere destinos explícitos de subida y correo, sin * global");
+    for (const channel of ["web_proxy", "mail", "sync", "browser_file", "browser_paste", "browser_drop", "http_transfer"]) {
+      if (result.policies[channel].mode !== "enforce") throw new Error("El perfil estricto requiere enforce en todos los canales de salida");
+    }
   }
   return result;
 }
@@ -30,7 +38,7 @@ function destinationDecision(input, policy) {
     let url; try { url = new URL(input.destination); } catch { throw new Error("Destino web inválido"); }
     if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) throw new Error("Destino web no admitido");
     if (matchesHost(url.hostname, policy.blockedDomains)) return { allowed: false, decision: "BLOQUEADO", detected: false, reason: "Dominio prohibido por política", cause: "DESTINATION" };
-    if (input.parts?.length && !matchesHost(url.hostname, policy.uploadDomains)) return { allowed: false, decision: "BLOQUEADO", detected: false, reason: "Destino de subida no autorizado", cause: "DESTINATION" };
+    if ((input.parts?.length || policy.profile === "restricted" && input.outboundWrite) && !matchesHost(url.hostname, policy.uploadDomains)) return { allowed: false, decision: "BLOQUEADO", detected: false, reason: "Destino de subida no autorizado", cause: "DESTINATION" };
   }
   if (input.channel === "mail") {
     if (!Array.isArray(input.recipients) || !input.recipients.length || input.recipients.length > 50 || input.recipients.some((r) => typeof r !== "string" || !/^[^\s<>@]+@[^\s<>@]+$/.test(r))) throw new Error("Destinatarios inválidos");

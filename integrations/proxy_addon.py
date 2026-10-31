@@ -60,7 +60,7 @@ class DlpProxy:
                 parts.append(("consulta.txt", "\n".join(f"{key}: {value}" for key, value in fields).encode()))
             fragmented = "content-range" in flow.request.headers or flow.request.headers.get("upload-offset") is not None or flow.request.headers.get("upload-length") is not None or flow.request.headers.get("transfer-encoding", "").lower() not in ("", "chunked")
             unsupported = flow.request.headers.get("upgrade", "").lower() == "websocket" or flow.request.headers.get("content-type", "").split(";")[0].lower() == "application/dns-message" or flow.request.method not in ("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "PROPFIND", "MKCOL")
-            result = await self.decision(flow, parts, fragmented=fragmented, unsupported=unsupported)
+            result = await self.decision(flow, parts, fragmented=fragmented, unsupported=unsupported, outboundWrite=flow.request.method not in ("GET", "HEAD", "OPTIONS", "PROPFIND"))
             if not result["allowed"]:
                 await self.deny(flow, result["reason"], result)
             else:

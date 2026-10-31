@@ -6,6 +6,8 @@ Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correl
 
 Solo aportas tu **GROQ_API_KEY** en el .env privado. `npm.cmd run setup` genera las otras credenciales, incluso si copiaste .env.example con sus campos automáticos vacíos. El token de la extensión se copia desde **3001 > Navegador**; el token ADMIN de .env se utiliza únicamente en la consola **3100**.
 
+**Aplicaciones nativas, conversores web e inventario Groq:** consulta [Protección de aplicaciones y salidas](docs/PROTECCION_APLICACIONES_Y_SALIDAS.md). Incluye restricciones por EXE para WhatsApp/Discord, destinos de subida autorizados, perfil de salida por aplicación para Chrome/Edge/Firefox y restauración. Los scripts empiezan en Plan; no se activan al instalar. La restricción de un cliente nativo bloquea su red completa, no solo adjuntos sensibles. La exclusividad de salida necesita un endpoint aislado y gateway separado; no está acreditada en el Windows principal con servicios localhost.
+
 ## Arranque en esta computadora
 
 Los servicios están preparados en una distribución propia **DLP-Control-WSL**. El agente corre en Windows. No se aplicaron políticas generales al anfitrión. La VM VirtualBox DLP-Control-v3 se conserva apagada como alternativa; el despliegue final se verifica en WSL2.
@@ -25,7 +27,7 @@ npm.cmd run agent
 - Proxy: 127.0.0.1:8080. SMTP: 127.0.0.1:2525.
 - CA pública del proxy: `datos-control/certs-public/mitmproxy-ca-cert.pem`.
 
-El inventario utiliza reglas locales. Las salidas mediadas consultan la política central sobre una instantánea y comprueban su SHA-256. HTTPS se inspecciona antes de reenviar la solicitud; SMTP antes de la aceptación y relevo. La decisión y el recibo de ejecución se registran por separado.
+El inventario utiliza reglas y, con inventorySemantic activo y modo hybrid, consulta Groq por el central para documentos guardados en carpetas vigiladas, con presupuesto y cola. Los archivos sin clasificación semántica completa aparecen pendientes. Las salidas mediadas consultan la política central sobre una instantánea y comprueban su SHA-256. HTTPS se inspecciona antes de reenviar la solicitud; SMTP antes de la aceptación y relevo. La decisión y el recibo de ejecución se registran por separado.
 
 ## Último paso: tu clave Groq
 

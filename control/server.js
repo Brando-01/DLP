@@ -46,6 +46,20 @@ function createControl(options = {}) {
     next();
   });
   app.use(express.json({ limit: "16mb" }));
+  // Clasificación en reposo: sin destino, ticket ni afirmación de transferencia.
+  app.post("/v1/classify", async (req, res) => {
+    if (concurrent >= 2) return res.status(429).json({ error: "Clasificador ocupado; reintentar" });
+    const { name, base64 } = req.body || {};
+    if (typeof name !== "string" || !name || name.length > 200 || typeof base64 !== "string" || base64.length > 14 * 1024 * 1024 || base64.length % 4 || !/^[a-z0-9+/]*={0,2}$/i.test(base64)) throw new Error("Documento inválido");
+    const buffer = Buffer.from(base64, "base64");
+    if (buffer.length > 10 * 1024 * 1024) throw new Error("Documento superior a 10 MiB");
+    concurrent += 1;
+    try {
+      const inspection = await inspect(buffer, path.basename(name));
+      audit.record({ channel: "filesystem", activity: "CLASIFICACION_EN_REPOSO", classification: inspection.classification, semanticStatus: inspection.semantic?.status, sha256: inspection.sha256, detected: inspection.score > 0, prevented: false, evidence: "CLASSIFICATION_ONLY" });
+      res.json({ inspection });
+    } finally { concurrent -= 1; }
+  });
   app.get("/v1/config", (_req, res) => res.json({ blockedDomains: policy.blockedDomains, fragmentMode: policy.fragmentMode, maxBytes: 10 * 1024 * 1024 }));
   app.post("/v1/inspect", async (req, res) => {
     if (concurrent >= 2) return res.status(429).json({ error: "Inspecciones ocupadas; retener y reintentar" });

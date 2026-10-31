@@ -1,4 +1,5 @@
 "use strict";
+const { protectionStatus, auditProtection, protectionDirectory } = require("./protection");
 
 const http = require("node:http");
 const path = require("node:path");
@@ -50,6 +51,14 @@ function createEndpointApp(runtime) {
   });
   app.use(express.json({ limit: "15mb" }));
   app.get("/api/status", (_req, res) => res.json(runtime.status()));
+  app.get("/api/protection", (_req, res) => res.json(protectionStatus(protectionDirectory())));
+  let protectionAuditing = false;
+  app.post("/api/protection/audit", async (_req, res) => {
+    if (protectionAuditing) return res.status(429).json({ error: "Auditoría en curso" });
+    protectionAuditing = true;
+    try { res.json(await auditProtection(protectionDirectory())); }
+    finally { protectionAuditing = false; }
+  });
   app.get("/api/config", (_req, res) => res.json(runtime.config));
   app.put("/api/config", async (req, res) => res.json(await runtime.updateConfig(req.body)));
   app.get("/api/files", (_req, res) => res.json([...runtime.inventory.values()].sort((a, b) => b.score - a.score || a.name.localeCompare(b.name))));

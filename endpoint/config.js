@@ -22,6 +22,8 @@ function defaultConfig() {
     restrictedDestinations: [],
     maxFiles: 2500,
     scanIntervalSeconds: 120,
+    inventorySemantic: true,
+    semanticFilesPerScan: 5,
     clipboardMonitor: true,
     clipboardRemediation: false,
     notifications: true,
@@ -50,6 +52,7 @@ function validateConfig(value) {
   if (!Number.isInteger(config.maxFiles) || config.maxFiles < 1 || config.maxFiles > 20000) throw new Error("Límite de inventario inválido");
   if (!Number.isInteger(config.scanIntervalSeconds) || config.scanIntervalSeconds < 10 || config.scanIntervalSeconds > 3600) throw new Error("Intervalo de exploración inválido");
   for (const key of ["clipboardMonitor", "clipboardRemediation", "notifications", "browserFailClosed"]) if (typeof config[key] !== "boolean") throw new Error(`Configuración inválida: ${key}`);
+  if (typeof config.inventorySemantic !== "boolean" || !Number.isInteger(config.semanticFilesPerScan) || config.semanticFilesPerScan < 1 || config.semanticFilesPerScan > 50) throw new Error("Configuración semántica del inventario inválida");
   config.policies = validatePolicies(config.policies);
   if (!Array.isArray(config.browserDomains) || config.browserDomains.length > 100 || config.browserDomains.some((d) => typeof d !== "string" || !/^(\*|(?:\*\.)?[a-z0-9.-]+)$/i.test(d))) throw new Error("Lista de dominios no válida");
   if (!Array.isArray(config.targets) || config.targets.length > 20) throw new Error("Destinos no válidos");
