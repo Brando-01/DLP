@@ -73,29 +73,26 @@ Si ya existe DLP-Control-WSL, omite Create. Para comprobarlo: `wsl --list --verb
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/wsl/Lab-WSL.ps1 -Action Plan
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/wsl/Lab-WSL.ps1 -Action Create
-npm.cmd run wsl:sync
-npm.cmd run wsl:ca
-npm.cmd run agent
+npm.cmd start
 ```
 
 Create descarga una imagen oficial WSL y comprueba su SHA-256. Sync instala Docker Linux en esa distribución, copia el proyecto y construye los servicios. Puede tardar varios minutos. ExportCA copia únicamente el certificado público del proxy al directorio datos-control/certs-public. El proceso auxiliar del lanzador mantiene activa su distribución; no cambia Hyper-V ni instala una CA en Windows.
 
-Mantén abierta la terminal de `agent`. Abre http://127.0.0.1:3001. Si el panel ya funciona porque el agente estaba iniciado en segundo plano, no lances una segunda instancia.
+`npm.cmd start` reúne setup, construcción de extensión, Sync, ExportCA, agente y receptores. Mantén abierta su terminal y abre http://127.0.0.1:3001. Si otro agente/demo ocupa esos puertos, ciérralo primero. El arranque no activa restricciones de Windows; consulta ARRANQUE_UNICO.md para diferenciar servicios iniciados de protección del equipo.
 
 Para abrir la consola central en http://127.0.0.1:3100, copia localmente el valor de DLP_CONTROL_ADMIN_TOKEN del .env, sin el nombre de la variable ni comillas, y pégalo en su acceso. No pegues allí el token de extensión.
 
 ## 5. Inicios posteriores, cambios y parada
 
-Después de reiniciar Windows, si no cambió el código ni el .env:
+Después de reiniciar Windows o actualizar el código/.env:
 
 ```powershell
-npm.cmd run wsl:start
-npm.cmd run agent
+npm.cmd start
 ```
 
-Cuando cambies la clave Groq, los modelos o el código del servidor, ejecuta `npm.cmd run wsl:sync`. WSL usa su propia copia del proyecto: editar solo el .env de Windows no actualiza un contenedor que ya está ejecutándose. Si modificaste código de la extensión, ejecuta `npm.cmd run extension:build` y recárgala en cada navegador.
+El lanzador sincroniza los cambios con la copia Linux; editar solo .env sin reiniciar/sincronizar no actualiza un contenedor en ejecución. Los comandos wsl:* y agent quedan para diagnóstico de componentes. Aunque se construya la extensión, debes recargarla en cada navegador y refrescar las pestañas para reemplazar el código anterior.
 
-Para parar el agente iniciado en primer plano, pulsa Ctrl+C en su terminal. Si está en segundo plano, usa Detener agente en el icono de escudo de la bandeja Windows. Para detener exclusivamente el entorno Linux del proyecto:
+Ctrl+C en la terminal principal cierra sus recursos locales y el backend iniciado allí; conserva un backend ya existente. Si el agente está en segundo plano, usa Detener agente en la bandeja Windows. Para detener exclusivamente el entorno Linux del proyecto:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/wsl/Lab-WSL.ps1 -Action Stop

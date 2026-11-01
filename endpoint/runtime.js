@@ -133,14 +133,14 @@ class EndpointRuntime extends EventEmitter {
           try {
             const stat = await fsp.stat(file);
             const previous = this.inventory.get(id);
-            const semanticPending = semanticEnabled && previous && previous.score < 3 && previous.inspectionStatus === "COMPLETE" && previous.semantic?.status !== "COMPLETE" && previous.semantic?.status !== "BYPASSED_LOCAL_BLOCK" && Date.now() >= (previous.semanticRetryAt || 0);
+            const semanticPending = semanticEnabled && previous && !previous.emptyContent && previous.score < 3 && previous.inspectionStatus === "COMPLETE" && previous.semantic?.status !== "COMPLETE" && previous.semantic?.status !== "BYPASSED_LOCAL_BLOCK" && Date.now() >= (previous.semanticRetryAt || 0);
             if (!force && previous && previous.size === stat.size && previous.mtimeMs === stat.mtimeMs && !semanticPending && previous.inventorySemanticEnabled === semanticEnabled) continue;
             let inspection;
             if (stat.size > MAX_FILE_BYTES) inspection = { inspectionStatus: "UNANALYZABLE", classification: "NO_ANALIZABLE", score: 0, matches: [], reason: "Archivo superior a 10 MiB", size: stat.size, sha256: null };
             else {
               const snapshot = await this.readSnapshot(file);
               inspection = await inspectBuffer(snapshot.buffer, entry.name);
-              if (semanticEnabled && inspection.inspectionStatus === "COMPLETE" && inspection.score < 3) {
+              if (semanticEnabled && !inspection.emptyContent && inspection.inspectionStatus === "COMPLETE" && inspection.score < 3) {
                 if (semanticBudget > 0) {
                   semanticBudget -= 1;
                   const semanticInspection = await this.classifyAtRest(snapshot.buffer, entry.name);
@@ -374,6 +374,7 @@ class EndpointRuntime extends EventEmitter {
       operations: { prevented: this.audit.events.filter((event) => event.prevented === true).length },
       windows: this.bridge.info, windowsControls: systemControls, audit: this.audit.status(), suggestedRoots: suggestedRoots(),
       browserClients: this.browserObserver.status(),
+      session: this.session || { mode: "COMPONENT", nativeSensitiveOnly: false },
       coverage: [
         { channel: "Archivos locales", mode: "DETECCION", active: this.watchers.length > 0, detail: "Carpetas configuradas, archivos accesibles y formatos admitidos; no intercepta lecturas ni copias nativas." },
         { channel: "USB / carpetas compartidas", mode: "BLOQUEO_EN_OPERACION_MEDIADA", active: true, detail: "El agente decide antes de escribir. Los destinos de laboratorio están identificados; el Explorador no pasa por esta operación." },

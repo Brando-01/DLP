@@ -76,3 +76,20 @@ test("clasificación central en reposo: autentica, devuelve el hash y no crea ti
   assert.equal(control.tickets.size, 0); assert.equal(control.audit.events.at(-1).evidence, "CLASSIFICATION_ONLY");
   assert.ok(!(await fs.readFile(control.audit.file, "utf8")).includes("12345678"));
 });
+test("inventario vacío no consume presupuesto semántico ni vuelve a encolarse", async t => {
+  const prior = process.env.DLP_LLM_MODE; process.env.DLP_LLM_MODE = "hybrid";
+  t.after(() => { if (prior === undefined) delete process.env.DLP_LLM_MODE; else process.env.DLP_LLM_MODE = prior; });
+  const temp = await temporary(); t.after(temp.cleanup);
+  const root = path.join(temp.root, "fuente"); await fs.mkdir(root);
+  await fs.writeFile(path.join(root, "vacio.txt"), "");
+  let calls = 0;
+  const runtime = new EndpointRuntime({ dataDirectory: path.join(temp.root, "estado"), bridge: new FakeBridge(), config: { watchRoots: [root], semanticFilesPerScan: 1 }, classifyAtRest: async () => { calls += 1; throw new Error("No consultar"); } });
+  t.after(() => runtime.stop());
+  await runtime.scan();
+  const first = [...runtime.inventory.values()][0];
+  await runtime.scan();
+  assert.equal(calls, 0);
+  assert.equal(runtime.status().inventory.unknown, 0);
+  assert.equal([...runtime.inventory.values()][0], first);
+  assert.equal(first.classification, "PUBLICO");
+});

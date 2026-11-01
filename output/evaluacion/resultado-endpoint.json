@@ -1,11 +1,11 @@
 {
   "title": "Evaluación multicanal del laboratorio DLP de endpoint",
-  "generatedAt": "2026-10-28T22:31:55.239Z",
+  "generatedAt": "2026-10-31T22:38:52.876Z",
   "node": "v24.15.0",
   "platform": "win32",
-  "cases": 27,
-  "operations": 135,
-  "sourceCasesSha256": "6d7db1f4f4d31aa216cd871920a873046f1c2f6c3bd6071a3a925d3e27ea7114",
+  "cases": 32,
+  "operations": 160,
+  "sourceCasesSha256": "f451f2c13c49b485fe35e1aa9ed376428feba2ae676255c3e0143802f1db82e8",
   "interpretation": "Las etiquetas se declaran en casos-endpoint.json por propósito y contenido. Los casos se construyeron para comprobar el desarrollo; no constituyen un conjunto independiente de generalización. Las métricas integrales incluyen restricciones por no inspección y sus efectos de disponibilidad.",
   "coverage": {
     "usb": "Directorio de laboratorio, no USB físico ni bloqueo del Explorador",
@@ -17,29 +17,29 @@
   "channels": [
     {
       "channel": "usb",
-      "n": 27,
-      "completeInspections": 25,
-      "incompleteInspections": 2,
+      "n": 32,
+      "completeInspections": 29,
+      "incompleteInspections": 3,
       "detection": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "prevention": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "completeOnlyDetection": {
         "TP": 13,
         "FP": 3,
-        "TN": 7,
+        "TN": 11,
         "FN": 2,
         "precision": 0.8125,
         "recall": 0.8666666666666667
@@ -47,7 +47,7 @@
       "completeOnlyPrevention": {
         "TP": 12,
         "FP": 2,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
         "precision": 0.8571428571428571,
         "recall": 0.8
@@ -56,29 +56,29 @@
     },
     {
       "channel": "network_share",
-      "n": 27,
-      "completeInspections": 25,
-      "incompleteInspections": 2,
+      "n": 32,
+      "completeInspections": 29,
+      "incompleteInspections": 3,
       "detection": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "prevention": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "completeOnlyDetection": {
         "TP": 13,
         "FP": 3,
-        "TN": 7,
+        "TN": 11,
         "FN": 2,
         "precision": 0.8125,
         "recall": 0.8666666666666667
@@ -86,7 +86,7 @@
       "completeOnlyPrevention": {
         "TP": 12,
         "FP": 2,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
         "precision": 0.8571428571428571,
         "recall": 0.8
@@ -95,29 +95,29 @@
     },
     {
       "channel": "http_transfer",
-      "n": 27,
-      "completeInspections": 25,
-      "incompleteInspections": 2,
+      "n": 32,
+      "completeInspections": 29,
+      "incompleteInspections": 3,
       "detection": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "prevention": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "completeOnlyDetection": {
         "TP": 13,
         "FP": 3,
-        "TN": 7,
+        "TN": 11,
         "FN": 2,
         "precision": 0.8125,
         "recall": 0.8666666666666667
@@ -125,7 +125,7 @@
       "completeOnlyPrevention": {
         "TP": 12,
         "FP": 2,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
         "precision": 0.8571428571428571,
         "recall": 0.8
@@ -134,29 +134,29 @@
     },
     {
       "channel": "clipboard",
-      "n": 27,
-      "completeInspections": 25,
-      "incompleteInspections": 2,
+      "n": 32,
+      "completeInspections": 29,
+      "incompleteInspections": 3,
       "detection": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "prevention": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "completeOnlyDetection": {
         "TP": 13,
         "FP": 3,
-        "TN": 7,
+        "TN": 11,
         "FN": 2,
         "precision": 0.8125,
         "recall": 0.8666666666666667
@@ -164,7 +164,7 @@
       "completeOnlyPrevention": {
         "TP": 12,
         "FP": 2,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
         "precision": 0.8571428571428571,
         "recall": 0.8
@@ -173,29 +173,29 @@
     },
     {
       "channel": "print",
-      "n": 27,
-      "completeInspections": 25,
-      "incompleteInspections": 2,
+      "n": 32,
+      "completeInspections": 29,
+      "incompleteInspections": 3,
       "detection": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "prevention": {
-        "TP": 13,
+        "TP": 14,
         "FP": 3,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
-        "precision": 0.8125,
-        "recall": 0.8125
+        "precision": 0.8235294117647058,
+        "recall": 0.8235294117647058
       },
       "completeOnlyDetection": {
         "TP": 13,
         "FP": 3,
-        "TN": 7,
+        "TN": 11,
         "FN": 2,
         "precision": 0.8125,
         "recall": 0.8666666666666667
@@ -203,7 +203,7 @@
       "completeOnlyPrevention": {
         "TP": 12,
         "FP": 2,
-        "TN": 8,
+        "TN": 12,
         "FN": 3,
         "precision": 0.8571428571428571,
         "recall": 0.8
@@ -212,10 +212,10 @@
     }
   ],
   "audit": {
-    "events": 217,
+    "events": 267,
     "chainValid": true,
-    "checkedAt": "2026-10-28T22:31:55.242Z",
-    "lastHash": "e2a22bcf3659538ef97cecce341de756e70bf6b68aba755cad320030a22fda55",
+    "checkedAt": "2026-10-31T22:38:52.881Z",
+    "lastHash": "7f4a24ce3a7cf7c3502720a086acd8b86f6e9e406f2865525d3be7c5ec6a54f9",
     "note": "Cadena SHA-256 para detectar alteraciones; no es una firma ni protege contra un administrador que reconstruya la cadena."
   },
   "results": [
@@ -396,6 +396,74 @@
       "evidence": "REAL_LAB_DIRECTORY_WRITE"
     },
     {
+      "id": "P11",
+      "file": "vacio.txt",
+      "channel": "usb",
+      "sensitive": false,
+      "referenceReason": "Texto vacío válido: no requiere análisis semántico.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "P12",
+      "file": "vacio.docx",
+      "channel": "usb",
+      "sensitive": false,
+      "referenceReason": "Word válido en blanco sin imágenes ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "P13",
+      "file": "vacio.xlsx",
+      "channel": "usb",
+      "sensitive": false,
+      "referenceReason": "Libro Excel válido sin celdas ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "P14",
+      "file": "formula_publica.xlsx",
+      "channel": "usb",
+      "sensitive": false,
+      "referenceReason": "Fórmula aritmética pública con resultado guardado, sin ejecutar el cálculo.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
       "id": "S01",
       "file": "confidencial.txt",
       "channel": "usb",
@@ -676,6 +744,25 @@
       "detected": false,
       "prevented": false,
       "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "S16",
+      "file": "formula_sensible.xlsx",
+      "channel": "usb",
+      "sensitive": true,
+      "referenceReason": "DNI ficticio en una fórmula sin caché; se reconocen indicadores y se retiene la extracción parcial, sin ejecutar Excel.",
+      "inspectionStatus": "PARTIAL",
+      "classification": "CONFIDENCIAL",
+      "score": 3,
+      "rules": [
+        "DLP-008"
+      ],
+      "decision": "BLOQUEADO",
+      "detected": true,
+      "prevented": true,
+      "outcome": "PREVENTED",
       "sideEffectVerified": true,
       "evidence": "REAL_LAB_DIRECTORY_WRITE"
     },
@@ -890,6 +977,74 @@
       "evidence": "REAL_LAB_DIRECTORY_WRITE"
     },
     {
+      "id": "P11",
+      "file": "vacio.txt",
+      "channel": "network_share",
+      "sensitive": false,
+      "referenceReason": "Texto vacío válido: no requiere análisis semántico.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "P12",
+      "file": "vacio.docx",
+      "channel": "network_share",
+      "sensitive": false,
+      "referenceReason": "Word válido en blanco sin imágenes ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "P13",
+      "file": "vacio.xlsx",
+      "channel": "network_share",
+      "sensitive": false,
+      "referenceReason": "Libro Excel válido sin celdas ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "P14",
+      "file": "formula_publica.xlsx",
+      "channel": "network_share",
+      "sensitive": false,
+      "referenceReason": "Fórmula aritmética pública con resultado guardado, sin ejecutar el cálculo.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
       "id": "S01",
       "file": "confidencial.txt",
       "channel": "network_share",
@@ -1170,6 +1325,25 @@
       "detected": false,
       "prevented": false,
       "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LAB_DIRECTORY_WRITE"
+    },
+    {
+      "id": "S16",
+      "file": "formula_sensible.xlsx",
+      "channel": "network_share",
+      "sensitive": true,
+      "referenceReason": "DNI ficticio en una fórmula sin caché; se reconocen indicadores y se retiene la extracción parcial, sin ejecutar Excel.",
+      "inspectionStatus": "PARTIAL",
+      "classification": "CONFIDENCIAL",
+      "score": 3,
+      "rules": [
+        "DLP-008"
+      ],
+      "decision": "BLOQUEADO",
+      "detected": true,
+      "prevented": true,
+      "outcome": "PREVENTED",
       "sideEffectVerified": true,
       "evidence": "REAL_LAB_DIRECTORY_WRITE"
     },
@@ -1384,6 +1558,74 @@
       "evidence": "REAL_LOOPBACK_RECEIVER"
     },
     {
+      "id": "P11",
+      "file": "vacio.txt",
+      "channel": "http_transfer",
+      "sensitive": false,
+      "referenceReason": "Texto vacío válido: no requiere análisis semántico.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LOOPBACK_RECEIVER"
+    },
+    {
+      "id": "P12",
+      "file": "vacio.docx",
+      "channel": "http_transfer",
+      "sensitive": false,
+      "referenceReason": "Word válido en blanco sin imágenes ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LOOPBACK_RECEIVER"
+    },
+    {
+      "id": "P13",
+      "file": "vacio.xlsx",
+      "channel": "http_transfer",
+      "sensitive": false,
+      "referenceReason": "Libro Excel válido sin celdas ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LOOPBACK_RECEIVER"
+    },
+    {
+      "id": "P14",
+      "file": "formula_publica.xlsx",
+      "channel": "http_transfer",
+      "sensitive": false,
+      "referenceReason": "Fórmula aritmética pública con resultado guardado, sin ejecutar el cálculo.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LOOPBACK_RECEIVER"
+    },
+    {
       "id": "S01",
       "file": "confidencial.txt",
       "channel": "http_transfer",
@@ -1664,6 +1906,25 @@
       "detected": false,
       "prevented": false,
       "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "REAL_LOOPBACK_RECEIVER"
+    },
+    {
+      "id": "S16",
+      "file": "formula_sensible.xlsx",
+      "channel": "http_transfer",
+      "sensitive": true,
+      "referenceReason": "DNI ficticio en una fórmula sin caché; se reconocen indicadores y se retiene la extracción parcial, sin ejecutar Excel.",
+      "inspectionStatus": "PARTIAL",
+      "classification": "CONFIDENCIAL",
+      "score": 3,
+      "rules": [
+        "DLP-008"
+      ],
+      "decision": "BLOQUEADO",
+      "detected": true,
+      "prevented": true,
+      "outcome": "PREVENTED",
       "sideEffectVerified": true,
       "evidence": "REAL_LOOPBACK_RECEIVER"
     },
@@ -1878,6 +2139,74 @@
       "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
     },
     {
+      "id": "P11",
+      "file": "vacio.txt",
+      "channel": "clipboard",
+      "sensitive": false,
+      "referenceReason": "Texto vacío válido: no requiere análisis semántico.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "P12",
+      "file": "vacio.docx",
+      "channel": "clipboard",
+      "sensitive": false,
+      "referenceReason": "Word válido en blanco sin imágenes ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "P13",
+      "file": "vacio.xlsx",
+      "channel": "clipboard",
+      "sensitive": false,
+      "referenceReason": "Libro Excel válido sin celdas ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "P14",
+      "file": "formula_publica.xlsx",
+      "channel": "clipboard",
+      "sensitive": false,
+      "referenceReason": "Fórmula aritmética pública con resultado guardado, sin ejecutar el cálculo.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
       "id": "S01",
       "file": "confidencial.txt",
       "channel": "clipboard",
@@ -2158,6 +2487,25 @@
       "detected": false,
       "prevented": false,
       "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "S16",
+      "file": "formula_sensible.xlsx",
+      "channel": "clipboard",
+      "sensitive": true,
+      "referenceReason": "DNI ficticio en una fórmula sin caché; se reconocen indicadores y se retiene la extracción parcial, sin ejecutar Excel.",
+      "inspectionStatus": "PARTIAL",
+      "classification": "CONFIDENCIAL",
+      "score": 3,
+      "rules": [
+        "DLP-008"
+      ],
+      "decision": "BLOQUEADO",
+      "detected": true,
+      "prevented": true,
+      "outcome": "PREVENTED",
       "sideEffectVerified": true,
       "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
     },
@@ -2372,6 +2720,74 @@
       "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
     },
     {
+      "id": "P11",
+      "file": "vacio.txt",
+      "channel": "print",
+      "sensitive": false,
+      "referenceReason": "Texto vacío válido: no requiere análisis semántico.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "P12",
+      "file": "vacio.docx",
+      "channel": "print",
+      "sensitive": false,
+      "referenceReason": "Word válido en blanco sin imágenes ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "P13",
+      "file": "vacio.xlsx",
+      "channel": "print",
+      "sensitive": false,
+      "referenceReason": "Libro Excel válido sin celdas ni objetos.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "P14",
+      "file": "formula_publica.xlsx",
+      "channel": "print",
+      "sensitive": false,
+      "referenceReason": "Fórmula aritmética pública con resultado guardado, sin ejecutar el cálculo.",
+      "inspectionStatus": "COMPLETE",
+      "classification": "PUBLICO",
+      "score": 0,
+      "rules": [],
+      "decision": "PERMITIDO",
+      "detected": false,
+      "prevented": false,
+      "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
       "id": "S01",
       "file": "confidencial.txt",
       "channel": "print",
@@ -2652,6 +3068,25 @@
       "detected": false,
       "prevented": false,
       "outcome": "COMPLETED",
+      "sideEffectVerified": true,
+      "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
+    },
+    {
+      "id": "S16",
+      "file": "formula_sensible.xlsx",
+      "channel": "print",
+      "sensitive": true,
+      "referenceReason": "DNI ficticio en una fórmula sin caché; se reconocen indicadores y se retiene la extracción parcial, sin ejecutar Excel.",
+      "inspectionStatus": "PARTIAL",
+      "classification": "CONFIDENCIAL",
+      "score": 3,
+      "rules": [
+        "DLP-008"
+      ],
+      "decision": "BLOQUEADO",
+      "detected": true,
+      "prevented": true,
+      "outcome": "PREVENTED",
       "sideEffectVerified": true,
       "evidence": "TEST_DOUBLE_NATIVE_ADAPTER"
     },

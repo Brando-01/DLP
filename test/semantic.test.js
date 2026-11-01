@@ -7,6 +7,15 @@ const { decide } = require("../lib/policy");
 const cfg = () => ({ mode: "hybrid", key: "CLAVE_FICTICIA_NO_UTILIZABLE", model: "openai/gpt-oss-20b" });
 const response = (classification = "CONFIDENCIAL") => new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify({ classification, categories: ["datos_academicos"], rationale: "persona_identificable" }) } }] }), { status: 200 });
 
+test("LLM: texto vacío no consume cuota ni exige una clave, texto público no vacío sí", async () => {
+  let calls = 0;
+  const classifier = createSemanticClassifier({ settings: () => ({ ...cfg(), key: "" }), fetch: async () => { calls += 1; throw new Error("No consultar"); } });
+  const empty = await classifier.classify(" \n\t");
+  assert.equal(empty.status, "EMPTY_CONTENT"); assert.equal(empty.required, false);
+  assert.equal((await classifier.classify("Horario público")).status, "PENDING_KEY");
+  assert.equal(calls, 0);
+});
+
 test("LLM: clasifica contexto sin patrones, usa esquema estricto y conserva caché sin texto", async () => {
   let calls = 0;
   const classifier = createSemanticClassifier({ settings: cfg, fetch: async (url, options) => {
@@ -33,6 +42,8 @@ test("LLM: clave ausente, cuota, formato inválido e incertidumbre no liberan co
   for (const options of variants) {
     const result = await inspectBuffer(Buffer.from("Horario público"), "horario.txt", { semantic: true, classifier: createSemanticClassifier(options) });
     assert.equal(decide(result, "mail").allowed, false);
+    assert.equal(decide(result, "mail").cause, "NO_INSPECCIONABLE");
+    assert.ok(decide(result, "mail").reason.includes(result.semantic.reason));
     assert.equal(result.score, 0); // Restricción por no inspección, no sensibilidad inventada.
   }
 });

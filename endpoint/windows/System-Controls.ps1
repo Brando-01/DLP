@@ -17,7 +17,7 @@ function Write-JsonAtomic([string]$File, $Value) {
     [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($File)) | Out-Null
     $temporary = $File + '.' + [guid]::NewGuid().ToString() + '.tmp'
     [System.IO.File]::WriteAllText($temporary, ($Value | ConvertTo-Json -Depth 12), (New-Object System.Text.UTF8Encoding($false)))
-    if (Test-Path -LiteralPath $File) { [System.IO.File]::Replace($temporary, $File, $null) }
+    if (Test-Path -LiteralPath $File) { [System.IO.File]::Replace($temporary, $File, [NullString]::Value) }
     else { [System.IO.File]::Move($temporary, $File) }
 }
 

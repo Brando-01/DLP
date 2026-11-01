@@ -24,7 +24,7 @@ function Save-Backup($Value) {
   [IO.Directory]::CreateDirectory($DataDirectory) | Out-Null
   $tmp = $backupFile + '.tmp'
   [IO.File]::WriteAllText($tmp, ($Value | ConvertTo-Json -Depth 12), (New-Object Text.UTF8Encoding($false)))
-  if (Test-Path -LiteralPath $backupFile) { [IO.File]::Replace($tmp, $backupFile, $null) } else { [IO.File]::Move($tmp, $backupFile) }
+  if (Test-Path -LiteralPath $backupFile) { [IO.File]::Replace($tmp, $backupFile, [NullString]::Value) } else { [IO.File]::Move($tmp, $backupFile) }
 }
 function Administrator {
   $identity = [Security.Principal.WindowsIdentity]::GetCurrent()

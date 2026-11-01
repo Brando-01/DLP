@@ -9,6 +9,10 @@ P07,tutorial_dlp.txt,usb,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_D
 P08,tutorial_correo.txt,usb,false,COMPLETE,ALERTA,true,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 P09,tarjeta_pruebas.txt,usb,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 P10,serie.txt,usb,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P11,vacio.txt,usb,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P12,vacio.docx,usb,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P13,vacio.xlsx,usb,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P14,formula_publica.xlsx,usb,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 S01,confidencial.txt,usb,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 S02,restringido.json,usb,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 S03,notas.json,usb,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
@@ -24,6 +28,7 @@ S12,planilla.xlsx,usb,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIREC
 S13,directorio_interno.txt,usb,true,COMPLETE,ALERTA,true,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 S14,redaccion_distinta.txt,usb,true,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 S15,identidad_sin_sigla.txt,usb,true,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+S16,formula_sensible.xlsx,usb,true,PARTIAL,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 U01,escaneo_privado.pdf,usb,true,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 U02,archivo_publico.bin,usb,false,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 P01,horario.txt,network_share,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
@@ -36,6 +41,10 @@ P07,tutorial_dlp.txt,network_share,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,
 P08,tutorial_correo.txt,network_share,false,COMPLETE,ALERTA,true,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 P09,tarjeta_pruebas.txt,network_share,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 P10,serie.txt,network_share,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P11,vacio.txt,network_share,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P12,vacio.docx,network_share,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P13,vacio.xlsx,network_share,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+P14,formula_publica.xlsx,network_share,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 S01,confidencial.txt,network_share,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 S02,restringido.json,network_share,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 S03,notas.json,network_share,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
@@ -51,6 +60,7 @@ S12,planilla.xlsx,network_share,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL
 S13,directorio_interno.txt,network_share,true,COMPLETE,ALERTA,true,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 S14,redaccion_distinta.txt,network_share,true,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
 S15,identidad_sin_sigla.txt,network_share,true,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LAB_DIRECTORY_WRITE
+S16,formula_sensible.xlsx,network_share,true,PARTIAL,BLOQUEADO,true,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 U01,escaneo_privado.pdf,network_share,true,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 U02,archivo_publico.bin,network_share,false,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,REAL_LAB_DIRECTORY_WRITE
 P01,horario.txt,http_transfer,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
@@ -63,6 +73,10 @@ P07,tutorial_dlp.txt,http_transfer,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,
 P08,tutorial_correo.txt,http_transfer,false,COMPLETE,ALERTA,true,false,COMPLETED,REAL_LOOPBACK_RECEIVER
 P09,tarjeta_pruebas.txt,http_transfer,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LOOPBACK_RECEIVER
 P10,serie.txt,http_transfer,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
+P11,vacio.txt,http_transfer,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
+P12,vacio.docx,http_transfer,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
+P13,vacio.xlsx,http_transfer,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
+P14,formula_publica.xlsx,http_transfer,false,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
 S01,confidencial.txt,http_transfer,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LOOPBACK_RECEIVER
 S02,restringido.json,http_transfer,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LOOPBACK_RECEIVER
 S03,notas.json,http_transfer,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL_LOOPBACK_RECEIVER
@@ -78,6 +92,7 @@ S12,planilla.xlsx,http_transfer,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,REAL
 S13,directorio_interno.txt,http_transfer,true,COMPLETE,ALERTA,true,false,COMPLETED,REAL_LOOPBACK_RECEIVER
 S14,redaccion_distinta.txt,http_transfer,true,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
 S15,identidad_sin_sigla.txt,http_transfer,true,COMPLETE,PERMITIDO,false,false,COMPLETED,REAL_LOOPBACK_RECEIVER
+S16,formula_sensible.xlsx,http_transfer,true,PARTIAL,BLOQUEADO,true,true,PREVENTED,REAL_LOOPBACK_RECEIVER
 U01,escaneo_privado.pdf,http_transfer,true,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,REAL_LOOPBACK_RECEIVER
 U02,archivo_publico.bin,http_transfer,false,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,REAL_LOOPBACK_RECEIVER
 P01,horario.txt,clipboard,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
@@ -90,6 +105,10 @@ P07,tutorial_dlp.txt,clipboard,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST
 P08,tutorial_correo.txt,clipboard,false,COMPLETE,ALERTA,true,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 P09,tarjeta_pruebas.txt,clipboard,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 P10,serie.txt,clipboard,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P11,vacio.txt,clipboard,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P12,vacio.docx,clipboard,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P13,vacio.xlsx,clipboard,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P14,formula_publica.xlsx,clipboard,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 S01,confidencial.txt,clipboard,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 S02,restringido.json,clipboard,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 S03,notas.json,clipboard,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
@@ -105,6 +124,7 @@ S12,planilla.xlsx,clipboard,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOU
 S13,directorio_interno.txt,clipboard,true,COMPLETE,ALERTA,true,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 S14,redaccion_distinta.txt,clipboard,true,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 S15,identidad_sin_sigla.txt,clipboard,true,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+S16,formula_sensible.xlsx,clipboard,true,PARTIAL,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 U01,escaneo_privado.pdf,clipboard,true,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 U02,archivo_publico.bin,clipboard,false,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 P01,horario.txt,print,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
@@ -117,6 +137,10 @@ P07,tutorial_dlp.txt,print,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOU
 P08,tutorial_correo.txt,print,false,COMPLETE,ALERTA,true,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 P09,tarjeta_pruebas.txt,print,false,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 P10,serie.txt,print,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P11,vacio.txt,print,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P12,vacio.docx,print,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P13,vacio.xlsx,print,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+P14,formula_publica.xlsx,print,false,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 S01,confidencial.txt,print,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 S02,restringido.json,print,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 S03,notas.json,print,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
@@ -132,5 +156,6 @@ S12,planilla.xlsx,print,true,COMPLETE,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_
 S13,directorio_interno.txt,print,true,COMPLETE,ALERTA,true,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 S14,redaccion_distinta.txt,print,true,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
 S15,identidad_sin_sigla.txt,print,true,COMPLETE,PERMITIDO,false,false,COMPLETED,TEST_DOUBLE_NATIVE_ADAPTER
+S16,formula_sensible.xlsx,print,true,PARTIAL,BLOQUEADO,true,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 U01,escaneo_privado.pdf,print,true,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER
 U02,archivo_publico.bin,print,false,UNANALYZABLE,BLOQUEADO,false,true,PREVENTED,TEST_DOUBLE_NATIVE_ADAPTER

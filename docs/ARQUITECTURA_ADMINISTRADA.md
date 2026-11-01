@@ -102,6 +102,8 @@ Una decisión de bloqueo no prueba su ejecución. El control emite un ticket tem
 
 Reglas por defecto: 0 permite, 1-2 alerta y permite, 3 o más bloquea en enforce. En audit se detecta y permite; en alert se alerta y permite. Los puntos no son probabilidades. La política central puede denegar aunque el agente tenga un modo local más permisivo. Un resultado público del LLM no anula un indicador fuerte local.
 
+Los vacíos acreditados de texto y Office compatible no requieren Groq. Un PDF sin texto conserva su estado no inspeccionable. Excel incorpora definiciones de fórmulas y destinos de enlaces; no ejecuta cálculos. Las fórmulas sin resultado guardado y los componentes Office no cubiertos hacen parcial la extracción, aunque exista texto público. Estos casos no se confunden con un documento vacío ni con una sensibilidad reconocida por el modelo.
+
 ## Clasificación semántica y tratamiento de fallos
 
 El LLM recibe texto extraído, no ejecuta programas ni abre archivos en la PC. El documento se delimita como entrada no confiable; las instrucciones dentro del documento no tienen autoridad. La salida contiene solo clasificación y códigos permitidos. Las pruebas incluyen instrucciones maliciosas y salidas inválidas; estas defensas no demuestran inmunidad universal a prompt injection.

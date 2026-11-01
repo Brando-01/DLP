@@ -8,6 +8,13 @@ function renderProtection(value) {
   $("#protection-status").textContent = `${labels[value.state] || "Sin estado verificado."}${value.checkedAt ? " Comprobación: " + when(value.checkedAt) : ""}${value.findings?.length ? " " + value.findings.join("; ") : ""}`;
   const native = value.nativeApplications;
   if (native) $("#protection-status").textContent += ` Aplicaciones nativas: ${native.state === "CONFIGURATION_VERIFIED" ? "reglas por EXE comprobadas; valida el efecto y las rutas de proxy" : native.state === "NOT_APPLIED" ? "sin restricciones por EXE aplicadas" : native.state === "DRIFT" ? "hay cambios o versiones sin cubrir" : "pendiente de comprobar"}.`;
+  const session = state?.session;
+  $("#session-panel").classList.toggle("coverage-incomplete", !value.configurationVerified || session?.mode === "DEMO");
+  $("#session-title").textContent = session?.mode === "INTEGRATED" ? "Arranque integrado · cobertura por canal" : session?.mode === "DEMO" ? "Modo de demostración · solo reglas locales" : "Componente individual · usa npm start para el arranque integrado";
+  $("#session-detail").textContent = session?.mode === "DEMO" ? "La demo no consulta Groq ni instala controles de Windows. Las restricciones que hayas aplicado previamente permanecen activas; la demo no acredita protección general." : value.configurationVerified ? "Hay una configuración de salida verificada recientemente. Debes probar su efecto real; no existe inspección selectiva universal de archivos en todas las aplicaciones." : native?.configurationVerified ? "Hay reglas nativas comprobadas para los EXE/paquetes seleccionados; falta probar sus envíos. PROTECCIÓN GENERAL INCOMPLETA: otro navegador sin extensión ni proxy obligatorio conserva una ruta fuera del control." : "PROTECCIÓN DEL SISTEMA INCOMPLETA: WhatsApp/Discord y navegadores sin extensión o proxy obligatorio pueden enviar sin inspección. Iniciar los servicios no aplica esas restricciones.";
+  const site = $("#session-site");
+  site.classList.toggle("hidden", !session?.siteUrl);
+  if (session?.siteUrl && /^http:\/\/127\.0\.0\.1:\d+$/.test(session.siteUrl)) site.href = session.siteUrl;
 }
 const escape = (s) => String(s ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 const pill = (s) => `<span class="pill ${/^[A-Z_]+$/.test(s || "") ? s : ""}">${escape(s)}</span>`;

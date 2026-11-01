@@ -9,7 +9,7 @@ const { PROJECT } = require("../endpoint/config");
 const { EndpointRuntime } = require("../endpoint/runtime");
 const { createEndpointApp } = require("../endpoint/server");
 const { createDemoSite } = require("../endpoint/demo-site");
-const { FakeBridge } = require("../test/helpers/fixtures.cjs");
+const { FakeBridge, docxBuffer, xlsxBuffer } = require("../test/helpers/fixtures.cjs");
 
 async function waitFor(predicate, message, timeout = 20000) {
   const start = Date.now();
@@ -22,7 +22,8 @@ async function listen(app) {
   return server;
 }
 async function run() {
-  if (!process.env.PLAYWRIGHT_BROWSERS_PATH) process.env.PLAYWRIGHT_BROWSERS_PATH = path.join(PROJECT, "tmp", "browser-binaries");
+  // Misma caché predeterminada que `npm run browser:install`.
+  // PLAYWRIGHT_BROWSERS_PATH continúa disponible para instalaciones propias.
   let playwright;
   try { playwright = require(process.env.DLP_PLAYWRIGHT_MODULE || "playwright"); }
   catch { throw new Error("Esta comprobación opcional necesita Playwright. Instálalo como herramienta de pruebas o indica DLP_PLAYWRIGHT_MODULE."); }
@@ -34,6 +35,10 @@ async function run() {
     const publicText = "Horario publico de biblioteca", privateText = "DNI: 12345678";
     const publicPath = path.join(sources, "publico.txt"), privatePath = path.join(sources, "privado.txt");
     await fs.writeFile(publicPath, publicText); await fs.writeFile(privatePath, privateText);
+    const formulaPath = path.join(sources, "formula_sensible.xlsx");
+    await fs.writeFile(formulaPath, await xlsxBuffer([[{ formula: '"DNI: 12345678"' }]]));
+    const emptyFiles = [["vacio.txt", Buffer.alloc(0)], ["vacio.docx", await docxBuffer("")], ["vacio.xlsx", await xlsxBuffer([])]];
+    for (const [name, bytes] of emptyFiles) await fs.writeFile(path.join(sources, name), bytes);
     runtime = new EndpointRuntime({ dataDirectory: path.join(directory, "estado"), bridge: new FakeBridge(), config: { watchRoots: [sources], notifications: false } });
     await runtime.start();
     apiServer = await listen(createEndpointApp(runtime));
@@ -60,9 +65,17 @@ async function run() {
     const receipt = (channel, after, prevented) => runtime.audit.events.slice(after).some((e) => e.channel === channel && e.evidence === "BROWSER_CLIENT_REPORT" && e.prevented === prevented);
 
     let start = runtime.audit.events.length;
+    await page.evaluate(() => {
+      window.selectionPending = true; window.selectionCancelled = false;
+      document.querySelector("#file").addEventListener("change", () => { window.selectionPending = false; });
+      document.querySelector("#file").addEventListener("cancel", () => { window.selectionCancelled = true; });
+    });
     await choose(privatePath);
     await waitFor(() => receipt("browser_file", start, true), "El archivo sensible no fue retenido por el complemento");
     assert.equal(await page.locator("#file").evaluate((node) => node.files.length), 0);
+    await page.waitForFunction(() => !window.selectionPending && window.selectionCancelled);
+    await page.locator("#text").fill("La página sigue respondiendo después del bloqueo");
+    await page.locator("#text").fill("");
     await page.locator("#upload").click();
     assert.equal(site.receipts.length, 0);
     results.push({ scenario: "Archivo sensible elegido manualmente", result: "BLOQUEADO", destinationReceipts: 0, evidence: "REAL_CHROMIUM_EXTENSION_FILE_CHOOSER" });
@@ -73,6 +86,7 @@ async function run() {
     await waitFor(() => site.receipts.length === 1, "El archivo público no llegó al receptor independiente");
     assert.equal(site.receipts[0].sha256, crypto.createHash("sha256").update(publicText).digest("hex"));
     results.push({ scenario: "Archivo público elegido y enviado", result: "PERMITIDO", destinationReceipts: 1, evidence: "REAL_CHROMIUM_EXTENSION_AND_RECEIVER" });
+    results.push({ scenario: "Rechazo termina el flujo y permite elegir público sin recargar", result: "RECUPERADO", evidence: "REAL_INPUT_CHANGE_CANCEL_AND_SUBSEQUENT_UPLOAD" });
 
     const paste = async (text) => page.locator("#text").evaluate((node, text) => { node.focus(); const data = new DataTransfer(); data.setData("text/plain", text); node.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, composed: true, clipboardData: data })); }, text);
     start = runtime.audit.events.length;
@@ -107,9 +121,26 @@ async function run() {
 
     const evidenceDirectory = path.join(PROJECT, "output", "evidencias"); await fs.mkdir(evidenceDirectory, { recursive: true });
     await worker.evaluate(async () => chrome.storage.local.set({ enabled: true }));
+    await page.reload();
+    const formulaReceipts = site.receipts.length;
+    start = runtime.audit.events.length;
+    await choose(formulaPath);
+    await waitFor(() => receipt("browser_file", start, true), "El Excel con fórmula sensible pasó como vacío");
+    assert.equal(await page.locator("#file").evaluate(node => node.files.length), 0);
+    assert.equal(site.receipts.length, formulaReceipts);
+    results.push({ scenario: "Excel con fórmula sensible sin caché", result: "BLOQUEADO", evidence: "REAL_CHROMIUM_EXTENSION_NO_EMPTY_FORMULA_BYPASS" });
+    for (const [name, bytes] of emptyFiles) {
+      const count = site.receipts.length;
+      await choose(path.join(sources, name));
+      await page.waitForFunction(() => document.querySelector("#file").files.length === 1);
+      await page.locator("#upload").click();
+      await waitFor(() => site.receipts.length === count + 1, `El vacío válido ${name} no llegó al receptor`);
+      assert.equal(site.receipts.at(-1).sha256, crypto.createHash("sha256").update(bytes).digest("hex"));
+      results.push({ scenario: `Vacío válido ${name}`, result: "PERMITIDO", evidence: "REAL_CHROMIUM_EXTENSION_AND_RECEIVER_HASH" });
+    }
     await waitFor(() => runtime.browserObserver.status().some((c) => c.active && c.navigation), "El conector no volvió a estar activo");
     const panel = await context.newPage(); await panel.goto(agentUrl);
-    await panel.waitForFunction(() => document.querySelector("#count-files").textContent === "2");
+    await panel.waitForFunction(() => document.querySelector("#count-files").textContent === "6");
     await panel.locator('[data-view="live"]').click();
     await panel.locator("#live-browser").filter({ hasText: "Conectado" }).waitFor();
     await panel.locator("#live-filter").selectOption("navigation");

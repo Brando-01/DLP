@@ -17,7 +17,7 @@ function Save-Json($File,$Value) {
   [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($File)) | Out-Null
   $tmp=$File+'.'+[guid]::NewGuid().ToString()+'.tmp'
   [IO.File]::WriteAllText($tmp,($Value | ConvertTo-Json -Depth 16),(New-Object Text.UTF8Encoding($false)))
-  if (Test-Path -LiteralPath $File) { [IO.File]::Replace($tmp,$File,$null) } else { [IO.File]::Move($tmp,$File) }
+  if (Test-Path -LiteralPath $File) { [IO.File]::Replace($tmp,$File,[NullString]::Value) } else { [IO.File]::Move($tmp,$File) }
 }
 function Is-Administrator {
   return (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
