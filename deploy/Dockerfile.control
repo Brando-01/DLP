@@ -1,7 +1,7 @@
 FROM node:24-bookworm-slim
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --no-audit --no-fund --maxsockets=5 --fetch-timeout=60000 --fetch-retry-mintimeout=2000 --fetch-retry-maxtimeout=10000 --loglevel=http && npm cache clean --force
 COPY lib ./lib
 COPY endpoint/config.js ./endpoint/config.js
 COPY control ./control

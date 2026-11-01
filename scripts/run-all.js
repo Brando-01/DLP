@@ -12,6 +12,7 @@ const { startEndpoint } = require("../endpoint/server");
 const { createDemoSite } = require("../endpoint/demo-site");
 const { createReceiver } = require("../endpoint/receiver");
 const { auditProtection, protectionDirectory, protectionStatus } = require("../endpoint/protection");
+const { loggedCommand } = require("./logged-command");
 
 async function available(port) {
   if (port === 0) return;
@@ -26,8 +27,9 @@ async function listen(app, port) {
   await new Promise((resolve, reject) => { server.once("listening", resolve); server.once("error", reject); });
   return server;
 }
-async function wslAction(action, root = ROOT, signal) {
-  await execute("powershell.exe", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", path.join(root, "deploy/wsl/Lab-WSL.ps1"), "-Action", action], { cwd: root, windowsHide: true, signal, timeout: action === "Stop" ? 30000 : 15 * 60 * 1000, maxBuffer: 8 * 1024 * 1024 });
+async function wslAction(action, root = ROOT, signal, log = console.log) {
+  const secrets = Object.entries(process.env).filter(([key]) => /TOKEN|PASSWORD|API_KEY|SECRET/i.test(key)).map(([, value]) => value);
+  await loggedCommand("powershell.exe", ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", path.join(root, "deploy/wsl/Lab-WSL.ps1"), "-Action", action], { cwd: root, signal, log, secrets, label: `WSL ${action}`, timeout: action === "Stop" ? 30000 : 45 * 60 * 1000 });
 }
 async function centralStatus() {
   const url = new URL(process.env.DLP_CONTROL_URL || "http://127.0.0.1:3100");
@@ -47,8 +49,8 @@ async function defaultBackend(root, log, signal) {
   try { await centralStatus(); prior = true; } catch {}
   try {
     log("Preparando el backend WSL: sincronización, construcción y arranque de proxy, SMTP, DNS y sensores de red. Puede tardar varios minutos.");
-    await wslAction("Sync", root, signal);
-    await wslAction("ExportCA", root, signal);
+    await wslAction("Sync", root, signal, log);
+    await wslAction("ExportCA", root, signal, log);
     const status = await centralStatus();
     const pending = new Set([8080, 2525]);
     const deadline = Date.now() + 60000;
@@ -66,10 +68,10 @@ async function defaultBackend(root, log, signal) {
       if (pending.size) await delay(500, undefined, { signal });
     }
     if (pending.size) throw new Error("No están accesibles los conectores locales: " + [...pending].join(", "));
-    return { ...status, stop: async () => { if (!prior) await wslAction("Stop", root); } };
+    return { ...status, stop: async () => { if (!prior) await wslAction("Stop", root, undefined, log); } };
   } catch (error) {
-    if (!prior) { try { await wslAction("Stop", root); } catch {} }
-    throw new Error(`No se pudo preparar el backend WSL. Comprueba la instalación DLP-Control-WSL y su registro. ${String(error.message).slice(0, 300)}`);
+    if (!prior) { try { await wslAction("Stop", root, undefined, log); } catch {} }
+    throw new Error(`No se pudo preparar el backend WSL. ${String(error.message).slice(0, 1800)}`);
   }
 }
 async function runAll(options = {}) {
