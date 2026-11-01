@@ -4,6 +4,8 @@ Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correl
 
 **Empieza por la [guía completa de instalación, navegadores y tokens](docs/INSTALACION_Y_NAVEGADORES.md).** Incluye primera instalación, Chrome/Brave/Edge, Firefox, qué token pegar, proxy/CA, acceso a WSL, arranque diario y solución de errores.
 
+**Un solo comando para uso diario: `npm.cmd start`.** Reúne backend WSL, agente y receptores de prueba. Consulta [arranque único y cobertura de toda la PC](docs/ARRANQUE_UNICO.md). Iniciar servicios no activa las restricciones de Windows: el panel avisa si aplicaciones nativas y navegadores sin extensión/proxy obligatorio conservan salida.
+
 **Para probar los cambios de subidas y archivos vacíos:** [arranque rápido, pruebas manuales y los 12 casos](docs/PRUEBAS_RAPIDAS_Y_CASOS.md). `npm.cmd run demo` inicia agente y receptores locales por reglas, sin Groq, WSL ni cambios al firewall. Es una demo limitada, no protección universal del equipo.
 
 El complemento **3.1.1** permite reintentar después de rechazos, cancelaciones y errores sin dejar ocupado el campo de archivos. Los vacíos válidos no consumen Groq. Excel inspecciona fórmulas y enlaces además del texto visible: una fórmula sin resultado no se considera un archivo vacío. Los componentes Office no inspeccionables mantienen la extracción parcial incluso si hay texto público. Recarga la extensión y las pestañas tras actualizar; la compatibilidad con Gmail y cada IA debe probarse con muestras ficticias.
@@ -17,14 +19,10 @@ Solo aportas tu **GROQ_API_KEY** en el .env privado. `npm.cmd run setup` genera 
 Los servicios están preparados en una distribución propia **DLP-Control-WSL**. El agente corre en Windows. No se aplicaron políticas generales al anfitrión. La VM VirtualBox DLP-Control-v3 se conserva apagada como alternativa; el despliegue final se verifica en WSL2.
 
 ```powershell
-npm.cmd run setup
-npm.cmd run wsl:start
-npm.cmd run wsl:sync
-npm.cmd run wsl:ca
-npm.cmd run agent
+npm.cmd start
 ```
 
-`wsl:sync` copia código/configuración y construye los servicios dentro de Linux. El primer despliegue tarda varios minutos. Después, sin cambios de código o clave, basta `wsl:start` y `agent`. El lanzador mantiene activa exclusivamente su distribución con un proceso auxiliar oculto; `deploy/wsl/Lab-WSL.ps1 -Action Stop` la detiene. Mantén abierta la terminal del agente.
+El arranque integrado prepara setup/extensión, sincroniza código y configuración con Linux y levanta los servicios. El primer despliegue tarda varios minutos. Conserva abierta la terminal principal y usa Ctrl+C para cerrar los recursos propios. Los comandos de componentes se conservan para diagnóstico. La distribución se mantiene activa con un proceso auxiliar propio; `npm.cmd run wsl:stop` detiene exclusivamente ese laboratorio.
 
 - Agente: http://127.0.0.1:3001
 - Consola: http://127.0.0.1:3100. Accede con **DLP_CONTROL_ADMIN_TOKEN** del `.env` local, distinto de la clave Groq.

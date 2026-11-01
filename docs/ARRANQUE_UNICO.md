@@ -1,0 +1,68 @@
+# Un solo arranque y cobertura real del equipo
+
+## Uso diario
+
+Con Node 24+, dependencias instaladas (`npm.cmd ci`) y la distribución DLP-Control-WSL preparada, el comando principal es:
+
+```powershell
+cd 'C:\Users\ADMIN\Documents\Topico de Ciberseguridad\proyecto-dlp'
+npm.cmd start
+```
+
+No necesitas iniciar por separado agent, demo, receptores y WSL. El lanzador:
+
+1. Comprueba que 3001, 4100 y 4200 estén libres; no cierra programas ajenos.
+2. Lee el estado de las restricciones sin aplicarlas.
+3. Ejecuta setup y construye la extensión, conservando credenciales y .env.
+4. Sincroniza código y configuración con WSL, construye/inicia los servicios y exporta la CA pública, sin instalarla en Windows.
+5. Comprueba el central con el token INSPECT y espera el acceso TCP a proxy/SMTP. Esto no demuestra inspección TLS efectiva ni resistencia a bypass.
+6. Inicia el agente Windows, el sitio de prueba y el receptor de las transferencias mediadas.
+
+El primer arranque tras un cambio puede tardar varios minutos. El panel principal queda en http://127.0.0.1:3001; el enlace al sitio de prueba aparece en el panel. La consola administrativa sigue en 3100, el proxy en 8080 y SMTP en 2525. Un único comando puede coordinar procesos de Windows y contenedores Linux; no los convierte en un solo proceso ni en un driver de Windows.
+
+La instalación inicial de WSL, su distribución y la configuración del equipo se hacen una sola vez según INSTALACION_Y_NAVEGADORES.md. El lanzador no descarga una distribución ni cambia virtualización por su cuenta. Con un control remoto, configura DLP_CONTROL_URL y sus credenciales/red; no inicia el WSL local.
+
+Ctrl+C cierra los servicios locales propios y detiene el backend WSL si no estaba operativo antes del lanzamiento. Un backend que ya existía se conserva. Para consultar o detener exclusivamente la distribución del laboratorio:
+
+```powershell
+npm.cmd run wsl:status
+npm.cmd run wsl:stop
+```
+
+Tras un cierre forzado o un error durante la sincronización, comprueba ese estado. Si un puerto está ocupado por una demo/agente anterior, cierra su terminal antes de lanzar otro. El lanzador informa el conflicto y no mata automáticamente procesos.
+
+## Por qué WhatsApp u otro Chrome siguen enviando
+
+El arranque **no aplica** firewall, CA, USB ni políticas de navegador. En la revisión del equipo ambos perfiles devolvieron NOT_APPLIED. Esto explica que el cliente nativo y otros navegadores conserven rutas de salida. Se respetó la instrucción del usuario de preparar el proyecto sin activar restricciones automáticamente.
+
+| Capa | Qué necesita | Qué significa |
+| --- | --- | --- |
+| Extensión | Cargar 3.1.1, permitirla en el perfil y vincular token | Interacciones web cubiertas de ese navegador; no otras apps ni todos los mecanismos de carga. |
+| Proxy | Configuración del navegador/app, CA pública y salida obligatoria | Inspección de tráfico compatible que realmente pase por el proxy. No se acredita solo por iniciar mitmproxy. |
+| WhatsApp/Discord nativos | Reglas EXE instaladas, auditadas y probadas | Restricción de su red completa, incluidos mensajes/archivos públicos; versiones y procesos auxiliares requieren pruebas. |
+| Chrome sin extensión | Política de proxy y prevención de salida directa activas | No depende de tener extensión para el tráfico compatible; la política debe estar instalada en ese equipo. |
+| Control selectivo universal del endpoint | Tecnología nativa de acceso a archivos y enforcement por aplicación, fuera de este prototipo | No se implementa iniciando Node ni observando procesos. El proyecto actual no ofrece esa garantía. |
+
+Para activar controles del sistema revisa PROTECCION_APLICACIONES_Y_SALIDAS.md. Protection.ps1 exige endpoint aislado y gateway privado separado; la topología actual de servicios localhost no acredita esa frontera. Los scripts tienen Plan/Audit/Apply/Restore y Apply requiere intervención administrativa explícita. El lanzador nunca ejecuta Apply.
+
+El panel muestra una franja de cobertura incompleta cuando no existe una verificación reciente del perfil de salida. Tener todos los servicios arriba no se presenta como protección total de la PC.
+
+Para impedir incluso el arranque si no hay una configuración del sistema verificada:
+
+```powershell
+npm.cmd start -- --require-system-controls
+```
+
+Este parámetro solo exige la comprobación de configuración del perfil; no prueba el efecto en WhatsApp ni inspección universal. Si falta, termina antes de iniciar servicios y explica la causa. La comprobación del perfil no puede reemplazar las pruebas reales de envío/directo/proxy de la matriz de casos.
+
+## Modo de demostración
+
+El modo de pruebas usa el mismo punto de entrada:
+
+```powershell
+npm.cmd start -- --demo
+```
+
+`npm.cmd run demo` permanece como alias compatible. Este modo es opcional: utiliza reglas, sin Groq, WSL ni sensores nativos. Su estado y token son separados para evitar cambiar la configuración de trabajo. No lo uses como protección de la PC ni necesitas ejecutarlo antes del arranque integrado.
+
+Los comandos agent, web, receiver, lab, wsl:* y site:demo se conservan como herramientas técnicas. Para uso diario utiliza **npm.cmd start**. No se ejecutaron arranque WSL real ni controles Windows en la verificación de esta ampliación: los tests del coordinador usan backend y sensor simulados, puertos temporales y receptores locales. La infraestructura WSL dispone de su evaluación anterior; el nuevo flujo debe validarse con esos servicios al activarlo.

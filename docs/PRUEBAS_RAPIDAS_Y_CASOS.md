@@ -1,5 +1,7 @@
 # Ejecutar y comprobar el DLP
 
+**Arranque normal actualizado: `npm.cmd start`.** Ya no necesitas iniciar agente y WSL en terminales distintas. El modo demo de esta guía es opcional para ensayar regresiones; no activa controles de PC. Consulta ARRANQUE_UNICO.md para el flujo principal y por qué WhatsApp/Chrome sin extensión requieren restricciones adicionales del sistema.
+
 ## 1. Actualizar e instalar
 
 PowerShell normal, dentro de la carpeta del repositorio. Node.js 24+.
@@ -116,13 +118,10 @@ La compatibilidad con Gmail/IA de tu cuenta debe verificarse manualmente, solo c
 Detén la demo con Ctrl+C. Si ya creaste `DLP-Control-WSL`:
 
 ```powershell
-npm.cmd run wsl:start
-npm.cmd run wsl:sync
-npm.cmd run wsl:ca
-npm.cmd run agent
+npm.cmd start
 ```
 
-Sync es necesario tras cambiar código, políticas centrales o clave; no basta con reiniciar la extensión.
+El arranque integrado ejecuta Sync tras preparar setup/extensión; no basta con reiniciar solo el complemento.
 Si no existe el entorno WSL, sigue la sección de primera instalación del README (Plan y Create).
 No arranques simultáneamente el backend VirtualBox, Docker Desktop y WSL con los mismos puertos.
 

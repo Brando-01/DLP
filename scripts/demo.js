@@ -40,6 +40,7 @@ async function startDemo(options = {}) {
         { id: "http-laboratorio", name: "Receptor HTTP local", channel: "http_transfer", url: `http://127.0.0.1:${receiverServer.address().port}/upload`, lab: true },
       ],
     } });
+    endpoint.runtime.session = { mode: "DEMO", nativeSensitiveOnly: false, siteUrl: `http://127.0.0.1:${siteServer.address().port}` };
     endpoint.runtime.once("exit-request", stop);
     console.log(`DEMO LOCAL: solo reglas, sin Groq, proxy, firewall ni sensores nativos. No equivale a protección completa.`);
     console.log(`Agente: http://127.0.0.1:${endpoint.server.address().port}`);
