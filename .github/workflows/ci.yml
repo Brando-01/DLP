@@ -10,6 +10,9 @@ jobs:
       - name: PowerShell 5.1 syntax only
         shell: powershell
         run: ./scripts/check-powershell.ps1
+      - name: PowerShell 5.1 atomic state regression, no system policies
+        shell: powershell
+        run: ./evaluacion/test-windows-state.ps1
   functional:
     runs-on: ubuntu-24.04
     steps:

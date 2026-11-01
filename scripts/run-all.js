@@ -116,7 +116,7 @@ async function runAll(options = {}) {
     endpoint.runtime.session = { mode: "INTEGRATED", centralUrl: backend.url, siteUrl: `http://127.0.0.1:${siteServer.address().port}`, receiverUrl: `http://127.0.0.1:${receiverServer.address().port}/upload`, systemConfigurationVerified: protection.configurationVerified, nativeSensitiveOnly: false, startedAt: new Date().toISOString() };
     endpoint.runtime.once("exit-request", () => stop().catch(e => log(e.message)));
     log(`DLP integrado: http://127.0.0.1:${endpoint.server.address().port} · central ${backend.url} · prueba web ${endpoint.runtime.session.siteUrl}`);
-    log(protection.configurationVerified ? "Perfil de red configurado: valida su efecto real. No hay filtrado selectivo universal de aplicaciones nativas." : "COBERTURA INCOMPLETA: WhatsApp/Discord y navegadores sin extensión o proxy obligatorio pueden enviar sin inspección. No hay restricciones del sistema verificadas.");
+    log(protection.configurationVerified ? "Perfil de red configurado: valida su efecto real. No hay filtrado selectivo universal de aplicaciones nativas." : protection.nativeApplications?.configurationVerified ? "COBERTURA INCOMPLETA: hay reglas nativas comprobadas para EXE/paquetes, pero falta probar su efecto. Los navegadores sin extensión ni proxy obligatorio conservan salida." : "COBERTURA INCOMPLETA: WhatsApp/Discord y navegadores sin extensión o proxy obligatorio pueden enviar sin inspección. No hay restricciones del sistema verificadas.");
     log("Ctrl+C cierra los servicios locales y el backend iniciado aquí. No cambia restricciones de Windows ni las restaura.");
     return { endpoint, siteServer, receiverServer, backend, stop };
   } catch (error) { await stop(); throw error; }

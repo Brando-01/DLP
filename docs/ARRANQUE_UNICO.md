@@ -47,6 +47,10 @@ Para activar controles del sistema revisa PROTECCION_APLICACIONES_Y_SALIDAS.md. 
 
 El panel muestra una franja de cobertura incompleta cuando no existe una verificación reciente del perfil de salida. Tener todos los servicios arriba no se presenta como protección total de la PC.
 
+Si autorizas por separado restricciones nativas, el panel distingue sus reglas por EXE/paquete de la salida general del navegador. WhatsApp de Microsoft Store puede usar WebView2: el control de paquete se dirige a su SID, sin bloquear el WebView2 compartido de otras aplicaciones. La identidad debe corresponder al proceso y su efecto requiere una prueba real. `Native-Apps.ps1 -Action Refresh -ConfirmBlockApplications`, como administrador, añade identidades de paquetes a un perfil existente; Restore retira todas las reglas propias. No se restauran automáticamente al cerrar el agente. El filtro sigue siendo de aplicación completa, no selectivo por documento.
+
+Se corrigió además el reemplazo atómico de respaldos en PowerShell 5.1 con NullString y se prueban las cuatro funciones reales de persistencia sobre archivos temporales. La auditoría comprueba las reglas creadas; no envía mensajes ni documentos desde tus aplicaciones.
+
 Para impedir incluso el arranque si no hay una configuración del sistema verificada:
 
 ```powershell
