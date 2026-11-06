@@ -4,7 +4,7 @@ Revisión del 5 de noviembre de 2026. Esta guía distingue código existente, to
 
 ## 1. Qué está unificado y qué puede inspeccionar
 
-En la rama `fix/dlp-upload-recovery-empty-files`, `npm.cmd start` coordina central, proxy, SMTP, servicios Linux, agente local y receptores. Si DLP_CONTROL_URL apunta a otro equipo, el mismo lanzador consulta ese central y no inicia WSL local. Una instalación por puesto sigue siendo necesaria: un solo comando no convierte varios sistemas operativos en un único proceso ni aplica automáticamente sus controles de red.
+La versión mejorada está integrada en `main`. `npm.cmd start` coordina central, proxy, SMTP, servicios Linux, agente local y receptores. Si DLP_CONTROL_URL apunta a otro equipo, el mismo lanzador consulta ese central y no inicia WSL local. Una instalación por puesto sigue siendo necesaria: un solo comando no convierte varios sistemas operativos en un único proceso ni aplica automáticamente sus controles de red.
 
 El LLM recibe texto extraído de documentos que llegan al motor. No observa por sí solo toda la PC. En modo híbrido, una extracción completa sin bloqueo local fuerte puede consultar Groq; un documento ya bloqueado por reglas no necesita esa consulta. Vacíos válidos no consumen LLM. Extracción incompleta, formato desconocido o clasificador no disponible se retienen en enforce por falta de inspección, sin atribuir sensibilidad reconocida.
 
@@ -87,10 +87,10 @@ En PowerShell usar `curl.exe` y la ruta Windows real de la CA/muestra. El nombre
 
 ## 4. Instalación de los puestos y arranque diario
 
-Instalar Node 24+ y Git, y usar la rama revisada hasta que se fusione:
+Instalar Node 24+ y Git, y descargar la versión actual de `main`:
 
 ```text
-git clone --branch fix/dlp-upload-recovery-empty-files https://github.com/Brando-01/DLP.git
+git clone --branch main https://github.com/Brando-01/DLP.git
 cd DLP
 ```
 
