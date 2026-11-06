@@ -4,6 +4,8 @@ Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correl
 
 **Empieza por la [guía completa de instalación, navegadores y tokens](docs/INSTALACION_Y_NAVEGADORES.md).** Incluye primera instalación, Chrome/Brave/Edge, Firefox, qué token pegar, proxy/CA, acceso a WSL, arranque diario y solución de errores.
 
+**Para presentar tu PC como servidor y dos VM Windows/Linux como empleados:** [laboratorio empresarial, casos principales y guion de exposición](docs/LABORATORIO_EMPRESA_Y_EXPOSICION.md). Distingue topología propuesta, controles existentes y pruebas pendientes; no se ofrece inspección automática de cualquier aplicación instalada.
+
 **Un solo comando para uso diario: `npm.cmd start`.** Reúne backend WSL, agente y receptores de prueba. Consulta [arranque único y cobertura de toda la PC](docs/ARRANQUE_UNICO.md). Iniciar servicios no activa las restricciones de Windows: el panel avisa si aplicaciones nativas y navegadores sin extensión/proxy obligatorio conservan salida.
 
 **Para probar los cambios de subidas y archivos vacíos:** [arranque rápido, pruebas manuales y los 12 casos](docs/PRUEBAS_RAPIDAS_Y_CASOS.md). `npm.cmd run demo` inicia agente y receptores locales por reglas, sin Groq, WSL ni cambios al firewall. Es una demo limitada, no protección universal del equipo.

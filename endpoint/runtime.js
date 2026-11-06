@@ -94,6 +94,11 @@ class EndpointRuntime extends EventEmitter {
     return relative.split(/[\\/]/).some((piece) => EXCLUDED.has(piece.toLowerCase()));
   }
 
+  semanticInventoryEnabled() {
+    // El cliente central no necesita LLM ni clave locales: decide el servidor.
+    return this.config.inventorySemantic && (process.env.DLP_INSPECTION_BACKEND === "central" || process.env.DLP_LLM_MODE === "hybrid");
+  }
+
   installWatchers() {
     for (const watcher of this.watchers) watcher.close();
     this.watchers = [];
@@ -115,7 +120,7 @@ class EndpointRuntime extends EventEmitter {
     this.scanState = { running: true, startedAt: new Date().toISOString(), completedAt: null, examined: 0, skipped: 0, inaccessible: 0, capped: false, roots: [] };
     const seen = new Set();
     let semanticBudget = this.config.semanticFilesPerScan;
-    const semanticEnabled = this.config.inventorySemantic && process.env.DLP_LLM_MODE === "hybrid";
+    const semanticEnabled = this.semanticInventoryEnabled();
     const walk = async (directory) => {
       if (this.stopping || this.scanState.capped || this.ignore(directory)) return;
       let entries;
@@ -370,7 +375,7 @@ class EndpointRuntime extends EventEmitter {
     try { systemControls = JSON.parse(fs.readFileSync(path.join(this.dataDirectory, "controles-windows-estado.json"), "utf8")); } catch {}
     return {
       version: "3.0.0", startedAt: this.startedAt, platform: process.platform, scan: this.scanState, classifier: { ...semanticClassifier.status(), backend: process.env.DLP_INSPECTION_BACKEND || "local" },
-      inventory: { total: items.length, sensitive: items.filter((x) => x.score > 0).length, unknown: items.filter((x) => x.inspectionStatus !== "COMPLETE" || x.semantic?.required && x.semantic.status !== "COMPLETE").length, semanticEnabled: this.config.inventorySemantic && process.env.DLP_LLM_MODE === "hybrid", semanticBudget: this.config.semanticFilesPerScan },
+      inventory: { total: items.length, sensitive: items.filter((x) => x.score > 0).length, unknown: items.filter((x) => x.inspectionStatus !== "COMPLETE" || x.semantic?.required && x.semantic.status !== "COMPLETE").length, semanticEnabled: this.semanticInventoryEnabled(), semanticBudget: this.config.semanticFilesPerScan },
       operations: { prevented: this.audit.events.filter((event) => event.prevented === true).length },
       windows: this.bridge.info, windowsControls: systemControls, audit: this.audit.status(), suggestedRoots: suggestedRoots(),
       browserClients: this.browserObserver.status(),
