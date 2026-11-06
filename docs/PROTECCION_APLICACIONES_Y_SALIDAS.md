@@ -56,6 +56,8 @@ No basta con que un documento incluya un correo empresarial para ser confidencia
 
 ## 3. Restringir los clientes nativos en tu PC, posteriormente
 
+Actualización: las aplicaciones de Microsoft Store se pueden restringir también por SID de paquete. Esto cubre procesos con esa identidad, incluyendo WebView2 de WhatsApp cuando la conserva, sin bloquear WebView2 globalmente. Discover y Plan muestran los paquetes; si ya hay un perfil anterior solo por EXE, un administrador puede ejecutar `Native-Apps.ps1 -Action Refresh -ConfirmBlockApplications`. Audit verifica los filtros EXE/Package y Restore retira las reglas propias. No se acredita filtrado selectivo ni el efecto en un envío real solo por auditar la configuración.
+
 Este modo puede utilizarse con la topología local WSL existente. **No cambia la salida predeterminada del firewall**. Restringe todo el tráfico saliente de los ejecutables seleccionados; no mantiene el envío de archivos públicos en esos clientes.
 
 Primero, en PowerShell normal, inspecciona lo que se detectó:
@@ -175,3 +177,5 @@ Registra dos matrices: sensibilidad y prevención. Bloqueo por destino, por apli
 - Plantillas de políticas de Firefox: https://mozilla.github.io/policy-templates/
 - Diferencias de conectividad AppContainer/loopback: https://learn.microsoft.com/en-us/windows/security/operating-system-security/network-security/windows-firewall/troubleshooting-uwp-firewall
 - Límites de interceptación TLS: https://docs.mitmproxy.org/stable/concepts/certificates/
+- Firewall por identidad de paquete: https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule
+- SID de paquete: https://learn.microsoft.com/en-us/windows/win32/api/userenv/nf-userenv-deriveappcontainersidfromappcontainername

@@ -10,6 +10,9 @@ jobs:
       - name: PowerShell 5.1 syntax only
         shell: powershell
         run: ./scripts/check-powershell.ps1
+      - name: PowerShell 5.1 atomic state regression, no system policies
+        shell: powershell
+        run: ./evaluacion/test-windows-state.ps1
   functional:
     runs-on: ubuntu-24.04
     steps:
@@ -20,6 +23,9 @@ jobs:
         with: { python-version: '3.12' }
       - run: npm ci
       - run: npm test
+      - run: npm run browser:install -- --with-deps
+      - run: npm run extension:build
+      - run: npm run test:browser
       - run: python -m venv .venv
       - run: .venv/bin/python -m pip install -r integrations/requirements.txt
       - run: .venv/bin/python -m unittest discover -s test -p 'test_*.py'

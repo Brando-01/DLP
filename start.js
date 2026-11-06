@@ -29,5 +29,16 @@ async function start() {
   return { endpoint, web, control, stop };
 }
 
-if (require.main === module) start().catch((error) => { console.error(`Arranque incompleto: ${error.message}`); process.exitCode = 1; });
+if (require.main === module) {
+  const abort = new AbortController(); let service;
+  const stop = () => { abort.abort(); service?.stop().catch(error => console.error(error.message)); };
+  for (const signal of ["SIGINT", "SIGTERM"]) process.once(signal, stop);
+  require("./scripts/run-all").main(process.argv.slice(2), { signal: abort.signal }).then(value => {
+    service = value;
+    if (abort.signal.aborted) return service.stop();
+  }).catch(error => {
+    console.error(abort.signal.aborted ? "Arranque cancelado. Si quedó un backend iniciado, comprueba su estado con wsl:status o Lab-WSL.ps1 -Action Status." : `Arranque incompleto: ${error.message}`);
+    process.exitCode = abort.signal.aborted ? 0 : 1;
+  });
+}
 module.exports = { start };

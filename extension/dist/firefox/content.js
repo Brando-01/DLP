@@ -6,6 +6,7 @@
   const api = globalThis.browser || globalThis.chrome;
   const released = new WeakSet();
   const busy = new WeakSet();
+  const picking = new WeakSet();
   let enabled = true;
   api.storage.local.get({ enabled: true }).then((value) => { enabled = value.enabled; });
   api.storage.onChanged.addListener((changes, area) => {
@@ -22,7 +23,11 @@
     setTimeout(() => node.remove(), 9000);
   }
   async function inspect(data) {
-    try { return await api.runtime.sendMessage({ type: "INSPECT", ...data }); }
+    try {
+      const result = await api.runtime.sendMessage({ type: "INSPECT", ...data });
+      if (!result || typeof result.allowed !== "boolean") throw new Error("Respuesta incompleta");
+      return result;
+    }
     catch { return { allowed: false, decision: "NO_ANALIZADO", reason: "No se pudo consultar al conector DLP" }; }
   }
   async function report(result, outcome) {
@@ -30,7 +35,26 @@
     try { await api.runtime.sendMessage({ type: "RESULT", ticket: result.ticket, outcome }); } catch {}
   }
   function explain(result) {
+    if (!result.allowed && (result.decision === "NO_ANALIZADO" || result.cause === "NO_INSPECCIONABLE" || result.inspectionStatus && result.inspectionStatus !== "COMPLETE" || result.semantic?.required && result.semantic.status !== "COMPLETE")) {
+      const indicators = result.detected === true || result.score > 0;
+      return `DLP: interacción retenida por análisis incompleto${indicators ? "; también hay indicadores sensibles" : ", sin una detección confirmada de datos sensibles"}. ${result.reason || result.decision}. Puedes volver a seleccionar un archivo.`;
+    }
     return `${result.allowed ? "DLP: operación permitida con observación" : "DLP: interacción retenida"}. ${result.reason || result.decision}${result.score != null ? ` · ${result.score} puntos` : ""}`;
+  }
+  function fileEvents(input, cancelled = false) {
+    // La página debe terminar su flujo de selección incluso al rechazar o
+    // cancelar. El guard impide que nuestros eventos vuelvan a inspeccionarse.
+    released.add(input);
+    try {
+      input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
+      if (cancelled) input.dispatchEvent(new Event("cancel", { bubbles: true, composed: true }));
+    } finally { released.delete(input); }
+  }
+  function resetFile(input) { input.value = ""; fileEvents(input, true); }
+  function reportBatch(batch, outcome) {
+    // Los recibos de auditoría no mantienen ocupado el control de la página.
+    for (const result of batch?.results || []) void report(result, outcome === "CANCELLED" && result.allowed ? "FAILED" : outcome);
   }
   async function encode(file) {
     const bytes = new Uint8Array(await file.arrayBuffer());
@@ -52,24 +76,24 @@
     busy.add(input);
     let batch;
     try {
+      notify("DLP: analizando la selección. Puedes seguir usando la página; espera el resultado antes de adjuntar.");
       batch = await checkFiles(chosen, "browser_file");
       if (!batch.allowed) {
-        input.value = "";
-        for (const result of batch.results) await report(result, "CANCELLED");
+        resetFile(input);
+        reportBatch(batch, "CANCELLED");
         if (batch.results.length) notify(explain(batch.results.find((r) => !r.allowed)));
         return;
       }
       const transfer = new DataTransfer(); chosen.forEach((file) => transfer.items.add(file));
       input.files = transfer.files;
-      released.add(input);
-      input.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-      released.delete(input);
-      for (const result of batch.results) { await report(result, "RELEASED"); if (["ALERTA", "DETECTADO"].includes(result.decision)) notify(explain(result)); }
+      fileEvents(input);
+      document.getElementById("dlp-agent-notice")?.remove();
+      reportBatch(batch, "RELEASED");
+      for (const result of batch.results) if (["ALERTA", "DETECTADO"].includes(result.decision)) notify(explain(result));
     } catch {
-      input.value = "";
-      for (const result of batch?.results || []) await report(result, "FAILED");
-      notify("DLP: no se pudo completar la interacción. La selección permanece vacía.");
+      resetFile(input);
+      reportBatch(batch, "FAILED");
+      notify("DLP: no se pudo completar la interacción. La selección permanece vacía; puedes volver a intentarlo sin recargar.");
     } finally { busy.delete(input); }
   }
   function findInput(event) { return event.composedPath().find((node) => node instanceof HTMLInputElement && node.type === "file"); }
@@ -78,16 +102,24 @@
     const input = findInput(event);
     if (!input || input.disabled || released.has(input)) return;
     event.preventDefault(); event.stopImmediatePropagation();
+    if (busy.has(input) || picking.has(input)) { notify("DLP: ya hay una selección en curso para este campo."); return; }
     input.value = "";
-    if (input.webkitdirectory) { notify("DLP: la selección de directorios no está soportada por este conector."); return; }
+    if (input.webkitdirectory) { resetFile(input); notify("DLP: la selección de directorios no está soportada por este conector."); return; }
     // El selector privado evita exponer los archivos al DOM de la página antes de decidir.
     const host = document.createElement("div"); host.className = "dlp-private-picker";
     const shadow = host.attachShadow({ mode: "closed" });
     const picker = document.createElement("input"); picker.type = "file"; picker.multiple = input.multiple; picker.accept = input.accept;
     shadow.appendChild(picker); document.documentElement.appendChild(host);
-    picker.addEventListener("change", () => { const chosen = [...picker.files]; host.remove(); if (chosen.length) releaseFiles(input, chosen); }, { once: true });
-    picker.addEventListener("cancel", () => host.remove(), { once: true });
-    picker.click();
+    picking.add(input);
+    let settled = false;
+    const settle = (chosen) => {
+      if (settled) return;
+      settled = true; host.remove(); picking.delete(input);
+      if (chosen.length) void releaseFiles(input, chosen); else resetFile(input);
+    };
+    picker.addEventListener("change", () => settle([...picker.files]), { once: true });
+    picker.addEventListener("cancel", () => settle([]), { once: true });
+    try { picker.click(); } catch { settle([]); notify("DLP: el navegador no abrió el selector. Vuelve a intentarlo."); }
   }, true);
   window.addEventListener("change", (event) => {
     if (!enabled) return;
@@ -108,22 +140,23 @@
     busy.add(form);
     checkFiles(chosen, "browser_file").then(async (batch) => {
       if (!batch.allowed) {
-        inputs.forEach((input) => { input.value = ""; });
-        for (const result of batch.results) await report(result, "CANCELLED");
+        inputs.forEach(resetFile);
+        reportBatch(batch, "CANCELLED");
         if (batch.results.length) notify(explain(batch.results.find((r) => !r.allowed)));
         return;
       }
       try {
         released.add(form);
-        form.requestSubmit(event.submitter || undefined);
-        released.delete(form);
-        for (const result of batch.results) await report(result, "RELEASED");
-      } catch { for (const result of batch.results) await report(result, "FAILED"); }
-    }).finally(() => busy.delete(form));
+        try { form.requestSubmit(event.submitter || undefined); } finally { released.delete(form); }
+        reportBatch(batch, "RELEASED");
+      } catch { inputs.forEach(resetFile); reportBatch(batch, "FAILED"); notify("DLP: no se pudo completar el envío. Puedes volver a seleccionar el archivo."); }
+    }).catch(() => { inputs.forEach(resetFile); notify("DLP: falló la inspección; no se liberó el envío."); }).finally(() => busy.delete(form));
   }, true);
   window.addEventListener("paste", (event) => {
     if (!enabled || !event.clipboardData) return;
     const text = event.clipboardData.getData("text/plain");
+    // Un portapapeles vacío no debe inutilizar campos/atajos de la página.
+    if (!text && !event.clipboardData.files.length && !event.clipboardData.types.length) return;
     event.preventDefault(); event.stopImmediatePropagation();
     const target = event.composedPath()[0];
     if (!text) { notify("DLP: el pegado no contiene texto analizable. No se libera este formato."); return; }
@@ -151,15 +184,12 @@
       try {
         const transfer = new DataTransfer(); files.forEach((file) => transfer.items.add(file));
         if (target instanceof HTMLInputElement && target.type === "file") {
-          target.files = transfer.files; released.add(target);
-          target.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
-          target.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
-          released.delete(target);
+          target.files = transfer.files; fileEvents(target);
           for (const result of batch.results) await report(result, "RELEASED");
           return;
         }
         const replay = new DragEvent("drop", { bubbles: true, cancelable: true, composed: true, dataTransfer: transfer });
-        released.add(target); target.dispatchEvent(replay); released.delete(target);
+        released.add(target); try { target.dispatchEvent(replay); } finally { released.delete(target); }
         for (const result of batch.results) await report(result, "RELEASED");
         notify("DLP: archivos inspeccionados y liberados al sitio. Confirma que la página acepte el arrastre reemitido.");
       } catch { for (const result of batch.results) await report(result, "FAILED"); notify("DLP: la página no aceptó la interacción de arrastre inspeccionada."); }

@@ -12,8 +12,24 @@ async function setup(directory = root) {
   if (values.DLP_WAZUH_ENROLLMENT_PASSWORD) fs.writeFileSync(path.join(state, "authd.pass"), values.DLP_WAZUH_ENROLLMENT_PASSWORD + "\n", { mode: 0o600 });
   const finance = path.join(directory, "laboratorio/Finanzas"), desktop = path.join(directory, "laboratorio/Escritorio");
   for (const folder of [finance, desktop]) fs.mkdirSync(folder, { recursive: true });
-  const { xlsxBuffer, docxBuffer } = require("../test/helpers/fixtures.cjs");
-  const samples = { "publico.txt": Buffer.from("Horario público de biblioteca"), "privado.txt": Buffer.from("DNI: 12345678\nExpediente ficticio"), "contexto_privado.txt": Buffer.from("María Torres obtuvo diecisiete en la evaluación del curso. Informe individual no publicado."), "publico.xlsx": await xlsxBuffer([["curso", "aula"], ["Redes", 301]]), "privado.xlsx": await xlsxBuffer([["DNI", "tarjeta"], ["12345678", "4111111111111111"]]), "renombrado.jpg": await docxBuffer("DNI: 12345678") };
+  const { xlsxBuffer, docxBuffer, pdfBuffer } = require("../test/helpers/fixtures.cjs");
+  const samples = {
+    "publico.txt": Buffer.from("Horario público de biblioteca"),
+    "privado.txt": Buffer.from("DNI: 12345678\nExpediente ficticio"),
+    "contexto_privado.txt": Buffer.from("María Torres obtuvo diecisiete en la evaluación del curso. Informe individual no publicado."),
+    "publico.xlsx": await xlsxBuffer([["curso", "aula"], ["Redes", 301]]),
+    "privado.xlsx": await xlsxBuffer([["DNI", "tarjeta"], ["12345678", "4111111111111111"]]),
+    "publico.docx": await docxBuffer("Horario público de biblioteca"),
+    "privado.docx": await docxBuffer("DNI: 12345678"),
+    "renombrado.jpg": await docxBuffer("DNI: 12345678"),
+    "vacio.txt": Buffer.alloc(0),
+    "vacio.docx": await docxBuffer(""),
+    "vacio.xlsx": await xlsxBuffer([]),
+    "sin_texto.pdf": pdfBuffer(""),
+    "base64_privado.txt": Buffer.from(Buffer.from("DNI: 12345678").toString("base64")),
+    "formula_sensible.xlsx": await xlsxBuffer([[{ formula: '"DNI: 12345678"' }]]),
+    "formula_publica.xlsx": await xlsxBuffer([[{ formula: "1+2", result: 3 }]]),
+  };
   for (const [name, buffer] of Object.entries(samples)) { const destination = path.join(finance, name); if (!fs.existsSync(destination)) fs.writeFileSync(destination, buffer); }
   const { loadState, writeJsonAtomic } = require("../endpoint/config");
   const local = loadState(path.join(directory, "datos-endpoint"));

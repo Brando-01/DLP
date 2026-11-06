@@ -76,3 +76,57 @@ test("clasificación central en reposo: autentica, devuelve el hash y no crea ti
   assert.equal(control.tickets.size, 0); assert.equal(control.audit.events.at(-1).evidence, "CLASSIFICATION_ONLY");
   assert.ok(!(await fs.readFile(control.audit.file, "utf8")).includes("12345678"));
 });
+test("inventario vacío no consume presupuesto semántico ni vuelve a encolarse", async t => {
+  const prior = process.env.DLP_LLM_MODE; process.env.DLP_LLM_MODE = "hybrid";
+  t.after(() => { if (prior === undefined) delete process.env.DLP_LLM_MODE; else process.env.DLP_LLM_MODE = prior; });
+  const temp = await temporary(); t.after(temp.cleanup);
+  const root = path.join(temp.root, "fuente"); await fs.mkdir(root);
+  await fs.writeFile(path.join(root, "vacio.txt"), "");
+  let calls = 0;
+  const runtime = new EndpointRuntime({ dataDirectory: path.join(temp.root, "estado"), bridge: new FakeBridge(), config: { watchRoots: [root], semanticFilesPerScan: 1 }, classifyAtRest: async () => { calls += 1; throw new Error("No consultar"); } });
+  t.after(() => runtime.stop());
+  await runtime.scan();
+  const first = [...runtime.inventory.values()][0];
+  await runtime.scan();
+  assert.equal(calls, 0);
+  assert.equal(runtime.status().inventory.unknown, 0);
+  assert.equal([...runtime.inventory.values()][0], first);
+  assert.equal(first.classification, "PUBLICO");
+});
+
+test("un cliente central clasifica su inventario sin clave Groq ni LLM local", async t => {
+  const keys = ["DLP_INSPECTION_BACKEND", "DLP_LLM_MODE", "GROQ_API_KEY", "DLP_CONTROL_URL", "DLP_INSPECT_TOKEN"];
+  const previous = Object.fromEntries(keys.map(key => [key, process.env[key]]));
+  t.after(() => { for (const key of keys) { if (previous[key] === undefined) delete process.env[key]; else process.env[key] = previous[key]; } });
+  process.env.DLP_INSPECTION_BACKEND = "central";
+  process.env.DLP_LLM_MODE = "off";
+  delete process.env.GROQ_API_KEY;
+  const temp = await temporary(); t.after(temp.cleanup);
+  const root = path.join(temp.root, "documentos"); await fs.mkdir(root);
+  await fs.writeFile(path.join(root, "registro.txt"), "María Torres obtuvo diecisiete en su evaluación del curso.");
+  let inspected = 0;
+  // Doble del clasificador: valida el transporte y la política, sin llamar a Groq.
+  const control = createControl({ directory: path.join(temp.root, "central"), credentials, inspect: async buffer => {
+    inspected += 1;
+    return { sha256: crypto.createHash("sha256").update(buffer).digest("hex"), inspectionStatus: "COMPLETE", classification: "CONFIDENCIAL", score: 3, matches: [{ id: "LLM-001", points: 3 }], semantic: { status: "COMPLETE", required: true } };
+  } });
+  const server = control.app.listen(0, "127.0.0.1"); await new Promise(r => server.once("listening", r));
+  t.after(() => new Promise(r => { server.close(r); server.closeAllConnections(); }));
+  process.env.DLP_CONTROL_URL = `http://127.0.0.1:${server.address().port}`;
+  process.env.DLP_INSPECT_TOKEN = credentials.inspect;
+  const runtime = new EndpointRuntime({ dataDirectory: path.join(temp.root, "cliente"), bridge: new FakeBridge(), config: { watchRoots: [root], inventorySemantic: true } });
+  t.after(() => runtime.stop());
+  await runtime.scan();
+  assert.equal(inspected, 1);
+  assert.equal(runtime.status().inventory.semanticEnabled, true);
+  assert.equal([...runtime.inventory.values()][0].classification, "CONFIDENCIAL");
+  assert.equal(control.audit.events.at(-1).evidence, "CLASSIFICATION_ONLY");
+  assert.equal(control.tickets.size, 0);
+  assert.ok(runtime.audit.events.every(event => event.prevented !== true));
+  // El modo local off y la opción explícita del usuario siguen desactivando la cola.
+  process.env.DLP_INSPECTION_BACKEND = "local";
+  assert.equal(runtime.semanticInventoryEnabled(), false);
+  process.env.DLP_INSPECTION_BACKEND = "central";
+  runtime.config.inventorySemantic = false;
+  assert.equal(runtime.semanticInventoryEnabled(), false);
+});
