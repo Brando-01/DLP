@@ -55,6 +55,8 @@ El instalador verifica dependencias y puerto antes de consumir la invitación, o
 
 Si la inscripción terminó pero falló la instalación de la tarea o servicio, corrige el error y repite client:setup con el mismo archivo: una identidad ya guardada no vuelve a consumir la invitación. También puedes ejecutar client:install. No cambies una identidad existente por otra sin revisar el registro y el historial.
 
+Si una instalación anterior de Kali mostró `bad unit file setting`, actualiza con `git pull --ff-only` y ejecuta `npm run client:install`, sin sudo. Se corrigió la generación de WorkingDirectory: las comillas exteriores eran interpretadas como parte de la ruta. El instalador reescribe solo su unidad propia, la verifica con systemd-analyze antes de habilitarla y recarga el gestor de usuario. La identidad ya inscrita y sus credenciales se conservan; no hace falta otra invitación. Comprueba después `npm run client:status`.
+
 HTTP se admite únicamente como concesión explícita al laboratorio aislado. El tramo entre agente y central no está cifrado en ese modo. El uso en una red compartida requiere HTTPS con confianza de certificados apropiada. Los tokens individuales permiten atribución al titular de la credencial, no acreditación hardware ni resistencia frente al administrador local.
 
 ## Qué arranca automáticamente
@@ -101,7 +103,7 @@ El tráfico de los conectores compartidos conserva su atribución al gateway/con
 6. Revocar únicamente una identidad de prueba y comprobar rechazo de sus tokens y continuidad del otro equipo.
 7. Retirar su inicio automático con Uninstall y comprobar que se conservan datos y controles anteriores.
 
-Las pruebas automatizadas usan un central temporal, Chromium real y documentos ficticios. El supervisor se prueba con un proceso real ficticio y puertos temporales; el ciclo de systemd se prueba con ejecutor simulado. También se registró y retiró una tarea Windows real con un cliente ficticio, sin iniciar sensores ni cambiar controles del sistema. No se atribuye a esas pruebas una instalación real en las VM ni la clasificación de Groq en vivo. Los resultados de consola están en output/evaluacion/resultado-central.json.
+Las pruebas automatizadas usan un central temporal, Chromium real y documentos ficticios. El supervisor se prueba con un proceso real ficticio y puertos temporales; el ciclo de systemctl se prueba con ejecutor simulado. La sintaxis de la unidad Linux se valida además con systemd-analyze real, con rutas normales, espacios, porcentajes y comillas, y un control negativo que reproduce el fallo original. También se registró y retiró una tarea Windows real con un cliente ficticio, sin iniciar sensores ni cambiar controles del sistema. No se atribuye a esas pruebas una instalación real en las VM ni la clasificación de Groq en vivo. Los resultados de consola están en output/evaluacion/resultado-central.json.
 
 ## Referencias
 

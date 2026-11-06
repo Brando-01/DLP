@@ -19,12 +19,16 @@ function unitPlan(options = {}) {
   const name = `dlp-agent-${id}.service`;
   if ([root, node].some(v => /[\r\n\0]/.test(v))) throw new Error("La ruta del servicio contiene caracteres no admitidos.");
   const quote = (text, command = false) => '"' + text.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/%/g, "%%").replace(/\$/g, command ? "$$$$" : "$") + '"';
-  const content = `# DLP owner=${id}\n[Unit]\nDescription=Agente DLP de laboratorio (usuario)\nStartLimitIntervalSec=60\nStartLimitBurst=5\n\n[Service]\nType=simple\nWorkingDirectory=${quote(root)}\nExecStart=${quote(node, true)} ${quote(path.join(root, "scripts/agent-runner.js"), true)} --mode=SYSTEMD_USER\nRestart=on-failure\nRestartSec=5\nUMask=0077\nNoNewPrivileges=true\n\n[Install]\nWantedBy=default.target\n`;
+  // WorkingDirectory es un valor de ruta: systemd conserva las comillas exteriores.
+  // ExecStart sí utiliza el analizador de argumentos y requiere sus propias comillas.
+  const workingDirectory = root.replace(/%/g, "%%");
+  const content = `# DLP owner=${id}\n[Unit]\nDescription=Agente DLP de laboratorio (usuario)\nStartLimitIntervalSec=60\nStartLimitBurst=5\n\n[Service]\nType=simple\nWorkingDirectory=${workingDirectory}\nExecStart=${quote(node, true)} ${quote(path.join(root, "scripts/agent-runner.js"), true)} --mode=SYSTEMD_USER\nRestart=on-failure\nRestartSec=5\nUMask=0077\nNoNewPrivileges=true\n\n[Install]\nWantedBy=default.target\n`;
   return { name, content, marker: `# DLP owner=${id}\n`, file: path.join(options.configHome || process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "systemd/user", name) };
 }
 async function linuxAction(action, options = {}) {
   const root = options.root || ROOT, plan = unitPlan(options);
   const execute = options.execute || (args => execFileSync("systemctl", ["--user", ...args], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }));
+  const verify = options.verify || (file => execFileSync("systemd-analyze", ["verify", "--man=no", file], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }));
   if (action === "plan") return { ...plan, scope: "Usuario actual; inicio de sesión. Sin firewall, CA, root ni habilitación de linger." };
   const exists = fs.existsSync(plan.file);
   if (exists && !fs.readFileSync(plan.file, "utf8").startsWith(plan.marker)) throw new Error("La unidad existente no pertenece a esta instalación; no se reemplazó.");
@@ -38,8 +42,13 @@ async function linuxAction(action, options = {}) {
   clientReadiness(root);
   if (!options.execute && process.getuid?.() === 0) throw new Error("Ejecuta la instalación como el usuario del puesto, sin sudo.");
   fs.mkdirSync(path.dirname(plan.file), { recursive: true }); fs.writeFileSync(plan.file, plan.content, { mode: 0o600 });
+  verify(plan.file);
   execute(["daemon-reload"]); execute(["enable", plan.name]);
-  if (options.start) execute(["start", plan.name]);
+  if (options.start) {
+    // Puede no haber un estado anterior cargado; ese caso no requiere limpieza.
+    try { execute(["reset-failed", plan.name]); } catch {}
+    execute(["start", plan.name]);
+  }
   return { installed: true, name: plan.name, started: Boolean(options.start), scope: "Inicio de sesión del usuario. No habilita linger ni protege antes de iniciar sesión." };
 }
 async function main(args = process.argv.slice(2)) {

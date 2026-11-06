@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const http = require("node:http");
+const { execFileSync } = require("node:child_process");
 const { setTimeout: delay } = require("node:timers/promises");
 const { temporary } = require("./helpers/fixtures.cjs");
 const { unitPlan, linuxAction } = require("../scripts/client-autostart");
@@ -16,7 +17,7 @@ async function waitFor(fn) { const until = Date.now() + 10000; while (Date.now()
 test("unidad Linux: plan sin instalación, propiedad, ciclo instalar/desinstalar y protección de archivos ajenos", async t => {
   const tmp = await temporary(); t.after(tmp.cleanup);
   const root = path.join(tmp.root, "cliente con espacios"); await fs.mkdir(root);
-  const options = { root, configHome: path.join(tmp.root, "config"), node: "/usr/bin/node", execute: () => "" };
+  const options = { root, configHome: path.join(tmp.root, "config"), node: "/usr/bin/node", verify: () => {}, execute: () => "" };
   const plan = await linuxAction("plan", options);
   assert.equal(await fs.access(plan.file).then(() => true, () => false), false);
   await assert.rejects(linuxAction("install", options), /Inscribe primero/);
@@ -34,6 +35,18 @@ test("unidad Linux: plan sin instalación, propiedad, ciclo instalar/desinstalar
   await assert.rejects(linuxAction("install", options), /no pertenece/);
   assert.equal(await fs.readFile(plan.file, "utf8"), "# UNIDAD AJENA\n");
   assert.throws(() => unitPlan({ root: "/tmp/ataque\nExecStart=/bin/false" }), /caracteres/);
+});
+test("systemd real acepta las unidades generadas para rutas normales y con espacios", { skip: process.platform !== "linux" }, async t => {
+  const tmp = await temporary(); t.after(tmp.cleanup);
+  for (const name of ["cliente", "cliente con espacios", "cliente % y $ con comillas \"dato\""]) {
+    const root = path.join(tmp.root, name); await fs.mkdir(root);
+    const plan = unitPlan({ root, node: process.execPath });
+    const file = path.join(tmp.root, plan.name); await fs.writeFile(file, plan.content);
+    execFileSync("systemd-analyze", ["verify", "--man=no", file], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    // Control negativo que reproduce el fallo original: las comillas invalidan la ruta.
+    await fs.writeFile(file, plan.content.replace(/^WorkingDirectory=.*$/m, 'WorkingDirectory="' + root.replace(/%/g, "%%") + '"'));
+    assert.throws(() => execFileSync("systemd-analyze", ["verify", "--man=no", file], { stdio: "pipe" }));
+  }
 });
 test("supervisor real: evita duplicados, reinicia su proceso y se detiene sin procesos huérfanos", async t => {
   const tmp = await temporary(); t.after(tmp.cleanup);
