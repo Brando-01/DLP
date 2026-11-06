@@ -47,7 +47,7 @@ async function linuxAction(action, options = {}) {
   if (options.start) {
     // Puede no haber un estado anterior cargado; ese caso no requiere limpieza.
     try { execute(["reset-failed", plan.name]); } catch {}
-    execute(["start", plan.name]);
+    execute(["restart", plan.name]);
   }
   return { installed: true, name: plan.name, started: Boolean(options.start), scope: "Inicio de sesión del usuario. No habilita linger ni protege antes de iniciar sesión." };
 }

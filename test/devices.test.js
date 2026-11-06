@@ -86,6 +86,25 @@ test("cliente guarda identidad y respaldo privado sin clave Groq ni ADMIN del se
   assert.equal(parseEnv(await fs.readFile(path.join(root, ".env"), "utf8")).DLP_DEVICE_ID, result.deviceId);
 });
 
+test("detalle de sensores y procesos se conserva por identidad y excluye objetos libres", async t => {
+  const f = await fixture(t), a = await f.register("LIN-01"), b = await f.register("LIN-02");
+  const response = await f.request("/v1/telemetry", a.telemetryToken, {
+    device: a.deviceId, sensors: { process: { available: true, count: 1, processes: [{ processId: 42, program: "firefox", cmdline: "NO_PERSISTIR" }] }, browser: { activeClients: 1, navigationClients: 1 }, universalInterception: true, content: "NO_PERSISTIR" },
+    events: [{ id: "detalle-1", activity: "PROCESO_INICIADO", program: "firefox", processId: 42, semanticStatus: "COMPLETE", content: "NO_PERSISTIR" }],
+  });
+  assert.equal(response.status, 200);
+  f.control.audit.record({ device: a.deviceId, channel: "filesystem", activity: "CLASIFICACION_EN_REPOSO", semanticStatus: "COMPLETE", prevented: false });
+  const status = await (await f.request("/v1/admin/status?device=" + a.deviceId)).json();
+  const agent = status.agents.find(d => d.id === a.deviceId);
+  assert.equal(agent.sensors.process.processes[0].program, "firefox"); assert.equal(agent.sensors.universalInterception, false);
+  assert.equal(agent.semantic.complete, 1); // No cuenta de nuevo el resultado reportado por el agente.
+  assert.equal(status.agents.find(d => d.id === b.deviceId).semantic, null);
+  assert.equal(status.events.find(e => e.sourceEventId === "detalle-1").processId, 42);
+  const disk = await fs.readFile(path.join(f.tmp.root, "equipos.json"), "utf8");
+  assert.ok(!disk.includes("NO_PERSISTIR")); assert.ok(!JSON.stringify(status).includes("NO_PERSISTIR"));
+  assert.equal(new DeviceStore(f.tmp.root).public(new DeviceStore(f.tmp.root).get(a.deviceId)).sensors.browser.navigationClients, 1);
+});
+
 test("instalador unificado no consume invitación con agente manual y reintenta servicio sin reinscribir", async t => {
   const f = await fixture(t), root = path.join(f.tmp.root, "puesto");
   await fs.mkdir(path.join(root, "node_modules/express"), { recursive: true });

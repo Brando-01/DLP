@@ -36,6 +36,7 @@ async function run() {
       return device;
     }
     const win = await enroll("WIN-01", "win32"), lin = await enroll("LIN-01", "linux"); results.push("Invitación descargada e inscripción individual Windows/Linux");
+    await request("/v1/telemetry", win.telemetryToken, { device: win.deviceId, platform: "win32", startMode: "WINDOWS_LOGON", sensors: { process: { available: true, scope: "VISIBLE_PROCESSES", sampledAt: new Date().toISOString(), count: 1, processes: [{ processId: 1234, program: "notepad" }] }, browser: { activeClients: 1, navigationClients: 1 }, inventory: { roots: 2, files: 3 }, inspectionBackend: "central" }, events: [{ id: "proceso-prueba", channel: "process_observed", activity: "PROCESO_INICIADO", program: "notepad", processId: 1234 }, { id: "sitio-prueba", channel: "browser_navigation", activity: "SITIO_WEB_VISITADO", destination: "https://portal.example.test/ruta?secreto=NO_MOSTRAR" }, { id: "escape-prueba", channel: "process_observed", program: '<img src=x onerror="window.__bad=true">', activity: "PROCESO_FINALIZADO", processId: 4321 }] });
     for (const [device, file, text, outcome] of [[win, "reserva-win.txt", "DNI: 12345678", "CANCELLED"], [lin, "publico-lin.txt", "Horario publico de biblioteca", "RELEASED"]]) {
       const r = await request("/v1/inspect", device.inspectToken, { device: device.deviceId, channel: "browser_file", destination: "https://destino.example.test", parts: [{ name: file, base64: Buffer.from(text).toString("base64") }] });
       const decision = await r.json(); assert.equal(decision.allowed, outcome !== "CANCELLED");
@@ -45,8 +46,20 @@ async function run() {
     await page.locator(".device-card").filter({ has: page.getByRole("heading", { name: "WIN-01", exact: true }) }).getByRole("button", { name: "Ver actividad" }).click();
     await page.locator("#activity-title").filter({ hasText: "WIN-01" }).waitFor();
     assert.ok((await page.locator("#events").innerText()).includes("reserva-win.txt")); assert.ok(!(await page.locator("#events").innerText()).includes("publico-lin.txt"));
+    const details = await page.locator("#device-details").innerText();
+    assert.ok(details.includes("Extensiones activas: 1"));
+    await page.locator("#device-details summary").click();
+    assert.ok((await page.locator("#device-details").innerText()).includes("notepad · PID 1234"));
+    assert.ok((await page.locator("#events").innerText()).includes("Programa: notepad · PID 1234"));
+    assert.ok((await page.locator("#events").innerText()).includes("https://portal.example.test"));
+    assert.ok(!(await page.locator("#events").innerText()).includes("NO_MOSTRAR"));
+    assert.equal(await page.locator("#events img").count(), 0);
+    await fs.mkdir("output/evidencias", { recursive: true });
+    await page.locator("#device-details").screenshot({ path: "output/evidencias/central-detalle-equipo.png" });
+    results.push("Programa/PID, procesos actuales, conector y sitio sin ruta privada; escape HTML");
     await page.locator("#device-filter").selectOption(lin.deviceId); await page.locator("#activity-title").filter({ hasText: "LIN-01" }).waitFor();
     assert.ok((await page.locator("#events").innerText()).includes("publico-lin.txt")); assert.ok(!(await page.locator("#events").innerText()).includes("reserva-win.txt")); results.push("Vista individual no mezcla eventos entre puestos");
+    assert.ok((await page.locator("#device-details").innerText()).includes("no reporta aún"));
     await page.locator("#decision-filter").selectOption("BLOQUEADO"); assert.ok(!(await page.locator("#events").innerText()).includes("publico-lin.txt"));
     await page.locator("#decision-filter").selectOption(""); await page.locator("#all-devices").click(); await page.locator("#activity-title").filter({ hasText: "todos los equipos" }).waitFor();
     assert.ok((await page.locator("#events").innerText()).includes("reserva-win.txt")); results.push("Filtro de decisión y retorno a todos los equipos");

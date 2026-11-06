@@ -135,6 +135,9 @@ function createControl(options = {}) {
       // Proyección explícita: nunca persistir texto libre, claves o el cuerpo de un evento arbitrario.
       const clean = { ...eventIdentity(req, input.device), channel: "endpoint_telemetry", activity: String(item.activity || "OBSERVED").slice(0, 60), sourceEventId: String(item.id || "").slice(0, 64), sourceTime: String(item.timestamp || "").slice(0, 40), file: String(item.file || "").slice(0, 160), classification: String(item.classification || "NO_DETERMINADA").slice(0, 30), decision: ["PERMITIDO", "DETECTADO", "ALERTA", "BLOQUEADO", "ERROR", "NO_ANALIZABLE"].includes(item.decision) ? item.decision : "DETECTADO", prevented: false, reportedPrevented: item.prevented === true, evidence: "AGENT_REPORT_NOT_INDEPENDENT_PROOF", outcome: String(item.outcome || "OBSERVED").slice(0, 40) };
       for (const key of ["program", "destinationAddress", "destinationPort"]) if (typeof item[key] === "string") clean[key] = item[key].slice(0, key === "program" ? 250 : 80);
+      if (Number.isInteger(item.processId) && item.processId > 0) clean.processId = item.processId;
+      if (typeof item.semanticStatus === "string") clean.semanticStatus = item.semanticStatus.slice(0, 60);
+      if (typeof item.inspectionStatus === "string") clean.inspectionStatus = item.inspectionStatus.slice(0, 40);
       if (Number.isInteger(item.ruleId) && item.ruleId >= 100000 && item.ruleId < 120000) clean.ruleId = item.ruleId;
       if (typeof item.channel === "string") clean.sourceChannel = item.channel.slice(0, 60);
       if (item.channel === "browser_navigation" && typeof item.destination === "string") { try { const u = new URL(item.destination); if (["http:", "https:"].includes(u.protocol)) clean.destination = u.origin; } catch {} }
@@ -148,7 +151,18 @@ function createControl(options = {}) {
   app.get("/v1/admin/status", (req, res) => {
     const selected = typeof req.query.device === "string" ? req.query.device.slice(0, 100) : "";
     const filtered = selected ? audit.events.filter(e => e.device === selected) : audit.events;
-    res.json({ version: "3.0.0", serverTime: new Date().toISOString(), classifier: semanticClassifier.status(), cases: CASES, agents: devices.list(), selectedDevice: selected || null, filteredEvents: filtered.length, events: filtered.slice(-300).reverse(), audit: audit.status(), policy, pendingDecisions: tickets.size });
+    // Cuenta resultados emitidos por el central; excluye copias de telemetría.
+    // COMPLETE acredita clasificación semántica (puede usar caché), no una llamada nueva ni bloqueo.
+    const semanticByDevice = new Map();
+    for (const event of audit.events) {
+      if (!["CLASIFICACION_EN_REPOSO", "DECISION_PREVIA"].includes(event.activity) || event.channel === "endpoint_telemetry") continue;
+      const statuses = event.files ? event.files.map(f => f.semanticStatus) : [event.semanticStatus];
+      if (!statuses.some(Boolean)) continue;
+      const summary = semanticByDevice.get(event.device) || { complete: 0, other: 0, lastStatus: "", lastAt: null };
+      for (const status of statuses.filter(Boolean)) { status === "COMPLETE" ? summary.complete++ : summary.other++; summary.lastStatus = status; }
+      summary.lastAt = event.timestamp; semanticByDevice.set(event.device, summary);
+    }
+    res.json({ version: "3.0.0", serverTime: new Date().toISOString(), classifier: semanticClassifier.status(), cases: CASES, agents: devices.list().map(d => ({ ...d, semantic: semanticByDevice.get(d.device) || null })), selectedDevice: selected || null, filteredEvents: filtered.length, events: filtered.slice(-300).reverse(), audit: audit.status(), policy, pendingDecisions: tickets.size });
   });
   app.post("/v1/admin/devices", (req, res) => {
     const result = devices.invite({ ...req.body, allowLabHttp: process.env.DLP_ALLOW_LAB_HTTP === "1" });

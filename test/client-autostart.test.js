@@ -26,7 +26,7 @@ test("unidad Linux: plan sin instalación, propiedad, ciclo instalar/desinstalar
   await fs.writeFile(path.join(root, ".env"), original);
   const commands = []; options.execute = args => { commands.push(args); return "ActiveState=active"; };
   await linuxAction("install", { ...options, start: true });
-  assert.ok(commands.some(args => args[0] === "enable")); assert.ok(commands.some(args => args[0] === "start"));
+  assert.ok(commands.some(args => args[0] === "enable")); assert.ok(commands.some(args => args[0] === "restart"));
   assert.equal((await linuxAction("status", options)).installed, true);
   await linuxAction("uninstall", options);
   assert.equal(await fs.readFile(path.join(root, ".env"), "utf8"), original);

@@ -16,6 +16,8 @@ const { forwardAudit } = require("../lib/telemetry");
 const { CopyMonitor } = require("./copy-monitor");
 const { managedInspection, reportCentral, classifyAtRest } = require("../lib/managed-inspection");
 const { BrowserObserver } = require("./browser-observer");
+const { LinuxProcessObserver } = require("./linux-process-observer");
+const { sensorReport } = require("../lib/sensor-report");
 
 const EXCLUDED = new Set(["node_modules", ".git", ".cache", "appdata", "windows", "program files", "program files (x86)", "datos-endpoint", "logs", "recibidos", "tmp", "$recycle.bin", "system volume information"]);
 const fileId = (file) => crypto.createHash("sha256").update(process.platform === "win32" ? file.toLowerCase() : file).digest("hex").slice(0, 24);
@@ -37,6 +39,9 @@ class EndpointRuntime extends EventEmitter {
     this.tickets = new Map();
     this.scanState = { running: false, completedAt: null, examined: 0, skipped: 0, inaccessible: 0, capped: false, roots: [] };
     this.bridge = options.bridge || new WindowsBridge({ enabled: options.native !== false && process.env.DLP_DISABLE_NATIVE !== "1" });
+    this.linuxProcesses = new LinuxProcessObserver({ enabled: options.native !== false && process.env.DLP_DISABLE_NATIVE !== "1" });
+    this.linuxProcesses.on("sensor", message => this.handleNative(message).catch(error => this.operationalError("SENSOR_LINUX", error)));
+    this.linuxProcesses.on("diagnostic", message => this.operationalError("SENSOR_LINUX", new Error(message)));
     this.adapters = options.adapters || {};
     this.classifyAtRest = options.classifyAtRest || classifyAtRest;
     this.startedAt = null;
@@ -68,7 +73,8 @@ class EndpointRuntime extends EventEmitter {
       }
     }
     this.bridge.start();
-    this.stopTelemetry = forwardAudit(this.audit, this.dataDirectory);
+    this.linuxProcesses.start();
+    this.stopTelemetry = forwardAudit(this.audit, this.dataDirectory, () => this.sensorReport());
     this.installWatchers();
     await this.scan();
     this.copyMonitor = new CopyMonitor(this); this.copyMonitor.start();
@@ -370,6 +376,17 @@ class EndpointRuntime extends EventEmitter {
     this.bridge.request("notify", { message }).catch(() => {});
   }
 
+  sensorReport() {
+    const win = this.bridge.info;
+    const clients = this.browserObserver.status().filter(c => c.active);
+    return sensorReport({
+      process: process.platform === "win32" ? { available: win.available && Boolean(win.processObservation), scope: "VISIBLE_PROCESSES", intervalMs: 5000, sampledAt: win.processSampledAt, count: win.processCount, processes: win.processes, truncated: win.processCount > 50, droppedEvents: win.droppedProcessEvents } : this.linuxProcesses.info,
+      browser: { activeClients: clients.length, navigationClients: clients.filter(c => c.navigation).length },
+      inventory: { roots: this.config.watchRoots.length, files: this.inventory.size, semanticEnabled: this.semanticInventoryEnabled() },
+      inspectionBackend: process.env.DLP_INSPECTION_BACKEND || "local",
+    });
+  }
+
   status() {
     const items = [...this.inventory.values()];
     let systemControls = { applied: false, verificationRequired: true };
@@ -380,6 +397,7 @@ class EndpointRuntime extends EventEmitter {
       operations: { prevented: this.audit.events.filter((event) => event.prevented === true).length },
       windows: this.bridge.info, windowsControls: systemControls, audit: this.audit.status(), suggestedRoots: suggestedRoots(),
       browserClients: this.browserObserver.status(),
+      sensors: this.sensorReport(),
       session: this.session || { mode: "COMPONENT", nativeSensitiveOnly: false },
       coverage: [
         { channel: "Archivos locales", mode: "DETECCION", active: this.watchers.length > 0, detail: "Carpetas configuradas, archivos accesibles y formatos admitidos; no intercepta lecturas ni copias nativas." },
@@ -398,6 +416,7 @@ class EndpointRuntime extends EventEmitter {
     this.stopping = true;
     this.stopTelemetry?.();
     this.copyMonitor?.stop();
+    this.linuxProcesses.stop();
     clearTimeout(this.debounce); clearInterval(this.scanTimer);
     for (const watcher of this.watchers) watcher.close();
     this.watchers = [];

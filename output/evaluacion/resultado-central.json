@@ -5,6 +5,7 @@
   "tests": [
     "Acceso administrativo en navegador real",
     "Invitación descargada e inscripción individual Windows/Linux",
+    "Programa/PID, procesos actuales, conector y sitio sin ruta privada; escape HTML",
     "Vista individual no mezcla eventos entre puestos",
     "Filtro de decisión y retorno a todos los equipos",
     "Estado reciente, sin reporte y desconectado por reloj controlado",

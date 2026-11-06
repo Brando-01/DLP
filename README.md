@@ -6,6 +6,8 @@ Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correl
 
 **Gestión por equipo:** [inscripción individual, consola e inicio automático Windows/Linux](docs/GESTION_DE_EQUIPOS.md). La consola 3100 separa actividad por puesto, conserva su último contacto y permite revocar su credencial. El instalador configura supervisión al iniciar sesión; no añade control universal de aplicaciones.
 
+**Corrección del inicio y visibilidad:** los clientes ya inscritos actualizan con `git pull --ff-only` y `npm run client:install` (`npm.cmd` en Windows). El inicio Windows usa un lanzador sin consola. El panel muestra programa/PID, sensor Linux del usuario, últimas muestras de procesos, extensiones activas y resultados semánticos por equipo. Consulta la guía anterior para las pruebas de continuidad y sus límites.
+
 **Para presentar tu PC como servidor y dos VM Windows/Linux como empleados:** [laboratorio empresarial, casos principales y guion de exposición](docs/LABORATORIO_EMPRESA_Y_EXPOSICION.md). Distingue topología propuesta, controles existentes y pruebas pendientes; no se ofrece inspección automática de cualquier aplicación instalada.
 
 **Un solo comando para uso diario: `npm.cmd start`.** Reúne backend WSL, agente y receptores de prueba. Consulta [arranque único y cobertura de toda la PC](docs/ARRANQUE_UNICO.md). Iniciar servicios no activa las restricciones de Windows: el panel avisa si aplicaciones nativas y navegadores sin extensión/proxy obligatorio conservan salida.

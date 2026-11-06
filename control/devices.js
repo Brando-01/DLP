@@ -3,6 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const { writeJsonAtomic } = require("../endpoint/config");
+const { sensorReport } = require("../lib/sensor-report");
 const digest = value => crypto.createHash("sha256").update(value).digest("hex");
 const equalHash = (value, hash) => typeof value === "string" && value.length === 64 && /^[a-f0-9]{64}$/.test(hash || "") && crypto.timingSafeEqual(Buffer.from(digest(value), "hex"), Buffer.from(hash, "hex"));
 const short = (value, length = 100) => typeof value === "string" ? value.replace(/[\x00-\x1f\x7f]/g, "").slice(0, length) : "";
@@ -50,6 +51,7 @@ class DeviceStore {
   heartbeat(device, input) {
     if (input.platform && input.platform !== device.platform) throw new Error("Plataforma del reporte incompatible.");
     Object.assign(device, { lastSeen: new Date(this.now()).toISOString(), hostname: short(input.hostname || device.hostname), version: short(input.version, 30), coverage: short(input.coverage, 200), startMode: short(input.startMode || "MANUAL", 40) });
+    device.sensors = sensorReport(input.sensors);
     this.save();
   }
   legacyHeartbeat(name, coverage) {
@@ -64,8 +66,8 @@ class DeviceStore {
     return !Number.isFinite(age) || age > 120000 ? "OFFLINE" : age > 30000 ? "STALE" : "ONLINE";
   }
   public(device) {
-    const { id, name, platform, hostname, version, createdAt, expiresAt, enrolledAt, revokedAt, lastSeen, coverage, startMode } = device;
-    return { device: id, id, name, platform, hostname, version, createdAt, expiresAt, enrolledAt, revokedAt, lastSeen, coverage, startMode, identity: "INDIVIDUAL", connection: revokedAt ? "REVOKED" : !enrolledAt ? Date.parse(expiresAt) <= this.now() ? "EXPIRED" : "PENDING" : this.connection(lastSeen) };
+    const { id, name, platform, hostname, version, createdAt, expiresAt, enrolledAt, revokedAt, lastSeen, coverage, startMode, sensors } = device;
+    return { device: id, id, name, platform, hostname, version, createdAt, expiresAt, enrolledAt, revokedAt, lastSeen, coverage, startMode, sensors: sensorReport(sensors), identity: "INDIVIDUAL", connection: revokedAt ? "REVOKED" : !enrolledAt ? Date.parse(expiresAt) <= this.now() ? "EXPIRED" : "PENDING" : this.connection(lastSeen) };
   }
   list() {
     return [...this.state.devices.map(d => this.public(d)), ...this.state.legacy.map(d => ({ ...d, name: d.device, identity: "SHARED_LEGACY", connection: this.connection(d.lastSeen) }))];

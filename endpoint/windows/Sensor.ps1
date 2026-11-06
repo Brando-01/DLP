@@ -51,7 +51,8 @@ function Get-DeviceStatus {
     try { $printers = @([System.Drawing.Printing.PrinterSettings]::InstalledPrinters) } catch {}
     $interactive = [Environment]::UserInteractive -and ([System.Diagnostics.Process]::GetCurrentProcess().SessionId -gt 0)
     $clipboardState = if ($interactive) { 'OBSERVACION_REACTIVA' } else { 'SESION_NO_INTERACTIVA' }
-    return @{ type = 'status'; clipboard = $clipboardState; interactive = $interactive; drives = $volumes; printers = $printers; printingObservation = $script:printStatus; notifications = [bool]$script:tray; sysmon = $script:sysmonStatus; processObservation='PERIODIC_SNAPSHOT_5_SECONDS'; processCount=$script:processes.Count }
+    $processList = @($script:processes.GetEnumerator() | Sort-Object Value,Name | Select-Object -First 50 | ForEach-Object { @{processId=[int]$_.Key;program=[string]$_.Value} })
+    return @{ type = 'status'; clipboard = $clipboardState; interactive = $interactive; drives = $volumes; printers = $printers; printingObservation = $script:printStatus; notifications = [bool]$script:tray; sysmon = $script:sysmonStatus; processObservation='PERIODIC_SNAPSHOT_5_SECONDS'; processCount=$script:processes.Count; processes=$processList; processSampledAt=$script:processSampledAt; droppedProcessEvents=$script:droppedProcessEvents }
 }
 
 function Invoke-ControlledPrint([string]$Text, [string]$Printer, [string]$OutputPath) {
@@ -105,6 +106,8 @@ $script:printStatus = 'NO_ACTIVADA'
 $script:lastSequence = [DlpClipboardNative]::GetClipboardSequenceNumber()
 $script:seenJobs = @{}
 $script:processes = @{}
+$script:droppedProcessEvents = 0
+$script:processSampledAt = [datetime]::UtcNow.ToString('o')
 foreach ($nativeProcess in [Diagnostics.Process]::GetProcesses()) { try { $script:processes[[int]$nativeProcess.Id] = $nativeProcess.ProcessName } catch {} finally { $nativeProcess.Dispose() } }
 $lastProcessPoll = [datetime]::UtcNow
 try {
@@ -179,12 +182,17 @@ try {
             foreach ($nativeProcess in [Diagnostics.Process]::GetProcesses()) { try { $current[[int]$nativeProcess.Id] = $nativeProcess.ProcessName } catch {} finally { $nativeProcess.Dispose() } }
             $changes = 0
             foreach ($processKey in @($current.Keys)) {
-                if (-not $script:processes.ContainsKey($processKey) -and $changes -lt 100) { Send-Message @{type='process-observed';phase='START';processId=$processKey;program=$current[$processKey]}; $changes++ }
+                if (-not $script:processes.ContainsKey($processKey) -or $script:processes[$processKey] -ne $current[$processKey]) {
+                    if ($changes -lt 100) { Send-Message @{type='process-observed';phase='START';processId=$processKey;program=$current[$processKey]}; $changes++ } else { $script:droppedProcessEvents++ }
+                }
             }
             foreach ($processKey in @($script:processes.Keys)) {
-                if (-not $current.ContainsKey($processKey) -and $changes -lt 100) { Send-Message @{type='process-observed';phase='EXIT';processId=$processKey;program=$script:processes[$processKey]}; $changes++ }
+                if (-not $current.ContainsKey($processKey) -or $current[$processKey] -ne $script:processes[$processKey]) {
+                    if ($changes -lt 100) { Send-Message @{type='process-observed';phase='EXIT';processId=$processKey;program=$script:processes[$processKey]}; $changes++ } else { $script:droppedProcessEvents++ }
+                }
             }
             $script:processes = $current
+            $script:processSampledAt = [datetime]::UtcNow.ToString('o')
             $lastProcessPoll = [datetime]::UtcNow
         }
 

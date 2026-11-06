@@ -32,7 +32,14 @@ if ($Action -in @('Stop','Uninstall')) {
 & $node (Join-Path $project 'scripts\client-autostart.js') check
 if ($LASTEXITCODE -ne 0) {throw 'Falta inscripcion individual o dependencias del cliente.'}
 $identity=[Security.Principal.WindowsIdentity]::GetCurrent().Name
-$actionTask=New-ScheduledTaskAction -Execute $node -Argument ('"'+$runner+'" --mode=WINDOWS_LOGON') -WorkingDirectory $project
+$launcher=Join-Path $PSScriptRoot 'Run-Supervisor.ps1'
+$powershell=Join-Path $PSHOME 'powershell.exe'
+if ($existing -and $existing.State -eq 'Running') {
+    & $node $runner --stop
+    if ($LASTEXITCODE -ne 0) {throw 'No se pudo detener el supervisor propio para actualizarlo.'}
+    Stop-ScheduledTask -TaskName $taskName
+}
+$actionTask=New-ScheduledTaskAction -Execute $powershell -Argument ('-NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "'+$launcher+'" -ProjectDirectory "'+$project+'" -NodeExecutable "'+$node+'"') -WorkingDirectory $project
 $trigger=New-ScheduledTaskTrigger -AtLogOn -User $identity
 $principal=New-ScheduledTaskPrincipal -UserId $identity -LogonType Interactive -RunLevel Limited
 $settings=New-ScheduledTaskSettingsSet -Hidden -StartWhenAvailable -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit ([TimeSpan]::Zero) -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -MultipleInstances IgnoreNew

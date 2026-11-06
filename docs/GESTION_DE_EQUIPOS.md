@@ -18,6 +18,42 @@ Los latidos se envían cada diez segundos aunque no haya eventos. Los estados se
 
 Estos estados acreditan contacto con el agente, no protección completa del sistema. El modo de inicio mostrado es reportado por el cliente. El registro conserva identidad y último contacto después de reiniciar el central.
 
+## Actualizar los clientes ya inscritos (ventana Node y detalle de actividad)
+
+Una tarea que lanza node.exe directamente puede mostrar una consola aunque la tarea tenga la propiedad Hidden. Se sustituyó por un lanzador PowerShell con WindowStyle Hidden que espera al supervisor. La instalación reinicia únicamente la tarea/unidad propia para cargar el código nuevo. No reinstales la identidad ni copies el .env de otro equipo.
+
+En Windows, desde la sesión LABWIN:
+
+```powershell
+cd 'C:\Users\LABWIN\DLP-Cliente'
+git pull --ff-only
+npm.cmd run client:install
+npm.cmd run client:status
+```
+
+En Kali, desde su usuario habitual y sin sudo:
+
+```bash
+cd ~/DLP-Cliente
+git pull --ff-only
+npm run client:install
+npm run client:status
+```
+
+Después puedes cerrar esas terminales. No ejecutes además npm start en los clientes: el supervisor ya ejecuta el agente. Mantén operativo el central del anfitrión. Si un agente anterior se inició manualmente y no está bajo el supervisor, ciérralo con Ctrl+C antes de instalar; no termines todos los procesos Node del sistema.
+
+En 3100 pulsa Ver actividad en WIN-01 o LIN-01. Estado del equipo seleccionado muestra sensores, extensiones vinculadas, inventario y resultados semánticos. La tabla muestra nombre del programa y PID en los eventos de procesos, y origen del sitio en los de navegación. El listado desplegable incluye hasta 50 procesos de la última muestra, también los que ya estaban abiertos al iniciar el agente. Si el equipo está desconectado, ese listado es histórico.
+
+- Windows consulta los procesos visibles a su usuario cada cinco segundos; Kali consulta /proc y solo incluye el UID del usuario del agente. Los nombres de /proc/comm pueden estar truncados por Linux. No se recolectan argumentos de comandos, pulsaciones, pantallas ni contenido de ventanas.
+- Se limitan a 100 cambios de procesos por muestra y 50 nombres en el resumen; se reportan cambios omitidos. Procesos que nacen y terminan entre muestras pueden no aparecer. Un proceso observado no acredita qué archivos leyó ni qué bytes envió.
+- La navegación requiere instalar y vincular la extensión en cada navegador/perfil de cada VM y habilitar su observación. Se guarda el origen (dominio y puerto), sin búsquedas, ruta ni fragmentos. Sin extensión o canal proxy obligatorio no se acredita observación ni inspección de ese navegador.
+- La clasificación de Groq se ejecuta en el central, sin clave en las VM. COMPLETE acredita un resultado semántico, que puede proceder de caché. OFF, EMPTY_CONTENT y BYPASSED_LOCAL_BLOCK no acreditan una consulta a Groq: los vacíos no necesitan LLM y una regla local puede bloquear antes. Sin resultados para un equipo, el panel lo indica explícitamente.
+- El agente permanece identificable en procesos, tareas/servicios y registros; no incorpora ocultación frente al administrador. La tarea Windows y systemd de usuario dependen de la sesión: esto no acredita protección antes del inicio de sesión ni resistencia a un administrador local.
+
+Para probar la continuidad, cierra solo la terminal de instalación; abre una aplicación de prueba durante al menos diez segundos y ciérrala. En unos 10–25 segundos, con central y sensores disponibles, deben aparecer programa/PID e inicio/salida en la vista del equipo. Después cierra y vuelve a iniciar sesión en la VM para comprobar el arranque automático. Si falla, consulta client:status y datos-endpoint/supervisor.log, sin publicar credenciales.
+
+La inspección selectiva de WhatsApp, Discord o cualquier otra aplicación no queda resuelta por observar sus procesos. Requiere un canal de salida obligatorio e inspeccionable, confianza TLS compatible y restricciones contra salidas alternativas; aplicaciones con cifrado extremo a extremo pueden requerir bloqueo completo del canal o un componente de endpoint compatible. El proyecto aún no acredita interceptación universal ni bloqueo de cualquier fuga. No se presenta el envío de texto de procesos a Groq como sustituto de inspeccionar contenido antes de la transferencia.
+
 ## Inscribir un equipo una sola vez
 
 1. En Agregar equipo indica un nombre como WIN-01 o LIN-01 y su plataforma.
@@ -103,10 +139,12 @@ El tráfico de los conectores compartidos conserva su atribución al gateway/con
 6. Revocar únicamente una identidad de prueba y comprobar rechazo de sus tokens y continuidad del otro equipo.
 7. Retirar su inicio automático con Uninstall y comprobar que se conservan datos y controles anteriores.
 
-Las pruebas automatizadas usan un central temporal, Chromium real y documentos ficticios. El supervisor se prueba con un proceso real ficticio y puertos temporales; el ciclo de systemctl se prueba con ejecutor simulado. La sintaxis de la unidad Linux se valida además con systemd-analyze real, con rutas normales, espacios, porcentajes y comillas, y un control negativo que reproduce el fallo original. También se registró y retiró una tarea Windows real con un cliente ficticio, sin iniciar sensores ni cambiar controles del sistema. No se atribuye a esas pruebas una instalación real en las VM ni la clasificación de Groq en vivo. Los resultados de consola están en output/evaluacion/resultado-central.json.
+Las pruebas automatizadas usan un central temporal, Chromium real y documentos ficticios. El supervisor se prueba con un proceso real ficticio y puertos temporales; el ciclo de systemctl se prueba con ejecutor simulado. La sintaxis de la unidad Linux se valida además con systemd-analyze real, con rutas normales, espacios, porcentajes y comillas, y un control negativo que reproduce el fallo original. También se registró, arrancó sin ventana, actualizó en marcha y retiró una tarea Windows real con un cliente ficticio, sin iniciar sensores DLP ni cambiar controles del sistema. El sensor Linux se prueba con /proc ficticio y con un proceso real en Linux; se comprueban aislamiento por usuario, entrada/salida, límites y ausencia de argumentos. No se atribuye a esas pruebas una instalación real en las VM ni la clasificación de Groq en vivo. Los resultados de consola están en output/evaluacion/resultado-central.json.
 
 ## Referencias
 
 - Microsoft, tareas al inicio de sesión: https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/new-scheduledtasktrigger
 - Microsoft, registro de tareas: https://learn.microsoft.com/en-us/powershell/module/scheduledtasks/register-scheduledtask
+- Microsoft, Start-Process y WindowStyle: https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.management/start-process
+- Linux, nombres de procesos en /proc: https://man7.org/linux/man-pages/man5/proc_pid_comm.5.html
 - systemd, unidades de servicio: https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html
