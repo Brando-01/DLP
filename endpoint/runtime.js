@@ -28,6 +28,7 @@ class EndpointRuntime extends EventEmitter {
     const state = loadState(this.dataDirectory, options.config || {});
     this.config = state.config;
     this.credentials = state.credentials;
+    this.installationId = crypto.createHash("sha256").update(this.credentials.browser).digest("hex").slice(0, 32);
     this.configFile = state.file;
     this.audit = new AuditLog(this.dataDirectory);
     this.browserObserver = new BrowserObserver(this);

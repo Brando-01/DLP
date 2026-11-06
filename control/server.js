@@ -12,6 +12,7 @@ const { inspectBuffer } = require("../lib/inspection");
 const { semanticClassifier } = require("../lib/semantic");
 const { CASES, defaults, validatePolicy, destinationDecision, combine } = require("./policy");
 const { writeJsonAtomic } = require("../endpoint/config");
+const { DeviceStore } = require("./devices");
 const safeEqual = (a, b) => typeof a === "string" && typeof b === "string" && b.length >= 32 && Buffer.byteLength(a) === Buffer.byteLength(b) && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 function credentialsFromEnv() { return { admin: process.env.DLP_CONTROL_ADMIN_TOKEN, inspect: process.env.DLP_INSPECT_TOKEN, telemetry: process.env.DLP_TELEMETRY_TOKEN }; }
 function safeDestination(value) {
@@ -26,6 +27,12 @@ function createControl(options = {}) {
   let policy = fs.existsSync(policyFile) ? validatePolicy(JSON.parse(fs.readFileSync(policyFile, "utf8"))) : defaults();
   const inspect = options.inspect || ((buffer, name) => inspectBuffer(buffer, name, { semantic: true }));
   const tickets = new Map(), agents = new Map(), receipts = new Map(), telemetryIds = new Map();
+  const devices = options.devices || new DeviceStore(directory, { now: options.now });
+  const eventIdentity = (req, reported) => {
+    if (req.device) return { device: req.device.id, deviceName: req.device.name, identity: "INDIVIDUAL" };
+    if (devices.get(reported)) throw new Error("Una credencial compartida no puede atribuir eventos a un equipo inscrito.");
+    return { device: String(reported || "gateway").slice(0, 100), identity: "SHARED_LEGACY" };
+  };
   let concurrent = 0, windowAt = Date.now(), requests = new Map();
   const app = express();
   app.disable("x-powered-by");
@@ -37,11 +44,25 @@ function createControl(options = {}) {
     next();
   });
   app.get("/healthz", (_req, res) => res.json({ service: "Control DLP", version: "3.0.0", ready: true }));
+  let enrollmentWindow = Date.now(), enrollmentRequests = new Map();
+  app.post("/v1/enroll", express.json({ limit: "8kb" }), (req, res) => {
+    if (Date.now() - enrollmentWindow > 60000) { enrollmentWindow = Date.now(); enrollmentRequests = new Map(); }
+    const key = req.socket.remoteAddress || "local", count = (enrollmentRequests.get(key) || 0) + 1;
+    enrollmentRequests.set(key, count);
+    if (enrollmentRequests.size > 1000 || count > 30) return res.status(429).json({ error: "Límite de inscripciones; espera un minuto." });
+    const result = devices.enroll(req.body || {});
+    audit.record({ activity: "EQUIPO_INSCRITO", channel: "administration", device: result.deviceId, prevented: false });
+    res.json(result);
+  });
   app.use("/v1", (req, res, next) => {
     const permission = req.path.startsWith("/admin/") ? "admin" : req.path.startsWith("/telemetry") ? "telemetry" : "inspect";
-    if (!safeEqual(req.headers["x-dlp-token"], credentials[permission])) return res.status(401).json({ error: "Credencial no válida para esta función" });
+    const token = req.headers["x-dlp-token"];
+    req.device = devices.authenticate(token, permission);
+    if (!req.device && !safeEqual(token, credentials[permission])) return res.status(401).json({ error: "Credencial no válida para esta función" });
+    req.principal = req.device ? req.device.id : `shared:${permission}`;
     if (Date.now() - windowAt > 60000) { requests = new Map(); windowAt = Date.now(); }
-    const count = (requests.get(permission) || 0) + 1; requests.set(permission, count);
+    const bucket = `${req.principal}:${permission}`;
+    const count = (requests.get(bucket) || 0) + 1; requests.set(bucket, count);
     if (count > 600) return res.status(429).json({ error: "Límite del control central" });
     next();
   });
@@ -56,7 +77,7 @@ function createControl(options = {}) {
     concurrent += 1;
     try {
       const inspection = await inspect(buffer, path.basename(name));
-      audit.record({ channel: "filesystem", activity: "CLASIFICACION_EN_REPOSO", classification: inspection.classification, semanticStatus: inspection.semantic?.status, sha256: inspection.sha256, detected: inspection.score > 0, prevented: false, evidence: "CLASSIFICATION_ONLY" });
+      audit.record({ ...eventIdentity(req, req.body.device), channel: "filesystem", activity: "CLASIFICACION_EN_REPOSO", classification: inspection.classification, semanticStatus: inspection.semantic?.status, sha256: inspection.sha256, detected: inspection.score > 0, prevented: false, evidence: "CLASSIFICATION_ONLY" });
       res.json({ inspection });
     } finally { concurrent -= 1; }
   });
@@ -79,9 +100,9 @@ function createControl(options = {}) {
       if (!destination) for (const part of parts) inspections.push({ file: part.name, ...await inspect(part.buffer, part.name) });
       const decision = destination || combine(inspections, input.channel, policy);
       const ticket = crypto.randomUUID();
-      const event = { channel: input.channel, activity: "DECISION_PREVIA", device: String(input.device || "gateway").slice(0, 100), destination: safeDestination(input.destination), decision: decision.decision, cause: decision.cause, detected: decision.detected, prevented: null, evidence: "GATEWAY_POLICY_DECISION", files: inspections.map(({ file, sha256, classification, inspectionStatus, semantic, score, matches, formatMismatch }) => ({ file, sha256, classification, inspectionStatus, semanticStatus: semantic?.status, score, rules: matches.map((m) => m.id), formatMismatch })), ticket };
+      const event = { ...eventIdentity(req, input.device), channel: input.channel, activity: "DECISION_PREVIA", destination: safeDestination(input.destination), decision: decision.decision, cause: decision.cause, detected: decision.detected, prevented: null, evidence: "GATEWAY_POLICY_DECISION", files: inspections.map(({ file, sha256, classification, inspectionStatus, semantic, score, matches, formatMismatch }) => ({ file, sha256, classification, inspectionStatus, semanticStatus: semantic?.status, score, rules: matches.map((m) => m.id), formatMismatch })), ticket };
       audit.record(event);
-      tickets.set(ticket, { event, allowed: decision.allowed, expires: Date.now() + 120000 });
+      tickets.set(ticket, { event, allowed: decision.allowed, owner: req.principal, expires: Date.now() + 120000 });
       for (const [key, value] of tickets) if (value.expires < Date.now() || tickets.size > 2000) tickets.delete(key);
       res.json({ ...decision, ticket, inspections, noInspection: decision.cause === "NO_INSPECCIONABLE" });
     } finally { concurrent -= 1; }
@@ -89,6 +110,7 @@ function createControl(options = {}) {
   app.post("/v1/receipts", (req, res) => {
     const { ticket, outcome, status } = req.body || {};
     const pending = tickets.get(ticket);
+    if (pending && pending.owner !== req.principal) return res.status(403).json({ error: "El recibo pertenece a otro equipo o conector." });
     if (!pending || pending.expires < Date.now() || !["CANCELLED", "RELEASED", "UPSTREAM_RESPONSE", "FAILED"].includes(outcome)) throw new Error("Recibo ausente, caducado o no válido");
     if (pending.allowed && outcome === "CANCELLED" || !pending.allowed && ["RELEASED", "UPSTREAM_RESPONSE"].includes(outcome)) throw new Error("Recibo incompatible con la decisión");
     if (status !== undefined && (!Number.isInteger(status) || status < 100 || status > 599)) throw new Error("Estado inválido");
@@ -99,6 +121,10 @@ function createControl(options = {}) {
   app.post("/v1/telemetry", (req, res) => {
     const input = req.body;
     if (!input || typeof input.device !== "string" || input.device.length > 100 || !Array.isArray(input.events) || input.events.length > 100) throw new Error("Telemetría inválida");
+    if (req.device && input.device !== req.device.id) return res.status(403).json({ error: "El reporte no corresponde a la identidad autenticada." });
+    if (!req.device && devices.get(input.device)) return res.status(403).json({ error: "La identidad requiere su credencial individual." });
+    if (req.device) devices.heartbeat(req.device, input);
+    else devices.legacyHeartbeat(input.device, input.coverage);
     agents.set(input.device, { device: input.device, lastSeen: new Date().toISOString(), coverage: String(input.coverage || "OBSERVACION").slice(0, 100) });
     while (agents.size > 1000) agents.delete(agents.keys().next().value);
     let accepted = 0;
@@ -107,7 +133,7 @@ function createControl(options = {}) {
       const identity = item.id ? `${input.device}:${String(item.id).slice(0, 64)}` : null;
       if (identity && telemetryIds.has(identity)) continue;
       // Proyección explícita: nunca persistir texto libre, claves o el cuerpo de un evento arbitrario.
-      const clean = { channel: "endpoint_telemetry", activity: String(item.activity || "OBSERVED").slice(0, 60), device: input.device, sourceEventId: String(item.id || "").slice(0, 64), sourceTime: String(item.timestamp || "").slice(0, 40), file: String(item.file || "").slice(0, 160), classification: String(item.classification || "NO_DETERMINADA").slice(0, 30), decision: ["PERMITIDO", "DETECTADO", "ALERTA", "BLOQUEADO", "ERROR", "NO_ANALIZABLE"].includes(item.decision) ? item.decision : "DETECTADO", prevented: false, reportedPrevented: item.prevented === true, evidence: "AGENT_REPORT_NOT_INDEPENDENT_PROOF", outcome: String(item.outcome || "OBSERVED").slice(0, 40) };
+      const clean = { ...eventIdentity(req, input.device), channel: "endpoint_telemetry", activity: String(item.activity || "OBSERVED").slice(0, 60), sourceEventId: String(item.id || "").slice(0, 64), sourceTime: String(item.timestamp || "").slice(0, 40), file: String(item.file || "").slice(0, 160), classification: String(item.classification || "NO_DETERMINADA").slice(0, 30), decision: ["PERMITIDO", "DETECTADO", "ALERTA", "BLOQUEADO", "ERROR", "NO_ANALIZABLE"].includes(item.decision) ? item.decision : "DETECTADO", prevented: false, reportedPrevented: item.prevented === true, evidence: "AGENT_REPORT_NOT_INDEPENDENT_PROOF", outcome: String(item.outcome || "OBSERVED").slice(0, 40) };
       for (const key of ["program", "destinationAddress", "destinationPort"]) if (typeof item[key] === "string") clean[key] = item[key].slice(0, key === "program" ? 250 : 80);
       if (Number.isInteger(item.ruleId) && item.ruleId >= 100000 && item.ruleId < 120000) clean.ruleId = item.ruleId;
       if (typeof item.channel === "string") clean.sourceChannel = item.channel.slice(0, 60);
@@ -119,11 +145,25 @@ function createControl(options = {}) {
     }
     res.json({ accepted });
   });
-  app.get("/v1/admin/status", (_req, res) => res.json({ version: "3.0.0", classifier: semanticClassifier.status(), cases: CASES, agents: [...agents.values()], events: audit.recent(300), audit: audit.status(), policy, pendingDecisions: tickets.size }));
+  app.get("/v1/admin/status", (req, res) => {
+    const selected = typeof req.query.device === "string" ? req.query.device.slice(0, 100) : "";
+    const filtered = selected ? audit.events.filter(e => e.device === selected) : audit.events;
+    res.json({ version: "3.0.0", serverTime: new Date().toISOString(), classifier: semanticClassifier.status(), cases: CASES, agents: devices.list(), selectedDevice: selected || null, filteredEvents: filtered.length, events: filtered.slice(-300).reverse(), audit: audit.status(), policy, pendingDecisions: tickets.size });
+  });
+  app.post("/v1/admin/devices", (req, res) => {
+    const result = devices.invite({ ...req.body, allowLabHttp: process.env.DLP_ALLOW_LAB_HTTP === "1" });
+    audit.record({ channel: "administration", activity: "INVITACION_CREADA", device: result.device.id, prevented: false });
+    res.status(201).json(result);
+  });
+  app.post("/v1/admin/devices/:id/revoke", (req, res) => {
+    const result = devices.revoke(req.params.id);
+    audit.record({ channel: "administration", activity: "EQUIPO_REVOCADO", device: result.id, prevented: false });
+    res.json(result);
+  });
   app.put("/v1/admin/policy", (req, res) => { policy = validatePolicy(req.body); writeJsonAtomic(policyFile, policy); audit.record({ channel: "control", activity: "POLITICA_ACTUALIZADA", prevented: false, decision: "DETECTADO", evidence: "ADMIN_ACTION" }); res.json(policy); });
   app.use(express.static(path.join(__dirname, "ui")));
   app.use((error, _req, res, _next) => res.status(error.type === "entity.too.large" ? 413 : 400).json({ error: error.type === "entity.too.large" ? "Carga superior al límite" : String(error.message).slice(0, 150) }));
-  return { app, audit, agents, tickets, receipts };
+  return { app, audit, agents, devices, tickets, receipts };
 }
 async function startControl(options = {}) {
   const control = createControl(options);

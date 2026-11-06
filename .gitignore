@@ -4,6 +4,8 @@ logs/
 .env
 .env.endpoint
 .env.*.tmp
+DLP-invitacion-*.json
+invitacion-dlp.json
 npm-debug.log*
 datos-endpoint/
 laboratorio/

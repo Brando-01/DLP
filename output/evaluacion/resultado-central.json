@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "mode": "LOCAL_RULES_NO_GROQ",
+  "source": "TEMPORARY_CONTROL_REAL_CHROMIUM",
+  "tests": [
+    "Acceso administrativo en navegador real",
+    "Invitación descargada e inscripción individual Windows/Linux",
+    "Vista individual no mezcla eventos entre puestos",
+    "Filtro de decisión y retorno a todos los equipos",
+    "Estado reciente, sin reporte y desconectado por reloj controlado",
+    "Revocación desde consola sin afectar el otro puesto",
+    "Cierre de sesión elimina invitación de la interfaz"
+  ],
+  "limitation": "No instala inicio automático ni acredita interceptación universal o pruebas en VM."
+}

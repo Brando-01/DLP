@@ -13,6 +13,9 @@ jobs:
       - name: PowerShell 5.1 atomic state regression, no system policies
         shell: powershell
         run: ./evaluacion/test-windows-state.ps1
+      - name: Register and remove a task with a fake client, no sensors
+        shell: powershell
+        run: ./evaluacion/test-windows-task.ps1
   functional:
     runs-on: ubuntu-24.04
     steps:
@@ -26,6 +29,7 @@ jobs:
       - run: npm run browser:install -- --with-deps
       - run: npm run extension:build
       - run: npm run test:browser
+      - run: npm run test:central
       - run: python -m venv .venv
       - run: .venv/bin/python -m pip install -r integrations/requirements.txt
       - run: .venv/bin/python -m unittest discover -s test -p 'test_*.py'

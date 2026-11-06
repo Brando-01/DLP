@@ -37,7 +37,7 @@ function createEndpointApp(runtime) {
     if (req.method === "OPTIONS") return browserRoute ? res.sendStatus(204) : res.sendStatus(403);
     next();
   });
-  app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "Agente DLP local", version: "3.0.0" }));
+  app.get("/api/health", (_req, res) => res.json({ status: "ok", service: "Agente DLP local", version: "3.0.0", installationId: runtime.installationId, deviceId: process.env.DLP_DEVICE_ID || null }));
   app.get("/api/bootstrap", (req, res) => {
     if (req.headers["sec-fetch-site"] === "cross-site" || extensionOrigin(req.headers.origin)) return res.sendStatus(403);
     res.json({ token: runtime.credentials.admin, version: "3.0.0" });

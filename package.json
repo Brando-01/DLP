@@ -27,6 +27,13 @@
     "applications:discover": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File endpoint/windows/Native-Apps.ps1 -Action Discover",
     "applications:audit": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File endpoint/windows/Native-Apps.ps1 -Action Audit",
     "endpoint:export": "node scripts/export-endpoint.js",
+    "client:enroll": "node scripts/enroll-device.js",
+    "client:setup": "node scripts/install-client.js",
+    "client:plan": "node scripts/client-autostart.js plan",
+    "client:install": "node scripts/client-autostart.js install --start",
+    "client:status": "node scripts/client-autostart.js status",
+    "client:stop": "node scripts/client-autostart.js stop",
+    "client:uninstall": "node scripts/client-autostart.js uninstall",
     "vm:start": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/vm/Lab-VM.ps1 -Action Start",
     "vm:sync": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/vm/Lab-VM.ps1 -Action Sync",
     "vm:verify": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File deploy/vm/Lab-VM.ps1 -Action Verify",
@@ -41,6 +48,7 @@
     "evaluate:endpoint": "node scripts/evaluate-local.js endpoint",
     "extension:build": "node extension/build.js",
     "test:browser": "node scripts/evaluate-local.js browser",
+    "test:central": "node evaluacion/central-e2e.js",
     "test:windows": "node scripts/evaluate-local.js windows"
   },
   "keywords": [
