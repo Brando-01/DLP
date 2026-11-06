@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "tests": [
+    "Publico entregado por relay sin extensión",
+    "Sensible retenido aunque politica general este en auditoria",
+    "Vacio permitido",
+    "Fragmentado retenido",
+    "WebSocket retenido",
+    "Consulta arbitraria retenida",
+    "Ruta arbitraria retenida",
+    "Verificador Node transmite por TLS con CA validada",
+    "Sin credencial",
+    "Credencial compartida rechazada",
+    "Revocacion retiene nuevos tuneles"
+  ],
+  "evidence": "REAL_TLS_NODE_RELAY_STRICT_MITMPROXY_AND_RECEIVER",
+  "groqLiveTested": false,
+  "vmFirewallTested": false
+}

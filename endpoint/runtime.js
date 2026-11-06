@@ -18,6 +18,7 @@ const { managedInspection, reportCentral, classifyAtRest } = require("../lib/man
 const { BrowserObserver } = require("./browser-observer");
 const { LinuxProcessObserver } = require("./linux-process-observer");
 const { sensorReport } = require("../lib/sensor-report");
+const { StrictRelay } = require("./strict-relay");
 
 const EXCLUDED = new Set(["node_modules", ".git", ".cache", "appdata", "windows", "program files", "program files (x86)", "datos-endpoint", "logs", "recibidos", "tmp", "$recycle.bin", "system volume information"]);
 const fileId = (file) => crypto.createHash("sha256").update(process.platform === "win32" ? file.toLowerCase() : file).digest("hex").slice(0, 24);
@@ -33,6 +34,7 @@ class EndpointRuntime extends EventEmitter {
     this.installationId = crypto.createHash("sha256").update(this.credentials.browser).digest("hex").slice(0, 32);
     this.configFile = state.file;
     this.audit = new AuditLog(this.dataDirectory);
+    this.strictRelay = new StrictRelay({ record: event => this.audit.record(event) });
     this.browserObserver = new BrowserObserver(this);
     this.inventory = new Map();
     this.watchers = [];
@@ -58,6 +60,7 @@ class EndpointRuntime extends EventEmitter {
   async start() {
     if (this.startedAt) return;
     this.startedAt = new Date().toISOString();
+    await this.strictRelay.start();
     const demoRoot = path.join(PROJECT, "laboratorio", "protegidos");
     if (this.config.watchRoots.includes(demoRoot)) {
       await fsp.mkdir(demoRoot, { recursive: true });
@@ -384,6 +387,7 @@ class EndpointRuntime extends EventEmitter {
       browser: { activeClients: clients.length, navigationClients: clients.filter(c => c.navigation).length },
       inventory: { roots: this.config.watchRoots.length, files: this.inventory.size, semanticEnabled: this.semanticInventoryEnabled() },
       inspectionBackend: process.env.DLP_INSPECTION_BACKEND || "local",
+      strictRelay: this.strictRelay.info,
     });
   }
 
@@ -417,6 +421,7 @@ class EndpointRuntime extends EventEmitter {
     this.stopTelemetry?.();
     this.copyMonitor?.stop();
     this.linuxProcesses.stop();
+    await this.strictRelay.stop();
     clearTimeout(this.debounce); clearInterval(this.scanTimer);
     for (const watcher of this.watchers) watcher.close();
     this.watchers = [];

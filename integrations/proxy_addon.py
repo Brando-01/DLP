@@ -26,14 +26,17 @@ class DlpProxy:
         # Sin consultas ni credenciales en destino/auditoría. Los parámetros se inspeccionan como contenido.
         target = urllib.parse.urlsplit(flow.request.pretty_url)
         destination = urllib.parse.urlunsplit((target.scheme, target.netloc, "/", "", ""))
-        return await self.client.inspect("web_proxy", destination, parts, device=str(flow.client_conn.peername[0]) if flow.client_conn.peername else "proxy", **metadata)
+        return await self.client_for(flow).inspect("web_proxy", destination, parts, device=str(flow.client_conn.peername[0]) if flow.client_conn.peername else "proxy", **metadata)
+
+    def client_for(self, flow):
+        return flow.metadata.get("dlp_client", self.client)
 
     async def deny(self, flow, reason, result=None, code=403):
         flow.response = http.Response.make(code, f"DLP: operación retenida. {reason}".encode("utf-8"), {"Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store"})
         record("web_proxy", "RESULTADO_CONECTOR_LOCAL", "CANCELLED" if code == 403 else "RETAINED_INSPECTION_FAILURE", True)
         if result:
             try:
-                await self.client.receipt(result, "CANCELLED")
+                await self.client_for(flow).receipt(result, "CANCELLED")
             except RuntimeError:
                 ctx.log.warn("DLP: bloqueo local aplicado; recibo central pendiente")
 
@@ -49,7 +52,7 @@ class DlpProxy:
         try:
             # Impide liberar el cuerpo si hay un fallo de política o del motor.
             if time.monotonic() > self.cache_until:
-                self.config = await asyncio.to_thread(self.client.request, "/v1/config")
+                self.config = await asyncio.to_thread(self.client_for(flow).request, "/v1/config")
                 self.cache_until = time.monotonic() + 10
             data = bounded_body(flow.request.raw_content or b"", flow.request.headers.get("content-encoding", ""))
             filename = urllib.parse.unquote(flow.request.headers.get("x-dlp-file-name", "")) or urllib.parse.urlsplit(flow.request.pretty_url).path.split("/")[-1] or "documento.bin"
@@ -72,7 +75,7 @@ class DlpProxy:
         result = flow.metadata.pop("dlp_result", None)
         if result:
             try:
-                await self.client.receipt(result, "UPSTREAM_RESPONSE", flow.response.status_code)
+                await self.client_for(flow).receipt(result, "UPSTREAM_RESPONSE", flow.response.status_code)
             except RuntimeError:
                 ctx.log.warn("DLP: respuesta del destino observada; falta registrar el recibo")
 
@@ -80,7 +83,7 @@ class DlpProxy:
         result = flow.metadata.pop("dlp_result", None)
         if result:
             try:
-                await self.client.receipt(result, "FAILED")
+                await self.client_for(flow).receipt(result, "FAILED")
             except RuntimeError:
                 pass
 

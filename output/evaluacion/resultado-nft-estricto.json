@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "source": "REAL_KERNEL_TWO_ISOLATED_NETWORK_NAMESPACES",
+  "tests": [
+    "Conector autorizado 3100",
+    "Conector autorizado 8081",
+    "Canal alternativo bloqueado 8080",
+    "Canal alternativo bloqueado 2525",
+    "Canal alternativo bloqueado 443",
+    "Canal alternativo bloqueado 22",
+    "Canal alternativo bloqueado 21",
+    "Salida IPv6 directa bloqueada",
+    "Otro UID sin acceso al gateway",
+    "Restauración de conectividad al retirar tabla propia"
+  ],
+  "vmInstallationTested": false
+}

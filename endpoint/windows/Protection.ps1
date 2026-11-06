@@ -96,6 +96,11 @@ if ($Action -in @('Audit','Restore')) {
     $app=$rule | Get-NetFirewallApplicationFilter
     $address=$rule | Get-NetFirewallAddressFilter
     $port=$rule | Get-NetFirewallPortFilter
+    if ($expected.kind -eq 'DHCP') {
+      $service=$rule | Get-NetFirewallServiceFilter
+      if ($app.Program -ne $expected.program -or [string]$address.RemoteAddress -ne '255.255.255.255' -or [string]$port.RemotePort -ne '67' -or [string]$port.LocalPort -ne '68' -or [string]$port.Protocol -notin @('UDP','17') -or $service.Service -ne 'Dhcp') { $findings+=('DHCP alterado: '+$name) }
+      continue
+    }
     if ($app.Program -ne $expected.program -or @($address.RemoteAddress).Count -ne 1 -or [string]$address.RemoteAddress -ne $b.gateway -or [string]$port.RemotePort -ne [string]$expected.port -or [string]$port.Protocol -notin @('TCP','6')) { $findings+=('Filtros cambiados: '+$name) }
   }
   $unexpected=@(Get-NetFirewallRule -PolicyStore ActiveStore -Direction Outbound -Action Allow -Enabled True | Where-Object { $_.Name -notin @($b.ruleNames) })
@@ -113,6 +118,11 @@ if (-not $PolicyPath) {
 }
 $policy=Get-Content -LiteralPath $PolicyPath -Raw | ConvertFrom-Json
 if ($policy.schemaVersion -ne 1) { throw 'Version de politica invalida.' }
+$strictLab=($policy.strictLab -eq $true)
+if ($strictLab) {
+  if ($policy.host -ne $env:COMPUTERNAME -or (Get-CimInstance Win32_ComputerSystem).Model -notmatch 'VirtualBox|VMware|Virtual Machine|KVM') { throw 'El modo de laboratorio solo se aplica a la VM indicada; no al anfitrion.' }
+  if ($policy.proxyPort -ne 8081 -or $policy.controlPort -ne 3100 -or @($policy.programs | Where-Object {$_.role -notin @('browser','agent')}).Count) { throw 'El perfil estricto de VM solo admite navegador y agente, sin SMTP directo.' }
+}
 $ip=$null
 if (-not [Net.IPAddress]::TryParse($policy.gateway,[ref]$ip) -or $ip.AddressFamily -ne 'InterNetwork') { throw 'Gateway debe ser una IPv4 privada explicita.' }
 $octets=$ip.GetAddressBytes()
@@ -155,6 +165,7 @@ if (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.IPAddress -eq $polic
 if (Get-NetFirewallRule -PolicyStore ActiveStore -Direction Outbound -Action Allow -Enabled True | Where-Object {[string]$_.PolicyStoreSourceType -eq 'GroupPolicy'}) { throw 'Existen permisos de salida por GPO; coordina primero esa politica.' }
 foreach ($entry in $programs) { if ((Get-AuthenticodeSignature -LiteralPath $entry.path).Status -ne 'Valid') { throw 'Ejecutable sin firma valida: no se aplica el perfil.' } }
 foreach ($port in @($policy.proxyPort,$policy.controlPort)) { if (-not (Test-NetConnection -ComputerName $policy.gateway -Port $port -InformationLevel Quiet -WarningAction SilentlyContinue)) { throw 'Gateway inaccesible; no se aplica.' } }
+if ($strictLab -and -not (Test-NetConnection -ComputerName 127.0.0.1 -Port 3002 -InformationLevel Quiet -WarningAction SilentlyContinue)) { throw 'Inicia primero el agente con su relay estricto local en 3002.' }
 $pem=[IO.File]::ReadAllText([IO.Path]::GetFullPath($policy.caCertificate))
 if ($pem -match 'PRIVATE KEY') { throw 'Se necesita CA publica, nunca una clave privada.' }
 $cert=New-Object Security.Cryptography.X509Certificates.X509Certificate2 -ArgumentList (,[Convert]::FromBase64String(($pem -replace '-----BEGIN CERTIFICATE-----','' -replace '-----END CERTIFICATE-----','' -replace '\s','')))
@@ -162,6 +173,7 @@ $b=@{schemaVersion=1;phase='PREPARING';id=[guid]::NewGuid().ToString();host=$env
 foreach ($p in @(Get-NetFirewallProfile)) { $b.profiles+=@{name=$p.Name;enabled=[string]$p.Enabled;outbound=[string]$p.DefaultOutboundAction} }
 foreach ($r in @(Get-NetFirewallRule -PolicyStore PersistentStore -Direction Outbound -Action Allow -Enabled True)) { $b.allowRules+=@{name=$r.Name;displayName=$r.DisplayName} }
 $proxy=$policy.gateway+':'+$policy.proxyPort
+if ($strictLab) { $proxy='127.0.0.1:3002' }
 $values=@()
 foreach ($key in @('HKLM:\SOFTWARE\Policies\Google\Chrome','HKLM:\SOFTWARE\Policies\Microsoft\Edge')) {
   foreach ($pair in @(@('ProxyMode','fixed_servers','String'),@('ProxyServer',$proxy,'String'),@('ProxyBypassList','localhost;127.0.0.1','String'),@('QuicAllowed',0,'DWord'),@('DnsOverHttpsMode','off','String'))) { $values+=@{key=$key;name=$pair[0];value=$pair[1];kind=$pair[2]} }
@@ -177,7 +189,7 @@ try {
   $store=New-Object Security.Cryptography.X509Certificates.X509Store('Root','LocalMachine')
   $store.Open('ReadWrite');try {$store.Add($cert)} finally {$store.Close()}
   foreach ($entry in $programs) {
-    $ports=switch ($entry.role) {browser {@($policy.proxyPort)};agent {@($policy.controlPort)};mail {@($policy.mailPort)};wazuh {@(1514,1515)}}
+    $ports=switch ($entry.role) {browser {if (-not $strictLab) {@($policy.proxyPort)}};agent {if ($strictLab) {@($policy.controlPort,$policy.proxyPort)} else {@($policy.controlPort)}};mail {@($policy.mailPort)};wazuh {@(1514,1515)}}
     foreach ($port in $ports) {
       $name='DLP-PROTECTION-'+$b.id+'-'+$b.ruleNames.Count
       $b.ruleNames+=$name; $b.specifications+=@{name=$name;program=$entry.path;port=$port}; Save-Json $backupPath $b
@@ -185,6 +197,12 @@ try {
     }
   }
   foreach ($r in $b.allowRules) { Disable-NetFirewallRule -PolicyStore PersistentStore -Name $r.name }
+  if ($strictLab) {
+    $name='DLP-PROTECTION-'+$b.id+'-DHCP'
+    $program=Join-Path $env:SystemRoot 'System32\svchost.exe'
+    $b.ruleNames+=$name; $b.specifications+=@{name=$name;program=$program;kind='DHCP'}; Save-Json $backupPath $b
+    New-NetFirewallRule -Name $name -DisplayName 'DLP VM DHCP broadcast' -Description ('DLP-PROTECTION owner='+$b.id) -PolicyStore PersistentStore -Direction Outbound -Action Allow -Enabled True -Profile Any -Protocol UDP -Program $program -Service Dhcp -RemoteAddress 255.255.255.255 -LocalPort 68 -RemotePort 67 | Out-Null
+  }
   Set-NetFirewallProfile -Profile Domain,Private,Public -Enabled True -DefaultOutboundAction Block
   $b.phase='APPLIED';Save-Json $backupPath $b
   Save-Json $auditPath @{state='APPLIED_UNVERIFIED';host=$env:COMPUTERNAME;checkedAt=[DateTime]::UtcNow.ToString('o');configurationVerified=$false;gateway=$b.gateway;findings=@('Ejecuta Audit y la matriz de pruebas; configurado no significa probado.')}

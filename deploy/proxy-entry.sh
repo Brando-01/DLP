@@ -1,7 +1,18 @@
 #!/bin/sh
 set -eu
 mkdir -p /ca-public
-mitmdump --listen-host 0.0.0.0 --listen-port 8080 --set confdir=/mitm-private --set connection_strategy=lazy --set body_size_limit=12m --set ssl_verify_upstream_trusted_ca=/ca-public/receiver-ca.pem -s /app/integrations/proxy_addon.py -q &
+dlp_port=8080
+dlp_addon=/app/integrations/proxy_addon.py
+if [ "${DLP_STRICT_LISTENER:-0}" = 1 ]; then
+  dlp_port=8081
+  dlp_addon=/app/integrations/strict_proxy.py
+  dlp_wait=0
+  while [ ! -f /mitm-private/mitmproxy-ca-cert.pem ]; do
+    dlp_wait=$((dlp_wait + 1)); [ "$dlp_wait" -lt 60 ] || exit 1
+    sleep 1
+  done
+fi
+mitmdump --listen-host 0.0.0.0 --listen-port "$dlp_port" --set confdir=/mitm-private --set connection_strategy=lazy --set body_size_limit=12m --set ssl_verify_upstream_trusted_ca=/ca-public/receiver-ca.pem -s "$dlp_addon" -q &
 dlp_proxy_pid=$!
 trap 'kill "$dlp_proxy_pid" 2>/dev/null || true' TERM INT EXIT
 dlp_count=0

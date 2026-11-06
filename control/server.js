@@ -81,7 +81,7 @@ function createControl(options = {}) {
       res.json({ inspection });
     } finally { concurrent -= 1; }
   });
-  app.get("/v1/config", (_req, res) => res.json({ blockedDomains: policy.blockedDomains, fragmentMode: policy.fragmentMode, maxBytes: 10 * 1024 * 1024 }));
+  app.get("/v1/config", (req, res) => res.json({ blockedDomains: policy.blockedDomains, fragmentMode: policy.fragmentMode, maxBytes: 10 * 1024 * 1024, individualDevice: req.device ? { id: req.device.id, name: req.device.name } : null }));
   app.post("/v1/inspect", async (req, res) => {
     if (concurrent >= 2) return res.status(429).json({ error: "Inspecciones ocupadas; retener y reintentar" });
     concurrent += 1;
@@ -95,10 +95,12 @@ function createControl(options = {}) {
         if (total > 10 * 1024 * 1024) throw new Error("Carga superior a 10 MiB");
         return { name: path.basename(part.name), buffer };
       });
-      const destination = destinationDecision(input, policy);
+      if (input.strictLab === true && !req.device) return res.status(403).json({ error: "El canal estricto requiere identidad individual." });
+      const effectivePolicy = input.strictLab === true ? validatePolicy({ ...defaults(), profile: "restricted", uploadDomains: ["sink.dlp.test"] }) : policy;
+      const destination = destinationDecision(input, effectivePolicy);
       const inspections = [];
       if (!destination) for (const part of parts) inspections.push({ file: part.name, ...await inspect(part.buffer, part.name) });
-      const decision = destination || combine(inspections, input.channel, policy);
+      const decision = destination || combine(inspections, input.channel, effectivePolicy);
       const ticket = crypto.randomUUID();
       const event = { ...eventIdentity(req, input.device), channel: input.channel, activity: "DECISION_PREVIA", destination: safeDestination(input.destination), decision: decision.decision, cause: decision.cause, detected: decision.detected, prevented: null, evidence: "GATEWAY_POLICY_DECISION", files: inspections.map(({ file, sha256, classification, inspectionStatus, semantic, score, matches, formatMismatch }) => ({ file, sha256, classification, inspectionStatus, semanticStatus: semantic?.status, score, rules: matches.map((m) => m.id), formatMismatch })), ticket };
       audit.record(event);
@@ -140,7 +142,7 @@ function createControl(options = {}) {
       if (typeof item.inspectionStatus === "string") clean.inspectionStatus = item.inspectionStatus.slice(0, 40);
       if (Number.isInteger(item.ruleId) && item.ruleId >= 100000 && item.ruleId < 120000) clean.ruleId = item.ruleId;
       if (typeof item.channel === "string") clean.sourceChannel = item.channel.slice(0, 60);
-      if (item.channel === "browser_navigation" && typeof item.destination === "string") { try { const u = new URL(item.destination); if (["http:", "https:"].includes(u.protocol)) clean.destination = u.origin; } catch {} }
+      if (["browser_navigation", "strict_network"].includes(item.channel) && typeof item.destination === "string") { try { const u = new URL(item.destination); if (["http:", "https:"].includes(u.protocol)) clean.destination = u.origin; } catch {} }
       audit.record(clean);
       accepted += 1;
       if (identity) telemetryIds.set(identity, Date.now());

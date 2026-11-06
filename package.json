@@ -1,7 +1,7 @@
 {
   "name": "proyecto-dlp",
   "version": "3.0.0",
-  "description": "Laboratorio DLP de endpoint Windows: clasificación, controles de salida, auditoría y evaluación multicanal.",
+  "description": "Laboratorio DLP de endpoint Windows: clasificaciÃƒÂ³n, controles de salida, auditorÃƒÂ­a y evaluaciÃƒÂ³n multicanal.",
   "main": "start.js",
   "scripts": {
     "start": "node start.js",
@@ -49,7 +49,14 @@
     "extension:build": "node extension/build.js",
     "test:browser": "node scripts/evaluate-local.js browser",
     "test:central": "node evaluacion/central-e2e.js",
-    "test:windows": "node scripts/evaluate-local.js windows"
+    "test:windows": "node scripts/evaluate-local.js windows",
+    "strict:prepare": "node scripts/strict-lab.js prepare",
+    "strict:plan": "node scripts/strict-lab.js plan",
+    "strict:apply": "node scripts/strict-lab.js apply",
+    "strict:audit": "node scripts/strict-lab.js audit",
+    "strict:restore": "node scripts/strict-lab.js restore",
+    "strict:verify": "node scripts/verify-strict-lab.js",
+    "test:strict": "node evaluacion/strict-e2e.js"
   },
   "keywords": [
     "dlp",

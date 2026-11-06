@@ -46,6 +46,19 @@ services:
     volumes: ["proxy_keys:/mitm-private", "public_ca:/ca-public", "sensor_logs:/logs"]
     extra_hosts: ["sink.dlp.test:172.30.50.20"]
     networks: { internal: { ipv4_address: 172.30.50.11 }, egress: {} }
+  strict-proxy:
+    image: dlp-lab-integrations:3
+    entrypoint: ["sh", "/app/deploy/proxy-entry.sh"]
+    environment:
+      DLP_STRICT_LISTENER: "1"
+      DLP_CONTROL_URL: http://172.30.50.10:3100
+      DLP_ALLOW_LAB_HTTP: "1"
+      DLP_CONNECTOR_LOG: /logs/strict-proxy.jsonl
+    depends_on: { control: { condition: service_healthy }, proxy: { condition: service_started } }
+    ports: ["${DLP_STRICT_BIND:-127.0.0.1}:8081:8081"]
+    volumes: ["proxy_keys:/mitm-private", "public_ca:/ca-public", "sensor_logs:/logs"]
+    extra_hosts: ["sink.dlp.test:172.30.50.20"]
+    networks: { internal: { ipv4_address: 172.30.50.14 }, management: {} }
   mail-filter:
     image: dlp-lab-integrations:3
     command: ["python", "-m", "integrations.mail_filter"]

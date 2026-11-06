@@ -1,5 +1,7 @@
 # DLP administrado - versión 3
 
+**Modo estricto para las VM Windows y Kali:** [activación, pruebas y restauración](docs/MODO_ESTRICTO_VM.md). Solo admite el receptor HTTPS del laboratorio por un proxy autenticado individualmente; restringe canales alternativos. Incluye relay local, firewall Windows y nftables Linux. No es inspección universal de todas las operaciones ni bloqueo selectivo de aplicaciones cifradas.
+
 Agente Windows, consola central, proxy HTTPS, filtro SMTP, resolver DNS y correlación con Wazuh. Clasifica información sensible mediante reglas y contexto semántico de Groq. Evalúa permitido, detectado, alerta y bloqueado, además de falsos positivos y negativos. Usa exclusivamente datos ficticios y destinos del laboratorio. Inspecciona sensibilidad; no demuestra ausencia de malware.
 
 **Empieza por la [guía completa de instalación, navegadores y tokens](docs/INSTALACION_Y_NAVEGADORES.md).** Incluye primera instalación, Chrome/Brave/Edge, Firefox, qué token pegar, proxy/CA, acceso a WSL, arranque diario y solución de errores.

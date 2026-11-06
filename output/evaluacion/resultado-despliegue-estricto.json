@@ -1,0 +1,21 @@
+{
+  "source": "DEPLOYED_WSL_STRICT_PROXY_TEMPORARY_IDENTITY",
+  "passed": true,
+  "publicStatus": 200,
+  "sensitiveStatus": 403,
+  "centralReceipts": [
+    {
+      "decision": "BLOQUEADO",
+      "outcome": "CANCELLED",
+      "prevented": true
+    },
+    {
+      "decision": "PERMITIDO",
+      "outcome": "UPSTREAM_RESPONSE",
+      "prevented": false
+    }
+  ],
+  "groqCalls": 1,
+  "groqFailures": 0,
+  "vmFirewallApplied": false
+}

@@ -93,6 +93,8 @@ def serve():
 
         def do_GET(self):
             try:
+                if self.path == "/":
+                    return self.reply(200, Path(__file__).with_name("lab-ui.html").read_bytes(), "text/html; charset=utf-8")
                 target = self.target()
                 if target.is_file():
                     self.reply(200, target.read_bytes(), "application/octet-stream")
