@@ -13,6 +13,7 @@ const { semanticClassifier } = require("../lib/semantic");
 const { CASES, defaults, validatePolicy, destinationDecision, combine } = require("./policy");
 const { writeJsonAtomic } = require("../endpoint/config");
 const { DeviceStore } = require("./devices");
+const { publicProxyCA } = require("../lib/public-proxy-ca");
 const safeEqual = (a, b) => typeof a === "string" && typeof b === "string" && b.length >= 32 && Buffer.byteLength(a) === Buffer.byteLength(b) && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
 function credentialsFromEnv() { return { admin: process.env.DLP_CONTROL_ADMIN_TOKEN, inspect: process.env.DLP_INSPECT_TOKEN, telemetry: process.env.DLP_TELEMETRY_TOKEN }; }
 function safeDestination(value) {
@@ -82,6 +83,15 @@ function createControl(options = {}) {
     } finally { concurrent -= 1; }
   });
   app.get("/v1/config", (req, res) => res.json({ blockedDomains: policy.blockedDomains, fragmentMode: policy.fragmentMode, maxBytes: 10 * 1024 * 1024, individualDevice: req.device ? { id: req.device.id, name: req.device.name } : null }));
+  app.get("/v1/lab/proxy-ca", (req, res) => {
+    if (!req.device) return res.status(403).json({ error: "Usa la identidad individual del cliente inscrito." });
+    const file = options.proxyCaFile || path.join(directory, "certs-public", "mitmproxy-ca-cert.pem");
+    try {
+      const { pem, fingerprint256 } = publicProxyCA(fs.readFileSync(file, "utf8"));
+      res.setHeader("X-DLP-CA-SHA256", fingerprint256);
+      res.type("application/x-pem-file").send(pem);
+    } catch { res.status(503).json({ error: "CA pública no disponible. Sincroniza el backend y comprueba la CA del proxy en el servidor." }); }
+  });
   app.post("/v1/inspect", async (req, res) => {
     if (concurrent >= 2) return res.status(429).json({ error: "Inspecciones ocupadas; retener y reintentar" });
     concurrent += 1;

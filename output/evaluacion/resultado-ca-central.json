@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "source": "DEPLOYED_WSL_AUTHENTICATED_CA_DOWNLOAD",
+  "status": 200,
+  "certificateMatchesProxy": true,
+  "privateKeyExported": false,
+  "vmFirewallApplied": false
+}

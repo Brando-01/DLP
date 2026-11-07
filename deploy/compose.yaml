@@ -19,7 +19,7 @@ services:
       DLP_INSPECT_TOKEN: ${DLP_INSPECT_TOKEN:?Ejecuta npm run setup}
       DLP_TELEMETRY_TOKEN: ${DLP_TELEMETRY_TOKEN:?Ejecuta npm run setup}
     ports: ["${DLP_LAB_BIND:-127.0.0.1}:3100:3100"]
-    volumes: ["control_data:/app/datos-control"]
+    volumes: ["control_data:/app/datos-control", "public_ca:/app/datos-control/certs-public:ro"]
     networks: { internal: { ipv4_address: 172.30.50.10 }, egress: {} }
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3100/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]

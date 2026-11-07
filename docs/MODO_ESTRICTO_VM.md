@@ -41,18 +41,18 @@ Comprueba desde cada VM que 192.168.56.1:3100 y :8081 son accesibles **antes** d
 
 ## 2. Preparar Windows VM (sesión LABWIN, terminal normal)
 
-Primero actualiza e importa la CA pública desde la carpeta compartida que ya utiliza el laboratorio:
+Primero actualiza y obtiene la CA pública directamente del central con la identidad de la VM. No requiere carpetas compartidas:
 
 ```powershell
 cd 'C:\Users\LABWIN\DLP-Cliente'
 git pull --ff-only
-npm.cmd run strict:prepare -- --ca '\\VBOXSVR\DLPCliente\mitmproxy-ca-cert.pem'
+npm.cmd run strict:prepare -- --from-central
 npm.cmd run client:install
 npm.cmd run client:status
 npm.cmd run strict:plan
 ```
 
-La preparación copia la CA pública al estado privado del agente y habilita su relay. No aplica firewall. Conserva identidad, tokens y las otras variables de .env. No consume otra invitación. Discover debe encontrar Node y al menos un navegador en Program Files; un navegador instalado en AppData no se autoriza. Cierra los navegadores y aplicaciones de red antes del paso siguiente.
+La preparación descarga la CA pública a través del central configurado en .env, valida que sea una CA X.509 vigente sin clave privada, muestra su huella SHA-256 y guarda el certificado en el estado privado del agente. Después habilita su relay. No aplica firewall. Conserva identidad, tokens y las otras variables de .env. No consume otra invitación. Discover debe encontrar Node y al menos un navegador en Program Files; un navegador instalado en AppData no se autoriza. Cierra los navegadores y aplicaciones de red antes del paso siguiente.
 
 En **PowerShell como administrador de esa VM**, desde la misma carpeta:
 
@@ -66,17 +66,14 @@ El script verifica que es una VM y que la política corresponde a su hostname. C
 
 ## 3. Preparar Kali VM (usuario kali)
 
-Instala las dependencias de sistema **antes** de cerrar su salida. Para acceder a la carpeta compartida, si aún no está montada, utiliza el montaje indicado; no copies el .env del servidor:
+Instala las dependencias de sistema **antes** de cerrar su salida. Obtén la CA pública del central; no copies el .env del servidor:
 
 ```bash
 cd ~/DLP-Cliente
 git pull --ff-only
 sudo apt-get update
 sudo apt-get install -y nftables ca-certificates
-sudo mkdir -p /mnt/dlp-cliente
-mountpoint -q /mnt/dlp-cliente || sudo mount -t vboxsf -o ro DLPCliente /mnt/dlp-cliente
-sudo install -m 600 -o "$(id -u)" -g "$(id -g)" /mnt/dlp-cliente/mitmproxy-ca-cert.pem "$HOME/dlp-proxy-ca.pem"
-npm run strict:prepare -- --ca "$HOME/dlp-proxy-ca.pem"
+npm run strict:prepare -- --from-central
 npm run client:install
 npm run client:status
 npm run strict:plan
@@ -90,6 +87,12 @@ sudo npm run strict:audit
 ```
 
 La activación verifica VM, hostname y UID de la política, conexión a los tres componentes y sintaxis nft. Crea solo la tabla inet dlp_strict_lab; no vacía las tablas anteriores. Conserva respaldos en /var/lib/dlp-strict-lab, restringido a root. Instala la CA, políticas Chrome/Chromium/Firefox y una unidad de arranque dlp-strict-lab.service. Las otras reglas del sistema pueden restringir todavía más el tráfico. No se configura ningún DNS externo: el proxy resuelve el nombre del receptor.
+
+## Recuperar una preparación fallida por carpeta compartida
+
+Si `strict:prepare` falló al abrir `\\VBOXSVR\DLPCliente`, no se creó strict-lab-policy.json y los comandos Plan/Apply posteriores no pueden funcionar. No borres la identidad ni crees manualmente una política vacía. Actualiza servidor y cliente, sincroniza el backend y repite `strict:prepare -- --from-central`. Continúa únicamente cuando devuelva prepared:true. La descarga usa el token de inspección individual ya inscrito, sin pedir ni imprimir claves. Solo entrega el certificado público; el volumen de certificados públicos está montado en el central en modo de solo lectura.
+
+Si el central devuelve 404, le falta la actualización; 503 indica que el proxy aún no generó/publicó su CA. Con 401/403 revisa la identidad del cliente. Para un archivo local conservas la alternativa `strict:prepare -- --ca RUTA_CA_PUBLICA`. Una preparación fallida no activa el firewall.
 
 ## 4. Probar sin extensión y comprobar desde la PC
 

@@ -6,19 +6,42 @@ const path = require("node:path");
 const net = require("node:net");
 const { parseEnv } = require("node:util");
 const { temporary } = require("./helpers/fixtures.cjs");
-const { prepare } = require("../scripts/strict-lab");
+const { prepare, prepareFromCentral } = require("../scripts/strict-lab");
+const { publicProxyCA } = require("../lib/public-proxy-ca");
 const { StrictRelay } = require("../endpoint/strict-relay");
 
 test("preparación estricta conserva identidad y no instala firewall ni CA del sistema", async t => {
   const tmp = await temporary(); t.after(tmp.cleanup);
   const env = 'DLP_DEVICE_ID=11111111-1111-4111-8111-111111111111\nDLP_INSPECTION_BACKEND=central\nDLP_CONTROL_URL=http://192.168.99.1:3100\nDLP_INSPECT_TOKEN=' + 'a'.repeat(64) + '\n';
   await fs.writeFile(path.join(tmp.root, ".env"), env);
-  const ca = path.join(tmp.root, "ca.pem"); await fs.writeFile(ca, "-----BEGIN CERTIFICATE-----\nPUBLICA-FICTICIA\n-----END CERTIFICATE-----\n");
+  const ca = path.join(tmp.root, "ca.pem"); await fs.copyFile(path.join(__dirname, "fixtures/public-test-ca.crt"), ca);
   const result = prepare({ root: tmp.root, platform: "linux", ca });
   assert.equal(result.firewallChanged, false);
   const values = parseEnv(await fs.readFile(path.join(tmp.root, ".env"), "utf8"));
   assert.equal(values.DLP_STRICT_LAB, "1"); assert.equal(values.DLP_DEVICE_ID, "11111111-1111-4111-8111-111111111111"); assert.equal(values.DLP_INSPECT_TOKEN, "a".repeat(64));
-  await fs.writeFile(ca, "PRIVATE KEY"); assert.throws(() => prepare({ root: tmp.root, platform: "linux", ca }), /CA pública/);
+  await fs.writeFile(ca, "PRIVATE KEY"); assert.throws(() => prepare({ root: tmp.root, platform: "linux", ca }), /público/);
+  assert.throws(() => prepare({ root: tmp.root, platform: "linux", ca: path.join(tmp.root, "no-existe.pem") }), /from-central/);
+});
+
+test("descarga autenticada de CA: conserva inscripción; rechaza errores, claves, certificados inválidos y respuestas excesivas", async t => {
+  const tmp = await temporary(); t.after(tmp.cleanup);
+  const original = 'DLP_DEVICE_ID=11111111-1111-4111-8111-111111111111\nDLP_INSPECTION_BACKEND=central\nDLP_CONTROL_URL=http://192.168.99.1:3100\nDLP_ALLOW_LAB_HTTP=1\nDLP_INSPECT_TOKEN=' + 'a'.repeat(64) + '\n';
+  const file = path.join(tmp.root, ".env"); await fs.writeFile(file, original);
+  const options = { root: tmp.root, platform: "linux" };
+  await assert.rejects(prepareFromCentral({ ...options, fetch: async () => new Response("404", { status: 404 }) }), /sincroniza/);
+  for (const body of ["PRIVATE KEY", "-----BEGIN CERTIFICATE-----\ninvalido\n-----END CERTIFICATE-----", "x".repeat(70000)]) {
+    await assert.rejects(prepareFromCentral({ ...options, fetch: async () => new Response(body) }));
+    assert.equal(await fs.readFile(file, "utf8"), original);
+    assert.equal(await fs.access(path.join(tmp.root, "datos-endpoint/strict-lab-policy.json")).then(() => true, () => false), false);
+  }
+  const pem = await fs.readFile(path.join(__dirname, "fixtures/public-test-ca.crt"), "utf8");
+  const result = await prepareFromCentral({ ...options, fetch: async (url, init) => {
+    assert.equal(url, "http://192.168.99.1:3100/v1/lab/proxy-ca");
+    assert.equal(init.headers["X-DLP-Token"], "a".repeat(64)); assert.equal(init.redirect, "error");
+    return new Response(pem);
+  } });
+  assert.equal(result.prepared, true); assert.equal(result.firewallChanged, false);
+  assert.equal(result.caFingerprint256, publicProxyCA(pem).fingerprint256);
 });
 
 test("relay rechaza otros destinos y no abre salida cuando el gateway falla", async t => {
