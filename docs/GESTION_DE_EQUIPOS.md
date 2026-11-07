@@ -111,6 +111,16 @@ Si la tarea figura Running pero 3001 y 3002 no responden y supervisor.log muestr
 
 Un error JSON_INVALIDO al arrancar ahora identifica el archivo sin imprimir fragmentos de credenciales o documentos. Conserva el estado para revisar el caso: no elimines credenciales ni reconstruyas o borres auditoria.jsonl para conseguir que arranque. Si la configuración, la codificación o un registro están dañados, la corrección debe prepararse sobre una copia de respaldo y conservar la evidencia original.
 
+### Recuperar un único registro final inválido de la auditoría local
+
+Si el diagnóstico valida un prefijo de eventos y encuentra JSON inválido al final, usa `npm run client:recover-audit` para obtener un plan sin modificar archivos. En Windows utiliza npm.cmd. Solo se considera recuperable un último registro JSON ilegible, sin eventos posteriores y con todos los hashes anteriores válidos. Una cadena alterada, daño intermedio o ausencia de prefijo verificable requieren revisión; el comando no los corrige automáticamente.
+
+Con el supervisor detenido mediante client:stop y sin agente manual abierto, ejecuta `npm run client:recover-audit -- --apply`. El comando comprueba que 3001/3002 estén libres y que no haya un supervisor activo. Conserva una copia íntegra byte por byte, el fragmento inválido y manifiestos SHA-256 en datos-endpoint/recuperacion-auditoria/ID. Valida la cadena candidata antes de sustituir atómicamente el archivo activo. Los eventos anteriores mantienen sus identificadores y bytes. Se añade AUDITORIA_RECUPERADA_CON_CUARENTENA con decisión ALERTA y revisión pendiente; no se afirma que el fragmento perdido haya podido interpretarse ni que el daño fuera accidental. El archivo original se conserva como evidencia privada, no debe publicarse.
+
+Durante la intervención, un bloqueo propio impide abrir o escribir la auditoría desde el agente actualizado. Si aparece una recuperación pendiente tras una interrupción, conserva el bloqueo y los respaldos para revisar el caso; no lo borres a ciegas. Las nuevas escrituras del registro solicitan flush antes de cerrarse para reducir el riesgo de perder datos pendientes; esto no garantiza inmunidad ante cortes o corrupción del almacenamiento.
+
+Después ejecuta client:diagnose. Si la auditoría figura OK, reinicia con client:install y comprueba los puertos antes de strict:apply. La recuperación es local: no reconstruye ni modifica el historial ya recibido por el central, ni acredita que hubiera protección mientras el agente estaba detenido.
+
 En Windows usa npm.cmd y en Linux npm, desde la carpeta del cliente:
 
 ```text

@@ -57,7 +57,8 @@
     "strict:restore": "node scripts/strict-lab.js restore",
     "strict:verify": "node scripts/verify-strict-lab.js",
     "test:strict": "node evaluacion/strict-e2e.js",
-    "client:diagnose": "node scripts/client-diagnose.js"
+    "client:diagnose": "node scripts/client-diagnose.js",
+    "client:recover-audit": "node scripts/recover-client-audit.js"
   },
   "keywords": [
     "dlp",
