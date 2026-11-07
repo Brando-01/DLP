@@ -76,3 +76,21 @@ test("un puerto de un servicio ajeno no se ocupa, no se cierra y no deja bloqueo
   assert.equal(server.listening, true);
   assert.equal(await fs.access(path.join(tmp.root, "datos-endpoint/supervisor.json")).then(() => true, () => false), false);
 });
+
+test("un cierre transitorio del socket de salud se reintenta sin iniciar procesos sobre el puerto", async t => {
+  const tmp = await temporary(); t.after(tmp.cleanup);
+  const data = path.join(tmp.root, "datos-endpoint"); await fs.mkdir(data);
+  const crypto = require("node:crypto"), browser = "b".repeat(64);
+  await fs.writeFile(path.join(data, "credenciales.json"), JSON.stringify({ browser }));
+  const installationId = crypto.createHash("sha256").update(browser).digest("hex").slice(0, 32);
+  let calls = 0;
+  const server = http.createServer((req, res) => { calls++; if (calls === 1) return req.socket.destroy(); res.setHeader("Content-Type", "application/json"); res.end(JSON.stringify({ service: "Agente DLP local", installationId })); });
+  server.listen(0, "127.0.0.1"); await new Promise(r => server.once("listening", r));
+  t.after(() => new Promise(r => { server.close(r); server.closeAllConnections(); }));
+  const running = supervise({ root: tmp.root, port: server.address().port, interval: 50 });
+  t.after(async () => { await requestStop(tmp.root); await running; });
+  await waitFor(() => calls >= 2);
+  await requestStop(tmp.root); await running;
+  const log = await fs.readFile(path.join(data, "supervisor.log"), "utf8");
+  assert.ok(!log.includes("Proceso del agente iniciado")); assert.equal(server.listening, true);
+});

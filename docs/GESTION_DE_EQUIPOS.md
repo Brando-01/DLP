@@ -107,6 +107,10 @@ Cada supervisor usa su registro privado datos-endpoint/supervisor.json, un archi
 
 ## Consultar, detener y retirar
 
+Si la tarea figura Running pero 3001 y 3002 no responden y supervisor.log muestra salidas con código 1, el supervisor está activo y el agente está fallando. Detén el supervisor con client:stop y ejecuta `npm run client:diagnose` (npm.cmd en Windows). Este diagnóstico solo lee .env y archivos de estado conocidos; muestra nombre de archivo, estado JSON, codificación y primera línea problemática de la auditoría, sin valores, tokens ni contenido. También verifica la cadena de la auditoría. No inicia sensores, no modifica archivos y no activa el firewall.
+
+Un error JSON_INVALIDO al arrancar ahora identifica el archivo sin imprimir fragmentos de credenciales o documentos. Conserva el estado para revisar el caso: no elimines credenciales ni reconstruyas o borres auditoria.jsonl para conseguir que arranque. Si la configuración, la codificación o un registro están dañados, la corrección debe prepararse sobre una copia de respaldo y conservar la evidencia original.
+
 En Windows usa npm.cmd y en Linux npm, desde la carpeta del cliente:
 
 ```text

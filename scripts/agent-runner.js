@@ -34,11 +34,15 @@ async function supervise(options = {}) {
     if (fs.existsSync(p.log) && fs.statSync(p.log).size > 1024 * 1024) fs.writeFileSync(p.log, "Registro anterior truncado por límite de tamaño.\n");
     fs.appendFileSync(p.log, new Date().toISOString() + " " + text + "\n", { mode: 0o600 });
   };
-  let child, stopping = false, owned = false, failures = 0, nextStart = 0;
+  let child, stopping = false, owned = false, failures = 0, nextStart = 0, healthRetries = 0;
   const stop = () => { stopping = true; };
   for (const signal of ["SIGINT", "SIGTERM"]) process.on(signal, stop);
   const port = options.port || Number(process.env.DLP_AGENT_PORT || 3001), base = `http://127.0.0.1:${port}`;
-  const health = async () => { try { const r = await fetch(base + "/api/health", { signal: AbortSignal.timeout(1000) }); return r.ok ? await r.json() : { foreign: true }; } catch (error) { if (error.cause?.code === "ECONNREFUSED") return null; return { foreign: true }; } };
+  const health = async () => { try { const r = await fetch(base + "/api/health", { signal: AbortSignal.timeout(1000) }); return r.ok ? await r.json() : { foreign: true }; } catch (error) {
+    if (error.cause?.code === "ECONNREFUSED") return null;
+    if (["ECONNRESET", "UND_ERR_SOCKET", "ETIMEDOUT", "UND_ERR_CONNECT_TIMEOUT"].includes(error.cause?.code) || error.name === "TimeoutError") return { retry: true };
+    return { foreign: true };
+  } };
   const installation = () => {
     try { const credentials = JSON.parse(fs.readFileSync(path.join(p.directory, "credenciales.json"), "utf8")); return crypto.createHash("sha256").update(credentials.browser).digest("hex").slice(0, 32); } catch { return null; }
   };
@@ -49,12 +53,19 @@ async function supervise(options = {}) {
         try { if (JSON.parse(fs.readFileSync(p.request, "utf8")).nonce === nonce) { stopping = true; fs.unlinkSync(p.request); break; } } catch {}
       }
       const current = await health();
+      // Un socket que se cierra durante el reinicio no prueba que el puerto sea ajeno.
+      // Esperar sin lanzar ni cerrar procesos hasta obtener identidad o conexión rechazada.
+      if (current?.retry) {
+        if (++healthRetries > 5) throw new Error("No se pudo identificar el servicio del puerto tras cinco reintentos; no se gestionaron procesos ajenos.");
+        await delay(interval); continue;
+      }
+      healthRetries = 0;
       if (current && (current.service !== "Agente DLP local" || !installation() || current.installationId !== installation())) throw new Error("El puerto está ocupado por otro agente o una versión anterior. Cierra su terminal antes de iniciar el supervisor.");
       if (!current && !child && Date.now() >= nextStart) {
         child = spawn(process.execPath, [options.entry || path.join(root, "endpoint/server.js")], { cwd: root, windowsHide: true, stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, DLP_AGENT_PORT: String(port), DLP_AGENT_START_MODE: options.mode || "SUPERVISED" } });
         owned = true;
         child.stdout.on("data", bytes => log(String(bytes).trim().slice(0, 4000)));
-        child.stderr.on("data", () => log("El agente escribió un diagnóstico; consulta su panel local. No se copia contenido sensible al registro del supervisor."));
+        child.stderr.on("data", () => log("El agente escribió un diagnóstico. Para fallos de arranque ejecuta npm run client:diagnose. No se copia contenido sensible al registro del supervisor."));
         child.on("error", () => log("No se pudo ejecutar el agente."));
         child.on("exit", code => { child = null; failures += 1; nextStart = Date.now() + Math.min(60000, interval * failures); log(`Agente finalizado (${code}); reinicio supervisado pendiente.`); });
         log("Proceso del agente iniciado.");

@@ -5,6 +5,7 @@ const path = require("node:path");
 const os = require("node:os");
 const crypto = require("node:crypto");
 const { validatePolicies, DEFAULT_POLICY } = require("../lib/policy");
+const { readStateJson } = require("../lib/state-json");
 const PROJECT = path.resolve(__dirname, "..");
 
 function writeJsonAtomic(file, value) {
@@ -79,11 +80,11 @@ function validateConfig(value) {
 function loadState(dataDirectory, overrides = {}) {
   fs.mkdirSync(dataDirectory, { recursive: true });
   const file = path.join(dataDirectory, "config.json");
-  const config = validateConfig({ ...(fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : defaultConfig()), ...overrides });
+  const config = validateConfig({ ...(fs.existsSync(file) ? readStateJson(file) : defaultConfig()), ...overrides });
   writeJsonAtomic(file, config);
   const credentialsFile = path.join(dataDirectory, "credenciales.json");
   if (!fs.existsSync(credentialsFile)) writeJsonAtomic(credentialsFile, { admin: crypto.randomBytes(32).toString("hex"), browser: crypto.randomBytes(32).toString("hex") });
-  const credentials = JSON.parse(fs.readFileSync(credentialsFile, "utf8"));
+  const credentials = readStateJson(credentialsFile);
   for (const key of ["admin", "browser"]) if (!/^[a-f0-9]{64}$/.test(credentials[key] || "")) throw new Error("Archivo de credenciales no válido");
   return { config, credentials, file };
 }
