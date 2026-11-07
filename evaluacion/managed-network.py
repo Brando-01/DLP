@@ -57,6 +57,7 @@ def make_cert(directory):
 
 
 def run():
+    pc_filter = os.environ.get("DLP_E2E_PC_FILTER") == "1"
     results, received_http, received_mail = [], [], []
     dav_files = {}
     proxy = None
@@ -103,7 +104,9 @@ def run():
             proxy_port = free_port()
             log_path = directory / "proxy.log"
             with log_path.open("w", encoding="utf-8") as log:
-                proxy = subprocess.Popen([sys.executable, "-c", "from mitmproxy.tools.main import mitmdump; mitmdump()", "--listen-host", "127.0.0.1", "--listen-port", str(proxy_port), "--set", f"confdir={directory / 'mitm'}", "--set", "connection_strategy=lazy", "--set", f"ssl_verify_upstream_trusted_ca={cert}", "--set", "body_size_limit=12m", "-s", str(ROOT / "integrations/proxy_addon.py"), "-q"], cwd=ROOT, env=os.environ.copy(), stdout=log, stderr=log, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+                addon = ROOT / ("integrations/pc_capture.py" if pc_filter else "integrations/proxy_addon.py")
+                # Proxy explícito en loopback: nunca usa --mode local ni carga WinDivert.
+                proxy = subprocess.Popen([sys.executable, "-c", "from mitmproxy.tools.main import mitmdump; mitmdump()", "--listen-host", "127.0.0.1", "--listen-port", str(proxy_port), "--set", f"confdir={directory / 'mitm'}", "--set", "connection_strategy=lazy", "--set", f"ssl_verify_upstream_trusted_ca={cert}", "--set", "body_size_limit=12m", "-s", str(addon), "-q"], cwd=ROOT, env=os.environ.copy(), stdout=log, stderr=log, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
 
                 def ready():
                     if proxy.poll() is not None:
@@ -117,19 +120,19 @@ def run():
                 wait(ready)
                 client_context = ssl.create_default_context(cafile=str(directory / "mitm/mitmproxy-ca-cert.pem"))
 
-                def upload(content, content_type="text/plain", headers=None):
+                def upload(content, content_type="text/plain", headers=None, target="/upload"):
                     conn = http.client.HTTPSConnection("127.0.0.1", proxy_port, context=client_context, timeout=55)
                     conn.set_tunnel("127.0.0.1", sink.server_port)
-                    conn.request("POST", "/upload", content, {"Content-Type": content_type, **(headers or {})})
+                    conn.request("POST", target, content, {"Content-Type": content_type, **(headers or {})})
                     response = conn.getresponse()
                     status = response.status
                     response.read()
                     conn.close()
                     return status
 
-                def check_web(label, data, allowed, content_type="text/plain", headers=None):
+                def check_web(label, data, allowed, content_type="text/plain", headers=None, target="/upload"):
                     before = len(received_http)
-                    status = upload(data, content_type, headers)
+                    status = upload(data, content_type, headers, target)
                     if allowed:
                         assert status == 200, (label, status)
                         assert len(received_http) == before + 1
@@ -140,6 +143,11 @@ def run():
                     results.append({"case": label, "allowed": allowed, "status": status, "destinationVerified": True, "evidence": "REAL_HTTPS_MITMPROXY_AND_INDEPENDENT_RECEIVER"})
 
                 check_web("CU-06 texto público", b"Horario de biblioteca", True)
+                if pc_filter:
+                    check_web("PC documento vacío", b"", True)
+                    check_web("PC datos sensibles en consulta", b"", False, target="/upload?dato=DNI%3A%2012345678")
+                    check_web("PC datos sensibles en ruta", b"", False, target="/DNI%3A%2012345678")
+                    check_web("PC websocket no inspeccionable", b"", False, headers={"Upgrade": "websocket"})
                 check_web("CU-06 DNI en cuerpo", b"DNI: 12345678", False)
                 check_web("CU-12 base64", b"RE5JOiAxMjM0NTY3OApSZWdpc3RybyBwcml2YWRvIGZpY3RpY2lv", False)
                 check_web("CU-12 fragmento Content-Range", b"DNI: ", False, headers={"Content-Range": "bytes 0-4/20"})
@@ -223,7 +231,7 @@ def run():
                             assert "403" in result.stderr, result.stderr[-2000:]
                         results.append({"case": "CU-07 rclone WebDAV " + name, "allowed": allowed, "destinationVerified": True, "evidence": "REAL_RCLONE_WEBDAV_HTTPS_PROXY_AND_RECEIVER"})
 
-            return {"generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(), "tests": len(results), "groqLiveTested": False, "classification": "RULES_ONLY_FOR_NETWORK_VERIFICATION", "tlsInspection": True, "postfixTested": False, "rcloneTested": any("rclone WebDAV" in item["case"] for item in results), "results": results}
+            return {"generatedAt": datetime.datetime.now(datetime.timezone.utc).isoformat(), "tests": len(results), "groqLiveTested": False, "classification": "RULES_ONLY_FOR_NETWORK_VERIFICATION", "tlsInspection": True, "pcFilterTested": pc_filter, "captureMode": "EXPLICIT_PROXY_LOOPBACK", "nativeCaptureTested": False, "systemCertificatesChanged": False, "firewallChanged": False, "postfixTested": False, "rcloneTested": any("rclone WebDAV" in item["case"] for item in results), "results": results}
         finally:
             if mail_filter:
                 mail_filter.stop()

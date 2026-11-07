@@ -82,7 +82,7 @@ function createControl(options = {}) {
       res.json({ inspection });
     } finally { concurrent -= 1; }
   });
-  app.get("/v1/config", (req, res) => res.json({ blockedDomains: policy.blockedDomains, fragmentMode: policy.fragmentMode, maxBytes: 10 * 1024 * 1024, individualDevice: req.device ? { id: req.device.id, name: req.device.name } : null }));
+  app.get("/v1/config", (req, res) => res.json({ blockedDomains: policy.blockedDomains, fragmentMode: policy.fragmentMode, maxBytes: 10 * 1024 * 1024, capabilities: { pcCaptureEnforce: true }, individualDevice: req.device ? { id: req.device.id, name: req.device.name } : null }));
   app.get("/v1/lab/proxy-ca", (req, res) => {
     if (!req.device) return res.status(403).json({ error: "Usa la identidad individual del cliente inscrito." });
     const file = options.proxyCaFile || path.join(directory, "certs-public", "mitmproxy-ca-cert.pem");
@@ -106,7 +106,11 @@ function createControl(options = {}) {
         return { name: path.basename(part.name), buffer };
       });
       if (input.strictLab === true && !req.device) return res.status(403).json({ error: "El canal estricto requiere identidad individual." });
-      const effectivePolicy = input.strictLab === true ? validatePolicy({ ...defaults(), profile: "restricted", uploadDomains: ["sink.dlp.test"] }) : policy;
+      if (input.pcCapture === true && !req.device) return res.status(403).json({ error: "La captura PC requiere identidad individual." });
+      let effectivePolicy = input.strictLab === true ? validatePolicy({ ...defaults(), profile: "restricted", uploadDomains: ["sink.dlp.test"] }) : policy;
+      if (input.pcCapture === true) {
+        effectivePolicy = validatePolicy({ ...effectivePolicy, policies: { ...effectivePolicy.policies, web_proxy: { ...effectivePolicy.policies.web_proxy, mode: "enforce" } } });
+      }
       const destination = destinationDecision(input, effectivePolicy);
       const inspections = [];
       if (!destination) for (const part of parts) inspections.push({ file: part.name, ...await inspect(part.buffer, part.name) });

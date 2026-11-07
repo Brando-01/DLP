@@ -58,7 +58,13 @@
     "strict:verify": "node scripts/verify-strict-lab.js",
     "test:strict": "node evaluacion/strict-e2e.js",
     "client:diagnose": "node scripts/client-diagnose.js",
-    "client:recover-audit": "node scripts/recover-client-audit.js"
+    "client:recover-audit": "node scripts/recover-client-audit.js",
+    "pc:prepare": "node scripts/pc-protection.js prepare",
+    "pc:plan": "node scripts/pc-protection.js plan",
+    "pc:status": "node scripts/pc-protection.js status",
+    "pc:start": "node scripts/pc-protection.js start",
+    "pc:stop": "node scripts/pc-protection.js stop",
+    "test:pc-filter": "node evaluacion/managed-e2e.js --pc-filter"
   },
   "keywords": [
     "dlp",

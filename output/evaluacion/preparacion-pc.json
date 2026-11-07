@@ -1,0 +1,120 @@
+{
+  "prepared": true,
+  "coordinatorRunning": false,
+  "captureState": "NOT_ACTIVE",
+  "allAppsReady": false,
+  "universalProtection": false,
+  "failClosedOnProcessExit": false,
+  "nativeCaptureValidated": false,
+  "cases": [
+    {
+      "id": "CU-01",
+      "name": "USB",
+      "state": "CONTROL_DEL_CANAL_SEPARADO",
+      "limitation": "System-Controls.ps1; bloqueo general de escritura. No hay minifilter selectivo."
+    },
+    {
+      "id": "CU-02",
+      "name": "Copia local no autorizada",
+      "state": "DETECCION_POSTERIOR",
+      "limitation": "CopyMonitor correlaciona archivos después de copiar; no impide toda copia nativa."
+    },
+    {
+      "id": "CU-03",
+      "name": "Correo con adjunto",
+      "state": "FILTRO_SMTP_EXISTENTE",
+      "limitation": "Solo correo que llega al filtro. Captura local no implementa SMTP/STARTTLS transparente."
+    },
+    {
+      "id": "CU-04",
+      "name": "Correo en cuerpo",
+      "state": "FILTRO_SMTP_EXISTENTE",
+      "limitation": "El filtro MIME inspecciona el correo mediado; otras rutas requieren validación."
+    },
+    {
+      "id": "CU-05",
+      "name": "Subida HTTPS",
+      "state": "FILTRO_IMPLEMENTADO_CAPTURA_NATIVA_PENDIENTE",
+      "limitation": "Retener petición completa; reglas/Groq y recibo. Requiere CA confiable y tráfico capturado."
+    },
+    {
+      "id": "CU-06",
+      "name": "Texto a web",
+      "state": "FILTRO_IMPLEMENTADO_CAPTURA_NATIVA_PENDIENTE",
+      "limitation": "Cuerpo, consulta y ruta; no demuestra ausencia de canales encubiertos en cabeceras."
+    },
+    {
+      "id": "CU-07",
+      "name": "rclone",
+      "state": "WEBDAV_MEDIADO_EXISTENTE",
+      "limitation": "Otros backends requieren prueba; TCP no HTTP capturado se restringe como canal."
+    },
+    {
+      "id": "CU-08",
+      "name": "SFTP/SCP",
+      "state": "RESTRICCION_CANAL_CAPTURADO",
+      "limitation": "No lee SSH cifrado. No se acredita bloqueo si el tráfico elude la captura."
+    },
+    {
+      "id": "CU-09",
+      "name": "FTP",
+      "state": "RESTRICCION_CANAL_CAPTURADO",
+      "limitation": "No se ofrece clasificación transparente de FTP; Suricata sigue siendo detección separada."
+    },
+    {
+      "id": "CU-10",
+      "name": "DNS",
+      "state": "RESTRICCION_DNS_CAPTURADO",
+      "limitation": "El piloto deniega DNS capturado; resolución normal de toda la PC todavía pendiente."
+    },
+    {
+      "id": "CU-11",
+      "name": "Archivo cifrado",
+      "state": "RETENCION_POR_NO_INSPECCION",
+      "limitation": "No inspeccionable en el canal HTTP; no significa que se haya descifrado."
+    },
+    {
+      "id": "CU-12",
+      "name": "Evasión de formato",
+      "state": "MOTOR_EXISTENTE",
+      "limitation": "Firma real, base64 y límites. Sin cobertura garantizada de cualquier transformación."
+    }
+  ],
+  "missing": [
+    "Prueba nativa del redirector en Windows",
+    "Kill switch independiente del proceso de captura",
+    "DNS de uso diario y validación por protocolo",
+    "Minifilter para copias/lecturas nativas selectivas",
+    "Pruebas de cada aplicación, reinicio y evasiones",
+    "Evaluación FP/FN con corpus etiquetado"
+  ],
+  "windows": {
+    "driverStarted": false,
+    "binaries": [
+      {
+        "signature": "NotSigned",
+        "name": "windows-redirector.exe",
+        "sha256": "3F51066F1BFE9741E8696A9E09FE74EE4A07764F7E4E0CB03A3EBCA5D399B04A",
+        "present": true
+      },
+      {
+        "signature": "NotSigned",
+        "name": "WinDivert.dll",
+        "sha256": "C1E060EE19444A259B2162F8AF0F3FE8C4428A1C6F694DCE20DE194AC8D7D9A2",
+        "present": true
+      },
+      {
+        "signature": "Valid",
+        "name": "WinDivert64.sys",
+        "sha256": "8DA085332782708D8767BCACE5327A6EC7283C17CFB85E40B03CD2323A90DDC2",
+        "present": true
+      }
+    ],
+    "certificateInstalled": false,
+    "readOnly": true,
+    "firewallChanged": false,
+    "administrator": false
+  },
+  "evidence": "READ_ONLY_PREPARATION_NO_NATIVE_CAPTURE",
+  "groqLiveTested": false
+}

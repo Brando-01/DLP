@@ -60,6 +60,21 @@ test("credenciales por equipo: no suplantan reportes ni recibos; revocación ind
   assert.equal((await f.request("/v1/config", b.inspectToken)).status, 200);
   assert.equal(new DeviceStore(f.tmp.root).authenticate(a.telemetryToken, "telemetry"), null);
 });
+
+test("captura PC exige identidad individual y aplica enforce aun con política audit", async t => {
+  const f = await fixture(t), a = await f.register("PC-FICTICIA");
+  const { defaults } = require("../control/policy");
+  const policy = defaults(); policy.policies.web_proxy.mode = "audit";
+  assert.equal((await f.request("/v1/admin/policy", credentials.admin, policy, "PUT")).status, 200);
+  const config = await (await f.request("/v1/config", a.inspectToken)).json();
+  assert.equal(config.capabilities.pcCaptureEnforce, true);
+  const payload = { channel: "web_proxy", destination: "https://destino.example.test", parts: [{ name: "ficticio.txt", base64: Buffer.from("DNI: 12345678").toString("base64") }] };
+  assert.equal((await (await f.request("/v1/inspect", a.inspectToken, payload)).json()).allowed, true);
+  assert.equal((await f.request("/v1/inspect", credentials.inspect, { ...payload, pcCapture: true })).status, 403);
+  const blocked = await (await f.request("/v1/inspect", a.inspectToken, { ...payload, pcCapture: true })).json();
+  assert.equal(blocked.allowed, false); assert.equal(f.control.audit.events.at(-1).device, a.deviceId);
+  assert.equal((await (await f.request("/v1/inspect", a.inspectToken, { ...payload, pcCapture: true, parts: [{ name: "vacio.txt", base64: "" }] })).json()).allowed, true);
+});
 test("vista por equipo filtra antes del límite; latidos vacíos actualizan estado y sobreviven reinicio", async t => {
   const f = await fixture(t), a = await f.register("LIN-01"), b = await f.register("LIN-02");
   await f.request("/v1/telemetry", a.telemetryToken, { device: a.deviceId, platform: "linux", hostname: "kali", startMode: "SYSTEMD_USER", events: [{ id: "1", file: "solo-a.txt", decision: "ALERTA" }] });
